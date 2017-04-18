@@ -1,0 +1,12 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Search</ion-title>
+  </ion-navbar>
+</ion-header>
+<ion-content>
+  <ion-searchbar (ionInput)="search($event)" [debounce]="400"></ion-searchbar>
+  <artist-list-item *ngFor="let result of results | async" [artist]="result" (click)="onArtistClick(result)"></artist-list-item>
+</ion-content>
