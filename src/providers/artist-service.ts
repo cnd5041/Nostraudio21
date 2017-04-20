@@ -78,9 +78,10 @@ export class ArtistService {
             }
         });
 
-        queryObservable.map(queriedItems => {
-            console.log('queriedItems', queriedItems[0]);
-        });
+        queryObservable
+            .subscribe(queriedItems => {
+                console.log('queriedItems', queriedItems[0]);
+            });
         // I want to turn this into a firebase object reference, so prob use switch map, but control the logic flow based on if it returns
 
         return queryObservable;
