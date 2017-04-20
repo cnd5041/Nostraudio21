@@ -1,4 +1,4 @@
-export * from './artist-service';
+﻿export * from './artist-service';
 export * from './auth-data';
 export * from './date-service';
 export * from './firebase-store';

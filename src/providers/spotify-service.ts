@@ -4,7 +4,9 @@ import { Http, Response } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
 import 'rxjs/add/operator/map';
 
-import { INosArtist, ISpotifyTopTracks, SpotifyTrack } from '../models/artist.model';
+import { INosArtist, ISpotifyTopTracks } from '../models/artist.model';
+
+// SpotifyTrack
 
 @Injectable()
 export class SpotifyService {
@@ -41,6 +43,7 @@ export class SpotifyService {
       result.mediumImage = '/assets/fallback_artist.png';
       result.smallImage = '/assets/fallback_artist.png';
     }
+
     return result;
   }
 

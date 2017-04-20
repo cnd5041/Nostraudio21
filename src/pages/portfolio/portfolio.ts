@@ -1,24 +1,29 @@
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
-import { PortfolioService } from '../../providers/portfolio-service';
+import { PortfolioService } from '../../providers/';
+import { IPortfolio } from '../../models/';
 
 @Component({
-  selector: 'page-portfolio',
-  templateUrl: 'portfolio.html'
+    selector: 'page-portfolio',
+    templateUrl: 'portfolio.html'
 })
 export class PortfolioPage {
 
-  portfolio: any;
-  item: any;
+    userPortfolio: IPortfolio;
 
-  constructor(
-    public navCtrl: NavController,
-    public portfolioService: PortfolioService
-  ) { }
+    constructor(
+        public navCtrl: NavController,
+        public portfolioService: PortfolioService
+    ) { 
+        this.portfolioService.userPortfolio$
+            .subscribe(portfolio => {
+                this.userPortfolio = portfolio;
+            });
+    }
 
-  ionViewDidLoad() {
-    // this.item = this.portfolioService.getExamplePortfolio();
-  }
+    ionViewDidLoad() {
+        
+    }
 
 }
