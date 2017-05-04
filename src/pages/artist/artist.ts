@@ -3,6 +3,7 @@ import { NavController, NavParams } from 'ionic-angular';
 
 import { INosArtist } from '../../models/artist.model';
 import { ArtistService } from '../../providers/';
+import { ISubscription } from "rxjs/Subscription";
 
 @Component({
     selector: 'page-artist',
@@ -10,6 +11,7 @@ import { ArtistService } from '../../providers/';
 })
 export class ArtistPage {
     artist: INosArtist;
+    artistSubscription: ISubscription;
 
     constructor(
         public navCtrl: NavController,
@@ -18,17 +20,21 @@ export class ArtistPage {
     ) { }
 
     ionViewDidLoad() {
-        let spotifyId = this.navParams.get('spotifyId');
+        const spotifyId = this.navParams.get('spotifyId');
 
-        console.log('Hello ArtistDetail Page', spotifyId);
-        this.artist = <any>{};
-        this.artist.spotifyId = spotifyId;
-
-        this.artistService.getArtistBySpotifyId(spotifyId);
+        this.artistSubscription = this.artistService.getArtistById(spotifyId)
+            .subscribe(result => {
+                console.log('getArtistById result', result);
+                if (result.$exists()) {
+                    this.artist = result;
+                } else {
+                    this.artistService.createArtist(spotifyId);
+                }
+            });
     }
 
-    loadArtistDetail(spotifyId: string) {
-
+    ionViewWillUnload() {
+        this.artistSubscription.unsubscribe();
     }
 
 }

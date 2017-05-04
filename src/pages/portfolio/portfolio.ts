@@ -4,6 +4,8 @@ import { NavController } from 'ionic-angular';
 import { PortfolioService } from '../../providers/';
 import { IPortfolio } from '../../models/';
 
+import { ISubscription } from "rxjs/Subscription";
+
 @Component({
     selector: 'page-portfolio',
     templateUrl: 'portfolio.html'
@@ -11,19 +13,24 @@ import { IPortfolio } from '../../models/';
 export class PortfolioPage {
 
     userPortfolio: IPortfolio;
+    portfolioSubscription: ISubscription;
 
     constructor(
         public navCtrl: NavController,
         public portfolioService: PortfolioService
-    ) { 
-        this.portfolioService.userPortfolio$
+    ) {
+        this.portfolioSubscription = this.portfolioService.userPortfolio$
             .subscribe(portfolio => {
                 this.userPortfolio = portfolio;
             });
     }
 
     ionViewDidLoad() {
-        
+
+    }
+
+    ionViewWillUnload() {
+        this.portfolioSubscription.unsubscribe();
     }
 
 }

@@ -7,6 +7,8 @@ import { INosArtist } from '../models/artist.model';
 import { SpotifyService } from './spotify-service';
 import { FirebaseStore } from './firebase-store';
 
+import * as _ from 'lodash';
+
 import {
     AngularFire
     //FirebaseListObservable,
@@ -20,9 +22,6 @@ export class ArtistService {
     private _searchResults: BehaviorSubject<INosArtist[]>;
     searchResults: Observable<INosArtist[]>;
 
-    //private _currentArtist: BehaviorSubject<INosArtist>;
-    //currentArtist: Observable<INosArtist>;
-
     private _artists: BehaviorSubject<INosArtist[]>;
     artists: Observable<INosArtist[]>;
 
@@ -35,19 +34,27 @@ export class ArtistService {
         this._searchResults = <BehaviorSubject<INosArtist[]>>new BehaviorSubject([]);
         this.searchResults = this._searchResults.asObservable();
 
-
-        //this._currentArtist = <any><BehaviorSubject<INosArtist[]>>new BehaviorSubject(null);
-        //this.currentArtist = this._currentArtist.asObservable();
-
         this._artists = <any><BehaviorSubject<INosArtist[]>>new BehaviorSubject([]);
         this.artists = this._artists.asObservable();
 
+        // Query Example
+        // const source = this.af.database.list('/artists', {
+        //     query: {
+        //         orderByChild: 'spotifyId',
+        //         equalTo: spotifyId,
+        //         limitToFirst: 1
+        //     }
+        // });
 
-        //this.firebaseStore.artists
-        //    .subscribe(results => {
-        //        console.log('artists list', results);
-        //        this._artists.next(results);
-        //    });
+        // .key example
+        // return this.af.database.list(`/artists`)
+        //     .push(newArtist).key;
+
+        // Set Data Examples:
+        // this.af.database.object(`/genres/${genreKey}/artists/${spotifyId}`)
+        //     .set(true);
+        // this.af.database.object(`/genres/${genreKey}/`)
+        //     .update({ name: genre });
     }
 
     search(term: string): void {
@@ -67,24 +74,77 @@ export class ArtistService {
         this._searchResults.next([]);
     }
 
-    // do I want a get artist by id that returns a firebase object reference?
-    getArtistBySpotifyId(spotifyId: string): any {
+    getArtistById(spotifyId: string): any {
+        const source = this.af.database.object(`/artists/${spotifyId}`);
 
-        const queryObservable = this.af.database.list('/artists', {
-            query: {
-                orderByChild: 'spotifyId',
-                equalTo: spotifyId,
-                limitToFirst: 1
-            }
-        });
+        const sourceMap = source.map(queriedItems => queriedItems);
 
-        queryObservable
-            .subscribe(queriedItems => {
-                console.log('queriedItems', queriedItems[0]);
+        // for testing        
+        // this.spotifyService.getArtistById(spotifyId)
+        //     .subscribe(result => {
+        //         console.log('spotify artist', result);
+        //         console.log('example create', this.dbArtistFromNosArtist(result));
+        //     });
+
+        // TODO: How to get things like 'genres'
+        // maybe I get them later?
+
+        return sourceMap;
+    }
+
+    dbArtistFromNosArtist(artist: INosArtist) {
+        return {
+            name: artist.name,
+            spotifyId: artist.spotifyId,
+            spotifyUri: artist.spotifyUri,
+            spotifyUrl: artist.spotifyUrl,
+            spotifyHref: artist.spotifyHref,
+            spotifyPopularity: artist.spotifyPopularity,
+            spotifyFollowers: artist.spotifyFollowers,
+            largeImage: artist.largeImage,
+            mediumImage: artist.mediumImage,
+            smallImage: artist.smallImage
+        };
+    }
+
+    createArtist(spotifyId) {
+        this.spotifyService.getArtistById(spotifyId)
+            .subscribe(result => {
+                let newArtist = this.dbArtistFromNosArtist(result);
+
+                console.log('create this artist', newArtist);
+
+                // Set the Artist
+                // Set the Artists Genres, 
+                // Set the Genre, and make sure the artist is added to the list
+                // set seperately 
+                // genres, portoflio follows, portfolios
+
+                let updates = {};
+                // Set the Artist
+                updates[`/artists/${spotifyId}`] = newArtist;
+                // Set Genre and add artist to Genre list                
+                result.spotifyGenres.forEach((genre) => {
+                    let genreKey = _.camelCase(genre);
+                    // Set the genre name in genre list
+                    updates[`/genres/${genreKey}/name`] = genre;
+                    // Set the genres artist list in association node
+                    // updates[`/genres/${genreKey}/artists/${spotifyId}`] = true;
+                    updates[`/artistsPerGenre/${genreKey}/${spotifyId}`] = true;
+
+                    // Set the artist's genres in association node
+                    updates[`/genresPerArtist/${spotifyId}/${genreKey}`] = true;
+                });
+
+                // Perform the updates                
+                this.af.database.object('').update(updates);
             });
-        // I want to turn this into a firebase object reference, so prob use switch map, but control the logic flow based on if it returns
 
-        return queryObservable;
+        // TODO: create the rest of the artist (genres, follows, etc)
+        // create the artist..
+        // have to transform the lists like genres into a list I can push 
+        // into firebase (use the fan out where you get the id them update them all) 
+        // - https://firebase.google.com/docs/database/web/read-and-write
     }
 
 

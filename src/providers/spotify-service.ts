@@ -59,7 +59,7 @@ export class SpotifyService {
           console.log('response', response.json().artists.items);
 
           let results: INosArtist[] = response.json().artists.items
-            .map((x: any[]) => this.mapArtistSearch(x))
+            .map((x: any[]) => this.mapArtistSearch(x));
           // .filter((result: INosArtist) => {
           //   return result.spotifyPopularity > 5 && result.spotifyFollowers > 250;
           // });
@@ -74,7 +74,7 @@ export class SpotifyService {
 
   getArtistTopTracks(spotifyId: string): Observable<ISpotifyTopTracks> {
     //check api for more return options (there are a ton on album)
-    let url = this.baseUrl + `artists/${spotifyId}/top-tracks`
+    let url = this.baseUrl + `artists/${spotifyId}/top-tracks`;
 
     return this.http.get(url)
       .map((response: Response) => {
@@ -95,6 +95,15 @@ export class SpotifyService {
     //   defer.reject();
     // });
   };
+
+  getArtistById(spotifyId: string): Observable<INosArtist> {
+    let url = this.baseUrl + `artists/${spotifyId}`;
+
+    return this.http.get(url)
+      .map((response: Response) => {
+        return this.mapArtistSearch(response.json());
+      });
+  }
 
   handleError(error): Observable<any> {
     console.error(error);

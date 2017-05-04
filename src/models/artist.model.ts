@@ -17,10 +17,17 @@ export interface INosArtist {
     marketPrice?: number;
     marketCap?: number;
     transactions: any[];
+
+    // genres will be tracked seperately
+    // portfolio follows will be tracked seperately 
+    // portfolio investors will be tracked seperately 
 }
 
 export class NosArtist {
 
+    constructor() {
+
+    }
 }
 
 export interface ISpotifyTrack {

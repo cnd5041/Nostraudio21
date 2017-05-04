@@ -44,6 +44,8 @@ export class PortfolioService {
         private http: Http,
         private af: AngularFire
     ) {
+        // TODO: create portfolios when they sign in.
+
         // let t: FirebaseObjectObservable<any>;
 
         // const path = `/portfolios/${auth.id}`;
