@@ -3,7 +3,7 @@ import { Http } from '@angular/http';
 import { Observable, BehaviorSubject } from 'rxjs/Rx';
 import 'rxjs/add/operator/map';
 
-import { INosArtist } from '../models/artist.model';
+import { INosArtist, IDbArtist, ISpotifyArtist, dbArtistFromSpotifyArtist, nosArtistFromDbArtist, IDictionary } from '../models/artist.model';
 import { SpotifyService } from './spotify-service';
 import { FirebaseStore } from './firebase-store';
 
@@ -74,43 +74,35 @@ export class ArtistService {
         this._searchResults.next([]);
     }
 
-    getArtistById(spotifyId: string): any {
-        const source = this.af.database.object(`/artists/${spotifyId}`);
+    getArtistById(spotifyId: string): Observable<INosArtist> {
+        console.log('getArtistById', spotifyId);
+        const artistSource = this.af.database.object(`/artists/${spotifyId}`);
+        const stocksSource = this.af.database.list(`/stockholdersPerArtist/${spotifyId}`);
 
-        const sourceMap = source.map(queriedItems => queriedItems);
+        // maybe do a once on genres here, or do it separate in view
 
-        // for testing        
-        // this.spotifyService.getArtistById(spotifyId)
-        //     .subscribe(result => {
-        //         console.log('spotify artist', result);
-        //         console.log('example create', this.dbArtistFromNosArtist(result));
-        //     });
+        let stream = artistSource.combineLatest(stocksSource);
 
-        // TODO: How to get things like 'genres'
-        // maybe I get them later?
+        const sourceMap = stream.map(queriedItems => {
+            let artist = queriedItems[0];
+            let stockholdersPerArtist: IDictionary[] = queriedItems[1];
+
+            console.log('queriedItems', queriedItems);
+
+            let nosArtist = nosArtistFromDbArtist(artist, stockholdersPerArtist);
+
+            console.log('nosArtist', nosArtist);
+
+            return nosArtist;
+        });
 
         return sourceMap;
-    }
-
-    dbArtistFromNosArtist(artist: INosArtist) {
-        return {
-            name: artist.name,
-            spotifyId: artist.spotifyId,
-            spotifyUri: artist.spotifyUri,
-            spotifyUrl: artist.spotifyUrl,
-            spotifyHref: artist.spotifyHref,
-            spotifyPopularity: artist.spotifyPopularity,
-            spotifyFollowers: artist.spotifyFollowers,
-            largeImage: artist.largeImage,
-            mediumImage: artist.mediumImage,
-            smallImage: artist.smallImage
-        };
     }
 
     createArtist(spotifyId) {
         this.spotifyService.getArtistById(spotifyId)
             .subscribe(result => {
-                let newArtist = this.dbArtistFromNosArtist(result);
+                let newArtist = dbArtistFromSpotifyArtist(result);
 
                 console.log('create this artist', newArtist);
 
@@ -145,6 +137,40 @@ export class ArtistService {
         // have to transform the lists like genres into a list I can push 
         // into firebase (use the fan out where you get the id them update them all) 
         // - https://firebase.google.com/docs/database/web/read-and-write
+
+        // TODO: 
+        // Set up the Artist page and then do Follows (use the Per)
+    }
+
+    followArtist(spotifyId: string, uid: string): void {
+        let updates = {};
+        // Add to list track all users following an artist        
+        updates[`/followsPerArtist/${spotifyId}/${uid}`] = true;
+        // Add to list to track which artists a user is following
+        updates[`/artistFollowsPerUser/${uid}/${spotifyId}`] = true;
+        // Perform the updates
+        this.af.database.object('').update(updates);
+    }
+
+    unFollowArtist(spotifyId: string, uid: string): void {
+        let updates = {};
+        // Add to list track all users following an artist        
+        updates[`/followsPerArtist/${spotifyId}/${uid}`] = false;
+        // Add to list to track which artists a user is following
+        updates[`/artistFollowsPerUser/${uid}/${spotifyId}`] = false;
+        // Perform the updates
+        this.af.database.object('').update(updates);
+    }
+
+    getArtistFollowers(spotifyId: string): Observable<IDictionary[]> {
+        const source = this.af.database.list(`/followsPerArtist/${spotifyId}`);
+
+        const sourceMap = source
+            .map(list => {
+                return list.filter(f => f.$value === true);
+            });
+
+        return sourceMap;
     }
 
 

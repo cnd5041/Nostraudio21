@@ -4,7 +4,7 @@ import { Http, Response } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
 import 'rxjs/add/operator/map';
 
-import { INosArtist, ISpotifyTopTracks } from '../models/artist.model';
+import { INosArtist, ISpotifyTopTracks, ISpotifyArtist } from '../models/artist.model';
 
 // SpotifyTrack
 
@@ -18,8 +18,8 @@ export class SpotifyService {
 
   }
 
-  private mapArtistSearch(a: any): INosArtist {
-    var result: INosArtist = <any>{};
+  private mapArtistSearch(a: any): ISpotifyArtist {
+    var result: ISpotifyArtist = <any>{};
     //result.spotifyName = a.name;
     result.name = a.name;
     result.spotifyId = a.id;
@@ -96,7 +96,7 @@ export class SpotifyService {
     // });
   };
 
-  getArtistById(spotifyId: string): Observable<INosArtist> {
+  getArtistById(spotifyId: string): Observable<ISpotifyArtist> {
     let url = this.baseUrl + `artists/${spotifyId}`;
 
     return this.http.get(url)

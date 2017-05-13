@@ -1,5 +1,37 @@
-export interface INosArtist {
-    id: string;
+export interface IDictionary {
+    //[key: string]: boolean;
+    $key?: string;
+    $value?: boolean;
+    $exists?: () => boolean;
+}
+
+export interface INosArtist extends IDbArtist {
+    // // id: string;
+    // name: string;
+    // spotifyId: string;
+    // spotifyUri: string;
+    // spotifyUrl: string;
+    // spotifyHref: string;
+    // spotifyPopularity: number;
+    // spotifyFollowers: number;
+    // // spotifyGenres: string[];
+    // // genre: string;
+    // largeImage: string;
+    // mediumImage: string;
+    // smallImage: string;
+
+    shareCount?: number;
+    stockholdersPerArtist: IDictionary[];
+    marketPrice?: number;
+    marketCap?: number;
+    // transactions: any[];
+
+    // genres will be tracked seperately
+    // portfolio follows will be tracked seperately 
+    // portfolio investors will be tracked seperately 
+}
+
+export interface ISpotifyArtist {
     name: string;
     spotifyId: string;
     spotifyUri: string;
@@ -12,15 +44,19 @@ export interface INosArtist {
     largeImage: string;
     mediumImage: string;
     smallImage: string;
+}
 
-    shareCount?: number;
-    marketPrice?: number;
-    marketCap?: number;
-    transactions: any[];
-
-    // genres will be tracked seperately
-    // portfolio follows will be tracked seperately 
-    // portfolio investors will be tracked seperately 
+export interface IDbArtist extends IDictionary {
+    name: string;
+    spotifyId: string;
+    spotifyUri: string;
+    spotifyUrl: string;
+    spotifyHref: string;
+    spotifyPopularity: number;
+    spotifyFollowers: number;
+    largeImage: string;
+    mediumImage: string;
+    smallImage: string;
 }
 
 export class NosArtist {
@@ -28,6 +64,37 @@ export class NosArtist {
     constructor() {
 
     }
+}
+
+export function nosArtistFromDbArtist(dbArtist: IDbArtist, stockholdersPerArtist: IDictionary[]): INosArtist {
+    let artist = <INosArtist>Object.assign({}, dbArtist);
+    // issue right now is that .assign is not copying what is probably in the prototype, .$exists()
+
+    artist.shareCount = stockholdersPerArtist.length;
+    artist.stockholdersPerArtist = stockholdersPerArtist;
+    artist.marketCap = artist.marketPrice * artist.shareCount;
+
+    let price = (50 * (artist.spotifyPopularity / 100)) + (35 * (artist.spotifyFollowers / 5000000)) + (15 * (artist.shareCount / 5000));
+    price = Math.round(price * 100) / 100;
+    console.log('price', price);
+    artist.marketPrice = price
+
+    return artist;
+}
+
+export function dbArtistFromSpotifyArtist(artist: ISpotifyArtist): IDbArtist {
+    return {
+        name: artist.name,
+        spotifyId: artist.spotifyId,
+        spotifyUri: artist.spotifyUri,
+        spotifyUrl: artist.spotifyUrl,
+        spotifyHref: artist.spotifyHref,
+        spotifyPopularity: artist.spotifyPopularity,
+        spotifyFollowers: artist.spotifyFollowers,
+        largeImage: artist.largeImage,
+        mediumImage: artist.mediumImage,
+        smallImage: artist.smallImage
+    };
 }
 
 export interface ISpotifyTrack {

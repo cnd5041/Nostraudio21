@@ -3,6 +3,7 @@ interface IFireBaseIdReference extends String {
 }
 
 export interface IPortfolio {
+    $key?: string;
     balance: number;
     displayName: string;
     imageUrl?: string;

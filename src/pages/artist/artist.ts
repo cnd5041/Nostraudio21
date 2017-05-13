@@ -1,9 +1,14 @@
 ﻿import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
+// import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 
-import { INosArtist } from '../../models/artist.model';
-import { ArtistService } from '../../providers/';
+import { INosArtist, IPortfolio } from '../../models';
+import { ArtistService, PortfolioService } from '../../providers/';
 import { ISubscription } from "rxjs/Subscription";
+// import 'rxjs/add/operator/combineLatest';
+// import { Observable } from 'rxjs/Observable';
+
+import { ActionSheetController } from 'ionic-angular'
 
 @Component({
     selector: 'page-artist',
@@ -13,28 +18,112 @@ export class ArtistPage {
     artist: INosArtist;
     artistSubscription: ISubscription;
 
+    portfolioSubscription: ISubscription;
+    userPortfolio: IPortfolio;
+
+    artistFollowersSubscription: ISubscription;
+    artistFollowers: any[];
+    isFollowing = false;
+
+    // buyForm: FormGroup;
+    action = 'buy';
+    numberOfShares = 1;
+    total: number;
+
     constructor(
         public navCtrl: NavController,
         public navParams: NavParams,
-        public artistService: ArtistService
-    ) { }
+        public artistService: ArtistService,
+        public portfolioService: PortfolioService,
+        public actionSheetCtrl: ActionSheetController
+    ) {
+        // this.buyForm = this.formBuilder.group({
+        //     email: ['', Validators.compose([Validators.required])]
+        //     // password: ['', Validators.compose([Validators.minLength(6), Validators.required])]
+        // });
+    }
 
     ionViewDidLoad() {
         const spotifyId = this.navParams.get('spotifyId');
 
-        this.artistSubscription = this.artistService.getArtistById(spotifyId)
+        const artistStream = this.artistService.getArtistById(spotifyId);
+        this.artistSubscription = artistStream
             .subscribe(result => {
-                console.log('getArtistById result', result);
+                // console.log('getArtistById result', result);
                 if (result.$exists()) {
                     this.artist = result;
+
+                    this.onSharesChange(this.numberOfShares);
                 } else {
                     this.artistService.createArtist(spotifyId);
                 }
+            });
+
+        const artistFollowersStream = this.artistService.getArtistFollowers(spotifyId);
+        this.artistFollowersSubscription = artistFollowersStream
+            .subscribe(artistFollowers => {
+                console.log('artistFollowers', artistFollowers);
+                this.artistFollowers = artistFollowers;
+
+                // Check if the current user is one of the followers
+                if (artistFollowers.find(x => x.$key === this.userPortfolio.$key)) {
+                    this.isFollowing = true;
+                } else {
+                    this.isFollowing = false;
+                }
+            });
+
+        const portfolioStream = this.portfolioService.userPortfolio$;
+        this.portfolioSubscription = portfolioStream
+            .subscribe(portfolio => {
+                this.userPortfolio = portfolio;
             });
     }
 
     ionViewWillUnload() {
         this.artistSubscription.unsubscribe();
+        this.portfolioSubscription.unsubscribe();
+        this.artistFollowersSubscription.unsubscribe();
+    }
+
+    follow(): void {
+        this.artistService.followArtist(this.artist.spotifyId, this.userPortfolio.$key);
+    }
+
+    unFollow() {
+        let actionSheet = this.actionSheetCtrl.create({
+            title: this.artist.name,
+            buttons: [
+                {
+                    text: 'Unfollow',
+                    role: 'destructive',
+                    handler: () => {
+                        this.artistService.unFollowArtist(this.artist.spotifyId, this.userPortfolio.$key)
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    role: 'cancel',
+                    handler: () => { }
+                }
+            ]
+        });
+
+        actionSheet.present();
+    }
+
+    onSharesChange(value: number) {
+        console.log('onSharesChange', value);
+        this.total = this.calcTotal(value, this.artist.marketPrice);
+
+        // Get the users balance
+        // Make sure they can only buy when logged in
+        // Add the artist marketPrice calculation
+        // 
+    }
+
+    calcTotal(shares: number = 0, price: number = 0): number {
+        return shares * price;
     }
 
 }

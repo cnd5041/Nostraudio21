@@ -1,11 +1,130 @@
 <ion-header>
-  <ion-navbar>
-    <button ion-button menuToggle>
+    <ion-navbar>
+        <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Artist Info</ion-title>
-  </ion-navbar>
+        <ion-title>Artist Info</ion-title>
+    </ion-navbar>
 </ion-header>
-<ion-content padding>
-  <pre>{{artist | json}}</pre>
+<ion-content>
+
+    <ion-card>
+        <img [src]="artist?.largeImage" />
+        <ion-card-content>
+            <ion-card-title>
+                {{artist?.name}}
+            </ion-card-title>
+            <p>
+                The most popular industrial group ever, and largely responsible for bringing the music to a mass audience.
+            </p>
+        </ion-card-content>
+
+        <ion-list>
+            <ion-item>
+                Followers
+                <ion-badge item-right>{{artistFollowers?.length}}</ion-badge>
+                <button ion-button outline item-right icon-only *ngIf="!isFollowing" (click)="follow()">
+                      <ion-icon name="md-add"></ion-icon>
+                </button>
+                <button ion-button clear item-right icon-only *ngIf="isFollowing" (click)="unFollow()">
+                      <ion-icon name="md-checkmark-circle"></ion-icon>
+                </button>
+            </ion-item>
+            <ion-item>
+                Price
+            </ion-item>
+            <!--<ion-item>
+                Buy
+            </ion-item>-->
+            <!--<ion-item>
+                <ion-label color="primary" stacked>Number of Shares</ion-label>
+                <ion-input type="number" placeholder="Shares" clearInput></ion-input>
+            </ion-item>-->
+            <!--<button ion-button full>Full Button</button>-->
+            <!--<ion-item>
+                <ion-label color="primary" stacked>Number of Shares</ion-label>
+                <ion-input type="number" placeholder="Shares" clearInput></ion-input>
+
+
+                <button ion-button outline item-right>Buy</button>
+            </ion-item>-->
+        </ion-list>
+    </ion-card>
+
+
+    <ion-card>
+        <ion-card-header>
+            <ion-segment [(ngModel)]="action">
+                <ion-segment-button value="buy">
+                    Buy
+                </ion-segment-button>
+                <ion-segment-button value="sell">
+                    Sell
+                </ion-segment-button>
+            </ion-segment>
+        </ion-card-header>
+
+
+        <div [ngSwitch]="action">
+            <ion-list *ngSwitchCase="'buy'">
+                <ion-item>
+
+                    <ion-label color="primary" stacked>Number of Shares</ion-label>
+                    <ion-input id="numberOfShares" type="number" placeholder="Shares" [ngModel]="numberOfShares" (ngModelChange)="onSharesChange($event)">
+                    </ion-input>
+                    <!--<ion-label color="primary" stacked [ngModel]="numberOfShares" (ngModelChange)="onSharesChange($event)">Number of Shares</ion-label>-->
+
+                    <ion-badge item-right>{{total | currency:'USD':true:'1.2-2'}}</ion-badge>
+
+                    <!--<button ion-button outline item-right>Buy</button>-->
+                </ion-item>
+                <button ion-button block outline round color="secondary" class="center">Buy</button>
+            </ion-list>
+
+            <ion-list *ngSwitchCase="'sell'">
+                <ion-item>
+                    Sell
+                </ion-item>
+            </ion-list>
+        </div>
+    </ion-card>
+
+
+
+
+
+
+
+    <!--<pre>{{artist | json}}</pre>-->
+    <!--<ion-card>
+        <img [src]="artist?.largeImage" />
+        <ion-card-content>
+            <ion-card-title>
+                {{artist?.name}}
+            </ion-card-title>
+            <p>
+                The most popular industrial group ever, and largely responsible for bringing the music to a mass audience.
+            </p>
+        </ion-card-content>
+        <ion-list>
+            <ion-item>
+                Followers
+                <ion-badge item-right>{{artistFollowers?.length}}</ion-badge>
+                <button ion-button outline item-right icon-only *ngIf="!isFollowing" (click)="follow()">
+                      <ion-icon name="md-add"></ion-icon>
+                </button>
+                <button ion-button clear item-right icon-only *ngIf="isFollowing" (click)="unFollow()">
+                      <ion-icon name="md-checkmark-circle"></ion-icon>
+                </button>
+            </ion-item>
+            <ion-item>
+                Price
+            </ion-item>
+            <ion-item>
+                Buy
+            </ion-item>
+
+        </ion-list>
+    </ion-card>-->
+
 </ion-content>
