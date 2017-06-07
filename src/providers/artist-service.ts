@@ -9,12 +9,15 @@ import { FirebaseStore } from './firebase-store';
 
 import * as _ from 'lodash';
 
-import {
-    AngularFire
-    //FirebaseListObservable,
-    //FirebaseObjectObservable,
-    //FirebaseObjectFactory
-} from 'angularfire2';
+// import {
+//     AngularFire
+//     //FirebaseListObservable,
+//     //FirebaseObjectObservable,
+//     //FirebaseObjectFactory
+// } from 'angularfire2';
+
+import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
+
 
 @Injectable()
 export class ArtistService {
@@ -29,7 +32,7 @@ export class ArtistService {
         private http: Http,
         private spotifyService: SpotifyService,
         private firebaseStore: FirebaseStore,
-        private af: AngularFire
+        private db: AngularFireDatabase
     ) {
         this._searchResults = <BehaviorSubject<INosArtist[]>>new BehaviorSubject([]);
         this.searchResults = this._searchResults.asObservable();
@@ -76,8 +79,8 @@ export class ArtistService {
 
     getArtistById(spotifyId: string): Observable<INosArtist> {
         console.log('getArtistById', spotifyId);
-        const artistSource = this.af.database.object(`/artists/${spotifyId}`);
-        const stocksSource = this.af.database.list(`/stockholdersPerArtist/${spotifyId}`);
+        const artistSource = this.db.object(`/artists/${spotifyId}`);
+        const stocksSource = this.db.list(`/stockholdersPerArtist/${spotifyId}`);
 
         // maybe do a once on genres here, or do it separate in view
 
@@ -85,6 +88,7 @@ export class ArtistService {
 
         const sourceMap = stream.map(queriedItems => {
             let artist = queriedItems[0];
+            console.log('track artist', artist);
             let stockholdersPerArtist: IDictionary[] = queriedItems[1];
 
             console.log('queriedItems', queriedItems);
@@ -129,7 +133,7 @@ export class ArtistService {
                 });
 
                 // Perform the updates                
-                this.af.database.object('').update(updates);
+                this.db.object('').update(updates);
             });
 
         // TODO: create the rest of the artist (genres, follows, etc)
@@ -149,7 +153,7 @@ export class ArtistService {
         // Add to list to track which artists a user is following
         updates[`/artistFollowsPerUser/${uid}/${spotifyId}`] = true;
         // Perform the updates
-        this.af.database.object('').update(updates);
+        this.db.object('').update(updates);
     }
 
     unFollowArtist(spotifyId: string, uid: string): void {
@@ -159,11 +163,11 @@ export class ArtistService {
         // Add to list to track which artists a user is following
         updates[`/artistFollowsPerUser/${uid}/${spotifyId}`] = false;
         // Perform the updates
-        this.af.database.object('').update(updates);
+        this.db.object('').update(updates);
     }
 
     getArtistFollowers(spotifyId: string): Observable<IDictionary[]> {
-        const source = this.af.database.list(`/followsPerArtist/${spotifyId}`);
+        const source = this.db.list(`/followsPerArtist/${spotifyId}`);
 
         const sourceMap = source
             .map(list => {

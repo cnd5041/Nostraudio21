@@ -1,6 +1,5 @@
 {
-  "name": "Nostraudio21",
-  "app_id": "",
-  "v2": true,
-  "typescript": true
+    "name": "Nostraudio21",
+    "app_id": "8a237477",
+    "type": "ionic-angular"
 }

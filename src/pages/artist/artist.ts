@@ -49,10 +49,8 @@ export class ArtistPage {
         const artistStream = this.artistService.getArtistById(spotifyId);
         this.artistSubscription = artistStream
             .subscribe(result => {
-                // console.log('getArtistById result', result);
                 if (result.$exists()) {
                     this.artist = result;
-
                     this.onSharesChange(this.numberOfShares);
                 } else {
                     this.artistService.createArtist(spotifyId);

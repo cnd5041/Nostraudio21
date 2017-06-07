@@ -67,8 +67,7 @@ export class NosArtist {
 }
 
 export function nosArtistFromDbArtist(dbArtist: IDbArtist, stockholdersPerArtist: IDictionary[]): INosArtist {
-    let artist = <INosArtist>Object.assign({}, dbArtist);
-    // issue right now is that .assign is not copying what is probably in the prototype, .$exists()
+    let artist = <INosArtist>Object.create(dbArtist);
 
     artist.shareCount = stockholdersPerArtist.length;
     artist.stockholdersPerArtist = stockholdersPerArtist;
@@ -76,7 +75,6 @@ export function nosArtistFromDbArtist(dbArtist: IDbArtist, stockholdersPerArtist
 
     let price = (50 * (artist.spotifyPopularity / 100)) + (35 * (artist.spotifyFollowers / 5000000)) + (15 * (artist.shareCount / 5000));
     price = Math.round(price * 100) / 100;
-    console.log('price', price);
     artist.marketPrice = price
 
     return artist;

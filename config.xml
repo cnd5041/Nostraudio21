@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<widget id="com.ionicframework.nostraudio21133523" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-  <name>Nostraudio21</name>
-  <description>An awesome Ionic/Cordova app.</description>
-  <author email="hi@ionicframework" href="http://ionicframework.com/">Ionic Framework Team</author>
+<widget id="com.nostraudio.app" version="2.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+  <name>Nostraudio</name>
+  <description>Nostraudio allows you to trade stocks in artists much like you would companies in the stock market.</description>
+  <author email="projectNOS412@gmail.com" href="http://nostraudio.com/">Christopher Dixon</author>
   <content src="index.html"/>
   <access origin="*"/>
   <allow-intent href="http://*/*"/>

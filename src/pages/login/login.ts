@@ -2,10 +2,12 @@
 import { NavController, LoadingController, AlertController, Loading } from 'ionic-angular';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseAuthState } from 'angularfire2';
+// import { FirebaseAuthState } from 'angularfire2';
+// import { AngularFireAuth, FirebaseAuthState, F } from 'angularfire2/auth';
+
 
 import { AuthData } from '../../providers/';
-import { SignupPage, PortfolioPage, ResetPasswordPage } from '../';
+import { SignupPage, ResetPasswordPage } from '../';
 import { GlobalValidator } from '../../validators/global-validator';
 
 import { PortfolioService } from '../../providers/portfolio-service';
@@ -23,7 +25,8 @@ export class LoginPage {
     submitAttempt: boolean = false;
     loading: Loading;
     // Track user login state
-    userState: FirebaseAuthState;
+    // userState: FirebaseAuthState;
+    userState: any;
     userPortfolio$: Observable<IPortfolio>;
 
     constructor(

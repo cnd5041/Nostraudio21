@@ -6,33 +6,23 @@ import { HttpModule } from '@angular/http';
 import { InAppBrowser } from '@ionic-native/in-app-browser';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
-// Installing Firebase (AngularFire2): https://javebratt.com/ionic2rc0-firebase-angularfire2/
-import { AngularFireModule, AuthProviders, AuthMethods } from 'angularfire2';
+import { AngularFireModule } from 'angularfire2';
+import { AngularFireDatabaseModule } from 'angularfire2/database';
+import { AngularFireAuthModule } from 'angularfire2/auth';
 
 import { MyApp } from './app.component';
 
-import { AboutPage } from '../pages/about/about';
-import { SupportPage } from '../pages/support/support';
-import { PortfolioPage } from '../pages/portfolio/portfolio';
-import { SearchPage } from '../pages/search/search';
-import { ArtistPage } from '../pages/artist/artist';
-import { StatsPage } from '../pages/stats/stats';
-import { LoginPage } from '../pages/login/login';
-import { ResetPasswordPage } from '../pages/reset-password/reset-password';
-import { SignupPage } from '../pages/signup/signup';
+import {
+  AboutPage, SupportPage, PortfolioPage, SearchPage, ArtistPage, StatsPage, LoginPage, ResetPasswordPage, SignupPage
+} from '../pages/';
 
 //Import Components
 import { ArtistListItem } from '../components/artist-list-item/artist-list-item';
 
 //Import Providers
-import { SpotifyService } from '../providers/spotify-service';
-import { ArtistService } from '../providers/artist-service';
-import { DateService } from '../providers/date-service';
-// import { LoggingService } from '../providers/logging.service';
-// import { StatsService } from '../providers/stats.service';
-import { AuthData } from '../providers/auth-data';
-import { PortfolioService } from '../providers/portfolio-service';
-import { FirebaseStore } from '../providers/firebase-store';
+import {
+  SpotifyService, ArtistService, DateService, AuthData, PortfolioService, FirebaseStore
+} from '../providers/';
 
 // AF2 Settings
 export const firebaseConfig = {
@@ -43,10 +33,10 @@ export const firebaseConfig = {
   messagingSenderId: "392527777532"
 };
 
-const myFirebaseAuthConfig = {
-  provider: AuthProviders.Password,
-  method: AuthMethods.Password
-}
+// const myFirebaseAuthConfig = {
+//   provider: AuthProviders.Password,
+//   method: AuthMethods.Password
+// }
 
 @NgModule({
   declarations: [
@@ -66,7 +56,10 @@ const myFirebaseAuthConfig = {
     BrowserModule,
     HttpModule,
     IonicModule.forRoot(MyApp),
-    AngularFireModule.initializeApp(firebaseConfig, myFirebaseAuthConfig)
+    // AngularFireModule.initializeApp(firebaseConfig, myFirebaseAuthConfig),
+    AngularFireModule.initializeApp(firebaseConfig),
+    AngularFireDatabaseModule,
+    AngularFireAuthModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [

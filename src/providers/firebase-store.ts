@@ -1,10 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
 import 'rxjs/add/operator/map';
 
-import { AngularFire, FirebaseListObservable } from 'angularfire2';
-
-import * as _ from 'lodash';
+import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
 
 @Injectable()
 export class FirebaseStore {
@@ -14,11 +11,11 @@ export class FirebaseStore {
 
 
   constructor(
-    public af: AngularFire
+    private db: AngularFireDatabase
   ) {
-    this.artists = af.database.list('/artists');
+    this.artists = db.list('/artists');
 
-    this.genres = af.database.list('/genres');
+    this.genres = db.list('/genres');
 
 
     this.genres.subscribe(genres => {

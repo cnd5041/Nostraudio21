@@ -4,14 +4,9 @@ import { Http } from '@angular/http';
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/filter';
-// import { } from 'Firebase';
 
-import {
-    AngularFire,
-    FirebaseListObservable,
-    FirebaseObjectObservable,
-    FirebaseObjectFactory
-} from 'angularfire2';
+import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
+
 
 import { IPortfolio, Portfolio } from '../models';
 
@@ -42,7 +37,8 @@ export class PortfolioService {
 
     constructor(
         private http: Http,
-        private af: AngularFire
+        private db: AngularFireDatabase
+
     ) {
         // TODO: create portfolios when they sign in.
 
@@ -91,7 +87,7 @@ export class PortfolioService {
         //     equalTo: uid
         //   }
         // This continuously updates the subscription
-        this.af.database.object('/portfolios/' + uid)
+        this.db.object('/portfolios/' + uid)
             .subscribe((result) => {
                 console.log('portfolio', result);
                 if (result.$exists()) {
@@ -105,7 +101,7 @@ export class PortfolioService {
     private createPortfolio(uid: string): void {
         let newPortfolio = new Portfolio(uid);
         console.log('createPortfolio', newPortfolio);
-        this.af.database.object(`/portfolios/${uid}`)
+        this.db.object(`/portfolios/${uid}`)
             .set(newPortfolio);
     }
 
