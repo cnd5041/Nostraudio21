@@ -1,17 +1,16 @@
 ﻿import { Component } from '@angular/core';
-import { NavController, LoadingController, AlertController, Loading } from 'ionic-angular';
+import { NavController, LoadingController, AlertController, Loading, ActionSheetController } from 'ionic-angular';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs/Observable';
-// import { FirebaseAuthState } from 'angularfire2';
-// import { AngularFireAuth, FirebaseAuthState, F } from 'angularfire2/auth';
+import { ISubscription } from "rxjs/Subscription";
 
+import { AngularFireAuth } from 'angularfire2/auth';
+import * as firebase from 'firebase/app';
 
-import { AuthData } from '../../providers/';
+import { AuthData, PortfolioService } from '../../providers/';
+import { IPortfolio } from '../../models/';
 import { SignupPage, ResetPasswordPage } from '../';
 import { GlobalValidator } from '../../validators/global-validator';
-
-import { PortfolioService } from '../../providers/portfolio-service';
-import { IPortfolio } from '../../models/portfolio.model';
 
 @Component({
     selector: 'page-login',
@@ -25,9 +24,10 @@ export class LoginPage {
     submitAttempt: boolean = false;
     loading: Loading;
     // Track user login state
-    // userState: FirebaseAuthState;
-    userState: any;
+    userState: firebase.User;
     userPortfolio$: Observable<IPortfolio>;
+    userStateSubscription: ISubscription;
+
 
     constructor(
         public nav: NavController,
@@ -35,7 +35,9 @@ export class LoginPage {
         public formBuilder: FormBuilder,
         public alertCtrl: AlertController,
         public loadingCtrl: LoadingController,
-        public portfolioService: PortfolioService
+        public portfolioService: PortfolioService,
+        public afAuth: AngularFireAuth,
+        public actionSheetCtrl: ActionSheetController
     ) {
         /**
          * Creates a ControlGroup that declares the fields available, their values and the validators that they are going
@@ -52,20 +54,22 @@ export class LoginPage {
 
 
     ionViewDidLoad() {
+        // Setup Portfolio Subscription
         this.userPortfolio$ = this.portfolioService.userPortfolio$;
 
-        this.authData.authState
-            // .skip(1)
+        // Setup UserState Stream/Subscription        
+        const userStateStream = this.authData.authState;
+        this.userStateSubscription = userStateStream
             .subscribe(userState => {
                 this.userState = userState;
-                console.log('userState login subscription', userState);
             }, error => {
-                console.log('getAuthState error', error);
-
                 this.userState = null;
                 this.showError('Error Getting User Info.');
             });
+    }
 
+    ionViewWillUnload() {
+        this.userStateSubscription.unsubscribe();
     }
 
     /**
@@ -94,12 +98,12 @@ export class LoginPage {
                 }, error => {
                     this.loading.dismiss()
                         .then(() => {
-                            this.showError('Error Loggin In.');
+                            this.showError('Log In Error.');
                         });
                 });
 
+            // Setup and Show Loading
             this.loading = this.loadingCtrl.create({});
-
             this.loading.present();
         }
     }
@@ -113,9 +117,27 @@ export class LoginPage {
     }
 
     logOut() {
-        this.authData.logoutUser().then(() => {
-            //this.nav.setRoot(LoginPage);
+        let actionSheet = this.actionSheetCtrl.create({
+            title: 'Confirm Log Out',
+            buttons: [
+                {
+                    text: 'Log Out',
+                    role: 'destructive',
+                    handler: () => {
+                        this.authData.logoutUser().then(() => {
+                            //this.nav.setRoot(LoginPage);
+                        });
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    role: 'cancel',
+                    handler: () => { }
+                }
+            ]
         });
+
+        actionSheet.present();
     }
 
     showError(message: string): void {
@@ -129,6 +151,17 @@ export class LoginPage {
             ]
         });
         alert.present();
+    }
+
+    signInWithFacebook() {
+        this.afAuth.auth
+            .signInWithPopup(new firebase.auth.FacebookAuthProvider())
+            .then(res => {
+                console.log('facbook login res', res);
+            }, error => {
+                console.log('facbook login error', error);
+                this.showError(error.message);
+            });
     }
 
 }

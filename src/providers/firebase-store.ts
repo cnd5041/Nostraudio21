@@ -2,11 +2,13 @@ import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/map';
 
 import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
+import { IDbArtist } from '../models/artist.model';
+
 
 @Injectable()
 export class FirebaseStore {
 
-  artists: FirebaseListObservable<any[]>;
+  artists: FirebaseListObservable<IDbArtist[]>;
   genres: FirebaseListObservable<string[]>;
 
 

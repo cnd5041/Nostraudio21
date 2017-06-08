@@ -3,11 +3,11 @@
         <button ion-button menuToggle>
             <ion-icon name="menu"></ion-icon>
         </button>
-        <ion-title>Login</ion-title>
+        <ion-title>Log In</ion-title>
         <ion-buttons end>
-            <!--<button ion-button icon-only (click)="logOut()">
-              <ion-icon name="log-out"></ion-icon>
-              </button>-->
+            <button ion-button icon-right color="danger" (click)="logOut()" *ngIf="userState">
+                <ion-icon name="log-out"></ion-icon>
+            </button>
         </ion-buttons>
     </ion-navbar>
 </ion-header>
@@ -25,16 +25,13 @@
                 </button>
             </ion-item>
         </ion-list>
-        <button ion-button block outline color="danger" (click)="logOut()">
-            Logout
-        </button>
     </div>
     <div *ngIf="!userState">
         <form [formGroup]="loginForm" (submit)="loginUser()" novalidate>
             <ion-item>
                 <ion-label stacked>Email</ion-label>
                 <ion-input #email formControlName="email" type="email" (change)="elementChanged(email)" placeholder="Your email address"
-                           [class.invalid]="!loginForm.controls.email.valid && (emailChanged || submitAttempt)"></ion-input>
+                    [class.invalid]="!loginForm.controls.email.valid && (emailChanged || submitAttempt)"></ion-input>
             </ion-item>
             <ion-item class="error-message" *ngIf="!loginForm.controls.email.valid  && (emailChanged || submitAttempt)">
                 <p>Please enter a valid email.</p>
@@ -42,20 +39,24 @@
             <ion-item>
                 <ion-label stacked>Password</ion-label>
                 <ion-input #password formControlName="password" type="password" (change)="elementChanged(password)" placeholder="Your password"
-                           [class.invalid]="!loginForm.controls.password.valid && (passwordChanged || submitAttempt)"></ion-input>
+                    [class.invalid]="!loginForm.controls.password.valid && (passwordChanged || submitAttempt)"></ion-input>
             </ion-item>
             <ion-item class="error-message" *ngIf="!loginForm.controls.password.valid  && (passwordChanged || submitAttempt)">
                 <p>Your password needs more than 6 characters.</p>
             </ion-item>
             <button ion-button block type="submit">
-                Login
+                Log In
             </button>
         </form>
-        <button ion-button block clear (click)="goToSignup()">
-            Create a new account
+        <button ion-button icon-left block (click)="signInWithFacebook()" style="background-color:#3b5998">
+            <ion-icon name="logo-facebook"></ion-icon>
+            Connect With Facebook
         </button>
-        <button ion-button block clear (click)="goToResetPassword()">
-            I forgot my password
+        <button ion-button block outline (click)="goToSignup()">
+            Create a New Account
+        </button>
+        <button ion-button block outline (click)="goToResetPassword()">
+            Forgot Password?
         </button>
     </div>
 </ion-content>

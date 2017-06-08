@@ -133,7 +133,7 @@ export class ArtistService {
                 });
 
                 // Perform the updates                
-                this.db.object('').update(updates);
+                this.db.object('/').update(updates);
             });
 
         // TODO: create the rest of the artist (genres, follows, etc)
@@ -153,7 +153,7 @@ export class ArtistService {
         // Add to list to track which artists a user is following
         updates[`/artistFollowsPerUser/${uid}/${spotifyId}`] = true;
         // Perform the updates
-        this.db.object('').update(updates);
+        this.db.object('/').update(updates);
     }
 
     unFollowArtist(spotifyId: string, uid: string): void {
@@ -163,7 +163,7 @@ export class ArtistService {
         // Add to list to track which artists a user is following
         updates[`/artistFollowsPerUser/${uid}/${spotifyId}`] = false;
         // Perform the updates
-        this.db.object('').update(updates);
+        this.db.object('/').update(updates);
     }
 
     getArtistFollowers(spotifyId: string): Observable<IDictionary[]> {

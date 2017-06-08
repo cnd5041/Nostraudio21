@@ -124,4 +124,20 @@ export class ArtistPage {
         return shares * price;
     }
 
+    canAfford(): boolean {
+        let userBalance = (this.userPortfolio ? this.userPortfolio.balance : 0);
+        return (this.total < userBalance ? true : false);
+    }
+
+    getColor() {
+        return (this.canAfford() ? 'moneygreen' : 'danger');
+    }
+
+    /**
+     * TODO:
+     *set up buy option
+    turn text/button red if it's beyond their account cash
+    add a currency color or something for a green
+     */
+
 }

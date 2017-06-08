@@ -5,10 +5,13 @@ import { Subject, BehaviorSubject, Observable } from 'rxjs';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/filter';
 
-import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
+import { AngularFireDatabase } from 'angularfire2/database';
+import { AngularFireAuth } from 'angularfire2/auth';
 
 
 import { IPortfolio, Portfolio } from '../models';
+import { AuthData } from '../providers/';
+
 
 @Injectable()
 export class PortfolioService {
@@ -37,55 +40,19 @@ export class PortfolioService {
 
     constructor(
         private http: Http,
-        private db: AngularFireDatabase
-
+        private db: AngularFireDatabase,
+        private afAuth: AngularFireAuth,
+        private authData: AuthData
     ) {
-        // TODO: create portfolios when they sign in.
-
-        // let t: FirebaseObjectObservable<any>;
-
         // const path = `/portfolios/${auth.id}`;
+
+        // Set up userPortfolio Observable - emit all defined results
         this.userPortfolio$ = this._userPortfolio$.asObservable()
             .filter(data => data !== undefined);
-
-        // this.portfolios$ = af.database.list();
-
-        //TODO: decide if I want to subscribe, or call once
-        // this.items = af.database.list('/items', {
-        //   query: {
-        //     orderByChild: 'size',
-        //     equalTo: this.sizeSubject
-        //   }
-        // });
-        // this.portfolioQuery$.subscribe(users => {
-        //   console.log('userQuery$', users);
-        //   this.portfolio.next(users[0]);
-        // }); //=> [{name: 'Jim' ... }]
-
-        //this.portfoliosRef.sub
-        //this.portfoliosRef.order
-
-
-
-        //this.exampleItem = this.af.database.object('userProfile/rtFYvr3Q3YM5ULh0kWzpUXBKh5b2');
     }
-
-    // getPorfolio(uid: string): Observable<any> {
-    //   console.log('getPorfolio', uid);
-    //   this.userId$.next(uid);
-
-    //   return this.portfolio.asObservable();
-
-    // }
 
     getUserPortfolio(uid: string): void {
         console.log('getUserPortfolio', uid);
-
-        // this.af.database.object('/portfolios', {
-        //   query: {
-        //     orderByChild: 'userProfile',
-        //     equalTo: uid
-        //   }
         // This continuously updates the subscription
         this.db.object('/portfolios/' + uid)
             .subscribe((result) => {
@@ -99,30 +66,23 @@ export class PortfolioService {
     }
 
     private createPortfolio(uid: string): void {
-        let newPortfolio = new Portfolio(uid);
-        console.log('createPortfolio', newPortfolio);
-        this.db.object(`/portfolios/${uid}`)
-            .set(newPortfolio);
+        console.log('createPortfolio', uid);
+        // Get current auth state and create user based on that
+        this.authData.authState
+            .filter(user => user !== null && user !== undefined)
+            .take(1)
+            .subscribe(user => {
+                const options = {
+                    displayName: user.displayName || undefined,
+                    imageUrl: user.photoURL || undefined
+                };
+                let newPortfolio = new Portfolio(uid, options);
+                console.log('newPortfolio', newPortfolio);
+                // Set the new /portfolio with the uid as key
+                this.db.object(`/portfolios/${uid}`)
+                    .set(newPortfolio);
+            });
     }
-
-    // createPortfolio(uid: string): any {
-    //   let newPortfolio = {
-    //     "balance": 100,
-    //     "displayName": "Chris",
-    //     "imageUrl": "",
-    //     "userProfile:": uid,
-    //     "userFullName": "Chris Dixon",
-    //     "userProfileLink": "",
-    //     "hitCount": "",
-    //     "artists": {},
-    //     "artistFollows": {},
-    //     "achievements": {},
-    //     "friends": {}
-    //   };
-    //   //let itemObservable
-    //   //this.af.database.list('/portfolios/' + uid).push(newPortfolio);
-    //   // this.af.database.object('/portfolios/' + uid).set(newPortfolio);
-    // }
 
     // //Example of getting list
     // examples() {
