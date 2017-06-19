@@ -20,9 +20,9 @@ export class FirebaseStore {
     this.genres = db.list('/genres');
 
 
-    this.genres.subscribe(genres => {
-      console.log('genres', genres);
-    });
+    // this.genres.subscribe(genres => {
+    //   console.log('store: genres', genres);
+    // });
 
     /**
      Genres: probably want to normalize genre names and then

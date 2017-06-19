@@ -71,11 +71,11 @@ export function nosArtistFromDbArtist(dbArtist: IDbArtist, stockholdersPerArtist
 
     artist.shareCount = stockholdersPerArtist.length;
     artist.stockholdersPerArtist = stockholdersPerArtist;
-    artist.marketCap = artist.marketPrice * artist.shareCount;
 
     let price = (50 * (artist.spotifyPopularity / 100)) + (35 * (artist.spotifyFollowers / 5000000)) + (15 * (artist.shareCount / 5000));
     price = Math.round(price * 100) / 100;
-    artist.marketPrice = price
+    artist.marketPrice = price;
+    artist.marketCap = artist.marketPrice * artist.shareCount;
 
     return artist;
 }

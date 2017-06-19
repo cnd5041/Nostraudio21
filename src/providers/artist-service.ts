@@ -177,5 +177,53 @@ export class ArtistService {
         return sourceMap;
     }
 
+    getGenresByArtistId(spotifyId: string): Observable<any> {
+        // return this.db.list(`/genresPerArtist/${spotifyId}`)
+        //     .map((genres: IDictionary[]) => {
+        //         let obvs = genres.map(genre => this.db.list(`/genres/${genre.$key}`));
+        //         Observable.zip(obvs)
+        //             .subscribe(x => {
+        //                 console.log('genres from zip', genres);
+        //                 return [];
+        //             });
+        //         return genres.map(genre => this.db.list(`/genres/${genre.$key}`));
+        //     })
+
+
+        // let test = this.db.list(`/genresPerArtist/${spotifyId}`)
+        //     .mergeMap((genres: IDictionary[]) => {
+        //         // let genreKeys = Array.from(genres.keys());
+        //         let genreKeys = genres.map(genre => genre.$key);
+        //         let genreSubs = genreKeys.map(genre => { return this.db.list(`/genres/${genre}`) });
+        //         return Observable.zip(genreSubs)
+        //     });
+
+        // test.subscribe(x => {
+        //     console.log('x', x);
+        // });
+
+
+        // return test;
+
+        return this.db.list(`/genresPerArtist/${spotifyId}`)
+            .combineLatest(this.firebaseStore.genres)
+            .map((results) => {
+                let artistGenres = results[0];
+                let genres = results[1];
+
+                return genres
+                    .filter((genre: any) => {
+                        let result = artistGenres.findIndex(g => g.$key === genre.$key);
+                        return (result ? true : false);
+                    }).map((g: any) => {
+                        g.name = _.startCase(g.name);
+                        return g;
+                    });
+            });
+
+
+
+    }
+
 
 }

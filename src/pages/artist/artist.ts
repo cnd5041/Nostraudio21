@@ -25,6 +25,9 @@ export class ArtistPage {
     artistFollowers: any[];
     isFollowing = false;
 
+    artistGenreSubscription: ISubscription;
+    artistGenres = '';
+
     // buyForm: FormGroup;
     action = 'buy';
     numberOfShares = 1;
@@ -44,6 +47,9 @@ export class ArtistPage {
     }
 
     ionViewDidLoad() {
+        // TODO: 
+        // Only purchase when logged in
+
         const spotifyId = this.navParams.get('spotifyId');
 
         const artistStream = this.artistService.getArtistById(spotifyId);
@@ -54,6 +60,17 @@ export class ArtistPage {
                     this.onSharesChange(this.numberOfShares);
                 } else {
                     this.artistService.createArtist(spotifyId);
+                }
+            });
+
+        let artistGenreSubscription = artistStream
+            .subscribe(result => {
+                if (result.$exists()) {
+                    this.artistService.getGenresByArtistId(result.spotifyId)
+                        .subscribe(genres => {
+                            console.log('genre sub', genres);
+                            this.artistGenres = genres.map(g => g.name).join(', ');
+                        });
                 }
             });
 
@@ -111,13 +128,7 @@ export class ArtistPage {
     }
 
     onSharesChange(value: number) {
-        console.log('onSharesChange', value);
         this.total = this.calcTotal(value, this.artist.marketPrice);
-
-        // Get the users balance
-        // Make sure they can only buy when logged in
-        // Add the artist marketPrice calculation
-        // 
     }
 
     calcTotal(shares: number = 0, price: number = 0): number {
