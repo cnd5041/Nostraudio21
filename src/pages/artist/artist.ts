@@ -25,7 +25,6 @@ export class ArtistPage {
     artistFollowers: any[];
     isFollowing = false;
 
-    artistGenreSubscription: ISubscription;
     artistGenres = '';
 
     // buyForm: FormGroup;
@@ -58,19 +57,13 @@ export class ArtistPage {
                 if (result.$exists()) {
                     this.artist = result;
                     this.onSharesChange(this.numberOfShares);
-                } else {
-                    this.artistService.createArtist(spotifyId);
-                }
-            });
-
-        let artistGenreSubscription = artistStream
-            .subscribe(result => {
-                if (result.$exists()) {
+                    // Get Genres
                     this.artistService.getGenresByArtistId(result.spotifyId)
                         .subscribe(genres => {
-                            console.log('genre sub', genres);
                             this.artistGenres = genres.map(g => g.name).join(', ');
                         });
+                } else {
+                    this.artistService.createArtist(spotifyId);
                 }
             });
 
@@ -79,9 +72,8 @@ export class ArtistPage {
             .subscribe(artistFollowers => {
                 console.log('artistFollowers', artistFollowers);
                 this.artistFollowers = artistFollowers;
-
                 // Check if the current user is one of the followers
-                if (artistFollowers.find(x => x.$key === this.userPortfolio.$key)) {
+                if (this.userPortfolio && artistFollowers.find(x => x.$key === this.userPortfolio.$key)) {
                     this.isFollowing = true;
                 } else {
                     this.isFollowing = false;

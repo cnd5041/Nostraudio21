@@ -95,6 +95,10 @@ export function dbArtistFromSpotifyArtist(artist: ISpotifyArtist): IDbArtist {
     };
 }
 
+export interface IGenre extends IDictionary {
+    name: string;
+}
+
 export interface ISpotifyTrack {
     album;
     trackHref: string;

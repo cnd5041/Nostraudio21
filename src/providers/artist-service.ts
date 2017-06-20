@@ -3,24 +3,17 @@ import { Http } from '@angular/http';
 import { Observable, BehaviorSubject } from 'rxjs/Rx';
 import 'rxjs/add/operator/map';
 
-import { INosArtist, IDbArtist, ISpotifyArtist, dbArtistFromSpotifyArtist, nosArtistFromDbArtist, IDictionary } from '../models/artist.model';
+import { INosArtist, IDbArtist, ISpotifyArtist, dbArtistFromSpotifyArtist, nosArtistFromDbArtist, IDictionary, IGenre } from '../models/artist.model';
 import { SpotifyService } from './spotify-service';
 import { FirebaseStore } from './firebase-store';
 
 import * as _ from 'lodash';
 
-// import {
-//     AngularFire
-//     //FirebaseListObservable,
-//     //FirebaseObjectObservable,
-//     //FirebaseObjectFactory
-// } from 'angularfire2';
-
-import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
+import { AngularFireDatabase } from 'angularfire2/database';
 
 
 @Injectable()
-export class ArtistService {
+export class ArtistService {    
 
     private _searchResults: BehaviorSubject<INosArtist[]>;
     searchResults: Observable<INosArtist[]>;
@@ -39,25 +32,6 @@ export class ArtistService {
 
         this._artists = <any><BehaviorSubject<INosArtist[]>>new BehaviorSubject([]);
         this.artists = this._artists.asObservable();
-
-        // Query Example
-        // const source = this.af.database.list('/artists', {
-        //     query: {
-        //         orderByChild: 'spotifyId',
-        //         equalTo: spotifyId,
-        //         limitToFirst: 1
-        //     }
-        // });
-
-        // .key example
-        // return this.af.database.list(`/artists`)
-        //     .push(newArtist).key;
-
-        // Set Data Examples:
-        // this.af.database.object(`/genres/${genreKey}/artists/${spotifyId}`)
-        //     .set(true);
-        // this.af.database.object(`/genres/${genreKey}/`)
-        //     .update({ name: genre });
     }
 
     search(term: string): void {
@@ -81,6 +55,7 @@ export class ArtistService {
         console.log('getArtistById', spotifyId);
         const artistSource = this.db.object(`/artists/${spotifyId}`);
         const stocksSource = this.db.list(`/stockholdersPerArtist/${spotifyId}`);
+        // TODO: see if I can refactor this with more info like genres, and if a switchmap will help
 
         // maybe do a once on genres here, or do it separate in view
 
@@ -88,11 +63,8 @@ export class ArtistService {
 
         const sourceMap = stream.map(queriedItems => {
             let artist = queriedItems[0];
-            console.log('track artist', artist);
+            console.log('fb artist', artist);
             let stockholdersPerArtist: IDictionary[] = queriedItems[1];
-
-            console.log('queriedItems', queriedItems);
-
             let nosArtist = nosArtistFromDbArtist(artist, stockholdersPerArtist);
 
             console.log('nosArtist', nosArtist);
@@ -177,51 +149,17 @@ export class ArtistService {
         return sourceMap;
     }
 
-    getGenresByArtistId(spotifyId: string): Observable<any> {
-        // return this.db.list(`/genresPerArtist/${spotifyId}`)
-        //     .map((genres: IDictionary[]) => {
-        //         let obvs = genres.map(genre => this.db.list(`/genres/${genre.$key}`));
-        //         Observable.zip(obvs)
-        //             .subscribe(x => {
-        //                 console.log('genres from zip', genres);
-        //                 return [];
-        //             });
-        //         return genres.map(genre => this.db.list(`/genres/${genre.$key}`));
-        //     })
-
-
-        // let test = this.db.list(`/genresPerArtist/${spotifyId}`)
-        //     .mergeMap((genres: IDictionary[]) => {
-        //         // let genreKeys = Array.from(genres.keys());
-        //         let genreKeys = genres.map(genre => genre.$key);
-        //         let genreSubs = genreKeys.map(genre => { return this.db.list(`/genres/${genre}`) });
-        //         return Observable.zip(genreSubs)
-        //     });
-
-        // test.subscribe(x => {
-        //     console.log('x', x);
-        // });
-
-
-        // return test;
-
+    getGenresByArtistId(spotifyId: string): Observable<IGenre[]> {
         return this.db.list(`/genresPerArtist/${spotifyId}`)
             .combineLatest(this.firebaseStore.genres)
             .map((results) => {
                 let artistGenres = results[0];
                 let genres = results[1];
-
-                return genres
-                    .filter((genre: any) => {
-                        let result = artistGenres.findIndex(g => g.$key === genre.$key);
-                        return (result ? true : false);
-                    }).map((g: any) => {
-                        g.name = _.startCase(g.name);
-                        return g;
-                    });
+                return genres.filter(genre =>{
+                    let result = artistGenres.findIndex(g => g.$key === genre.$key);
+                    return (result ? true : false);
+                });
             });
-
-
 
     }
 
