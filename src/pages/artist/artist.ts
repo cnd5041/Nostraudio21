@@ -55,6 +55,7 @@ export class ArtistPage {
         this.artistSubscription = artistStream
             .subscribe(result => {
                 if (result.$exists()) {
+                    // Set artist and trigger share change
                     this.artist = result;
                     this.onSharesChange(this.numberOfShares);
                     // Get Genres
@@ -83,6 +84,7 @@ export class ArtistPage {
         const portfolioStream = this.portfolioService.userPortfolio$;
         this.portfolioSubscription = portfolioStream
             .subscribe(portfolio => {
+                console.log('portfolio', portfolio);
                 this.userPortfolio = portfolio;
             });
     }
@@ -136,11 +138,6 @@ export class ArtistPage {
         return (this.canAfford() ? 'moneygreen' : 'danger');
     }
 
-    /**
-     * TODO:
-     *set up buy option
-    turn text/button red if it's beyond their account cash
-    add a currency color or something for a green
-     */
+    //Sell - make sure they have shares
 
 }

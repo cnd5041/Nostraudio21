@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http, Response } from '@angular/http';
+import { Http, Response, RequestOptionsArgs, Headers } from '@angular/http';
 
 import { Observable } from 'rxjs/Rx';
 import 'rxjs/add/operator/map';
@@ -11,6 +11,7 @@ import { INosArtist, ISpotifyTopTracks, ISpotifyArtist } from '../models/artist.
 @Injectable()
 export class SpotifyService {
   baseUrl: string = 'https://api.spotify.com/v1/';
+  token = '42f3cb5e2ade4385af1758e1749a16b0';
 
   constructor(
     private http: Http
@@ -47,14 +48,32 @@ export class SpotifyService {
     return result;
   }
 
+  private authenticate() {
+      let url = `https://accounts.spotify.com/api/token`;
+
+      let headers = new Headers();
+      headers.append('Authorization', 'Basic NDJmM2NiNWUyYWRlNDM4NWFmMTc1OGUxNzQ5YTE2YjA6YTVmMDA0ZjBiYzJiNGNlNDk0YzM3MTYzZThhOWE1ZTgK');
+//       {
+//    "access_token": "NgCXRKc...MzYjw",
+//    "token_type": "bearer",
+//    "expires_in": 3600,
+// }
+  }
+
   searchArtists(name: string): Observable<INosArtist[]> {
     if (name && name.length) {
       let url = `https://api.spotify.com/v1/search?q=${name}&type=artist`;
+      let headers = new Headers();
+      // headers.append('Access-Token', '42f3cb5e2ade4385af1758e1749a16b0');
+
+      let options: RequestOptionsArgs = {
+        headers: headers
+      }
 
       //       return this.http.get('https://api.spotify.com/v1/search?q=' + name + '&type=artist')
       //                            'https://api.spotify.com/v1/';      
       // 'https://api.spotify.com/v1/search?q=' + name + '&type=artist'
-      return this.http.get(url)
+      return this.http.get(url, options)
         .map((response: Response) => {
           console.log('response', response.json().artists.items);
 

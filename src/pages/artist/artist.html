@@ -55,12 +55,12 @@
     </ion-card>
 
     <ion-card>
-        <ion-card-content *ngIf="userPortfolio">
+        <ion-card-content *ngIf="!userPortfolio">
             Login to start buying and selling shares.
         </ion-card-content>
     </ion-card>
 
-    <ion-card>
+    <ion-card *ngIf="userPortfolio">
         <ion-card-header>
             <ion-segment [(ngModel)]="action">
                 <ion-segment-button value="buy">
