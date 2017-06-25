@@ -4,7 +4,7 @@ import { Observable, BehaviorSubject } from 'rxjs/Rx';
 import 'rxjs/add/operator/map';
 
 import { INosArtist, IDbArtist, ISpotifyArtist, dbArtistFromSpotifyArtist, nosArtistFromDbArtist, IDictionary, IGenre } from '../models/artist.model';
-import { SpotifyService } from './spotify-service';
+import { NosSpotifyService } from './spotify-service';
 import { FirebaseStore } from './firebase-store';
 
 import * as _ from 'lodash';
@@ -13,7 +13,7 @@ import { AngularFireDatabase } from 'angularfire2/database';
 
 
 @Injectable()
-export class ArtistService {    
+export class ArtistService {
 
     private _searchResults: BehaviorSubject<INosArtist[]>;
     searchResults: Observable<INosArtist[]>;
@@ -23,7 +23,7 @@ export class ArtistService {
 
     constructor(
         private http: Http,
-        private spotifyService: SpotifyService,
+        private spotifyService: NosSpotifyService,
         private firebaseStore: FirebaseStore,
         private db: AngularFireDatabase
     ) {
@@ -155,7 +155,7 @@ export class ArtistService {
             .map((results) => {
                 let artistGenres = results[0];
                 let genres = results[1];
-                return genres.filter(genre =>{
+                return genres.filter(genre => {
                     let result = artistGenres.findIndex(g => g.$key === genre.$key);
                     return (result ? true : false);
                 });

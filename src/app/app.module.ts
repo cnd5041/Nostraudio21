@@ -10,6 +10,9 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 
+// import { SpotifyService } from 'angular2-spotify/angular2-spotify';
+//C:\Users\Chris\Development\Nostraudio21\node_modules\angular2-spotify\angular2-spotify.d.ts
+
 import { MyApp } from './app.component';
 
 import {
@@ -21,17 +24,29 @@ import { ArtistListItem } from '../components/artist-list-item/artist-list-item'
 
 //Import Providers
 import {
-  SpotifyService, ArtistService, DateService, AuthData, PortfolioService, FirebaseStore
+  NosSpotifyService, ArtistService, DateService, AuthData, PortfolioService, FirebaseStore
 } from '../providers/';
 
 // AF2 Settings
 export const firebaseConfig = {
-  apiKey: "AIzaSyD9ly1_EmV1N_8KDoW4IX_tYiD_hNhMBiQ",
-  authDomain: "nostraudio2.firebaseapp.com",
-  databaseURL: "https://nostraudio2.firebaseio.com",
-  storageBucket: "",
-  messagingSenderId: "392527777532"
+  apiKey: 'AIzaSyD9ly1_EmV1N_8KDoW4IX_tYiD_hNhMBiQ',
+  authDomain: 'nostraudio2.firebaseapp.com',
+  databaseURL: 'https://nostraudio2.firebaseio.com',
+  storageBucket: '',
+  messagingSenderId: '392527777532'
 };
+
+const spotifyConfig = {
+  provide: 'SpotifyConfig',
+  useValue: {
+    clientId: '98e6bfec35a84072badbb68d75c27dd4',
+    redirectUri: '',
+    scope: '',
+    // If you already have an auth token
+    authToken: ''
+  }
+}
+
 
 // const myFirebaseAuthConfig = {
 //   provider: AuthProviders.Password,
@@ -76,7 +91,7 @@ export const firebaseConfig = {
   ],
   providers: [
     { provide: ErrorHandler, useClass: IonicErrorHandler },
-    SpotifyService,
+    NosSpotifyService,
     ArtistService,
     DateService,
     // StatsService,
@@ -84,7 +99,8 @@ export const firebaseConfig = {
     PortfolioService,
     FirebaseStore,
     InAppBrowser,
-    SplashScreen
+    SplashScreen,
+    //SpotifyService, spotifyConfig
   ]
 })
 export class AppModule { }

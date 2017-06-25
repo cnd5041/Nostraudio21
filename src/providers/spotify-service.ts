@@ -9,7 +9,7 @@ import { INosArtist, ISpotifyTopTracks, ISpotifyArtist } from '../models/artist.
 // SpotifyTrack
 
 @Injectable()
-export class SpotifyService {
+export class NosSpotifyService {
   baseUrl: string = 'https://api.spotify.com/v1/';
   token = '42f3cb5e2ade4385af1758e1749a16b0';
 
@@ -49,15 +49,15 @@ export class SpotifyService {
   }
 
   private authenticate() {
-      let url = `https://accounts.spotify.com/api/token`;
+    let url = `https://accounts.spotify.com/api/token`;
 
-      let headers = new Headers();
-      headers.append('Authorization', 'Basic NDJmM2NiNWUyYWRlNDM4NWFmMTc1OGUxNzQ5YTE2YjA6YTVmMDA0ZjBiYzJiNGNlNDk0YzM3MTYzZThhOWE1ZTgK');
-//       {
-//    "access_token": "NgCXRKc...MzYjw",
-//    "token_type": "bearer",
-//    "expires_in": 3600,
-// }
+    let headers = new Headers();
+    headers.append('Authorization', 'Basic NDJmM2NiNWUyYWRlNDM4NWFmMTc1OGUxNzQ5YTE2YjA6YTVmMDA0ZjBiYzJiNGNlNDk0YzM3MTYzZThhOWE1ZTgK');
+    //       {
+    //    "access_token": "NgCXRKc...MzYjw",
+    //    "token_type": "bearer",
+    //    "expires_in": 3600,
+    // }
   }
 
   searchArtists(name: string): Observable<INosArtist[]> {
