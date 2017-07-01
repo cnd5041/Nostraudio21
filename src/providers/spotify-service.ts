@@ -13,9 +13,26 @@ export class NosSpotifyService {
   baseUrl: string = 'https://api.spotify.com/v1/';
   token = '42f3cb5e2ade4385af1758e1749a16b0';
 
+  //
+  base64 = 'OThlNmJmZWMzNWE4NDA3MmJhZGJiNjhkNzVjMjdkZDQ6IGE5Yjc1NWY2NjgwZTRmZTI5NTU5ZTUwY2MyNzI2N2M5Cg==';
+
   constructor(
     private http: Http
   ) {
+
+
+    /* 
+    https://developer.spotify.com/web-api/authorization-guide/#implicit_grant_flow
+    https://github.com/spotify/web-api-auth-examples/blob/master/implicit_grant/public/index.html
+    https://stackoverflow.com/questions/44511168/logging-in-spotify-with-ionic-2#
+    https://www.joshmorony.com/spotify-player-ionic/
+    https://blitzr.io/
+    https://www.google.com/search?q=music+metadata+api&oq=music+metadata+api+&aqs=chrome.0.0l6.2391j0j4&sourceid=chrome&ie=UTF-8
+    https://github.com/thelinmichael/spotify-web-api-node
+
+
+    https://cloud.google.com/nodejs/ 
+    */
 
   }
 
@@ -48,16 +65,62 @@ export class NosSpotifyService {
     return result;
   }
 
+  private handleErrorObservable(error: Response | any) {
+    console.error(error.message || error);
+    return Observable.throw(error.message || error);
+  }
+
   private authenticate() {
     let url = `https://accounts.spotify.com/api/token`;
-
+    
     let headers = new Headers();
-    headers.append('Authorization', 'Basic NDJmM2NiNWUyYWRlNDM4NWFmMTc1OGUxNzQ5YTE2YjA6YTVmMDA0ZjBiYzJiNGNlNDk0YzM3MTYzZThhOWE1ZTgK');
-    //       {
-    //    "access_token": "NgCXRKc...MzYjw",
-    //    "token_type": "bearer",
-    //    "expires_in": 3600,
-    // }
+    headers.append('Authorization', 'Basic ' + this.base64);
+
+    let options: RequestOptionsArgs = {
+      headers: headers
+    };
+
+    let body: {
+      grant_type: 'client_credentials'
+    };
+
+    return this.http.post(url, body, options)
+      .map((response: Response) => {
+        console.log('response', response);
+      })
+      .catch(this.handleErrorObservable);
+
+
+
+
+    // var authOptions = {
+    //   url: 'https://accounts.spotify.com/api/token',
+    //   headers: {
+    //     'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+    //   },
+    //   form: {
+    //     grant_type: 'client_credentials'
+    //   },
+    //   json: true
+    // };
+
+    // request.post(authOptions, function (error, response, body) {
+    //   if (!error && response.statusCode === 200) {
+
+    //     // use the access token to access the Spotify Web API
+    //     var token = body.access_token;
+    //     var options = {
+    //       url: 'https://api.spotify.com/v1/users/jmperezperez',
+    //       headers: {
+    //         'Authorization': 'Bearer ' + token
+    //       },
+    //       json: true
+    //     };
+    //     request.get(options, function (error, response, body) {
+    //       console.log(body);
+    //     });
+    //   }
+    // });
   }
 
   searchArtists(name: string): Observable<INosArtist[]> {
@@ -68,7 +131,13 @@ export class NosSpotifyService {
 
       let options: RequestOptionsArgs = {
         headers: headers
-      }
+      };
+
+
+
+      this.authenticate().subscribe(res => {
+        
+      });
 
       //       return this.http.get('https://api.spotify.com/v1/search?q=' + name + '&type=artist')
       //                            'https://api.spotify.com/v1/';      

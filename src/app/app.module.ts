@@ -10,8 +10,10 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 
-// import { SpotifyService } from 'angular2-spotify/angular2-spotify';
-//C:\Users\Chris\Development\Nostraudio21\node_modules\angular2-spotify\angular2-spotify.d.ts
+// import { SpotifyService } from 'angular2-spotify';
+import * as SpotifyService from 'angular2-spotify';
+
+// C:\Users\Chris\Development\Nostraudio21\node_modules\angular2-spotify\angular2-spotify.d.ts
 
 import { MyApp } from './app.component';
 
@@ -24,7 +26,7 @@ import { ArtistListItem } from '../components/artist-list-item/artist-list-item'
 
 //Import Providers
 import {
-  NosSpotifyService, ArtistService, DateService, AuthData, PortfolioService, FirebaseStore
+  NosSpotifyService, ArtistService, DateService, AuthData, PortfolioService, FirebaseStore, DiscogsService
 } from '../providers/';
 
 // AF2 Settings
@@ -92,6 +94,7 @@ const spotifyConfig = {
   providers: [
     { provide: ErrorHandler, useClass: IonicErrorHandler },
     NosSpotifyService,
+    DiscogsService,
     ArtistService,
     DateService,
     // StatsService,

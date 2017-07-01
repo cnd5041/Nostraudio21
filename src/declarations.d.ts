@@ -13,3 +13,5 @@
 */
 declare module '*';
 declare module 'lodash';
+
+declare module 'SpotifyService';

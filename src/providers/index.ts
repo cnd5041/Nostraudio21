@@ -5,3 +5,4 @@ export * from './firebase-store';
 export * from './portfolio-service';
 export * from './spotify-service';
 export * from './stats-service';
+export * from './discogs-service';
