@@ -1,0 +1,11 @@
+
+
+Reformat Artist screen UI
+
+Hook up discogs and add pull there (on Artist)
+    Just make it an additional set of functionality that will extend the classes/objects
+
+Complete buy and sell functionality
+
+Redo the share count to aggregate the count of each node (reduce)
+use the sharesPerPortolio to show that the user owns x amount of shares (then do sell)

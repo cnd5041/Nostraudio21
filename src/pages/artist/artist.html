@@ -6,10 +6,9 @@
         <ion-title>Artist Info</ion-title>
     </ion-navbar>
 </ion-header>
-<ion-content>
 
+<ion-content>
     <ion-card>
-        <img [src]="artist?.largeImage" />
         <ion-card-content>
             <ion-card-title>
                 {{artist?.name}}
@@ -18,14 +17,9 @@
                 {{artistGenres}}
             </p>
         </ion-card-content>
+        <img *ngIf="artist" [src]="artist?.largeImage" />
 
         <ion-list>
-            <ion-item>
-                Stock Price: {{artist?.marketPrice | currency:'USD':true:'1.2-2'}}
-            </ion-item>
-            <ion-item>
-                Market Cap: {{artist?.marketCap | currency:'USD':true:'1.2-2'}}
-            </ion-item>
             <ion-item>
                 Followers
                 <ion-badge item-right>{{artistFollowers?.length}}</ion-badge>
@@ -54,16 +48,24 @@
         </ion-list>
     </ion-card>
 
-    <ion-card>
-        <ion-card-content *ngIf="!userPortfolio">
+    <ion-card *ngIf="!userPortfolio">
+        <ion-row center text-center>
+            <ion-col>Stock Price: {{artist?.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
+            <ion-col>Market Cap: {{artist?.marketCap | currency:'USD':true:'1.2-2'}}</ion-col>
+        </ion-row>
+        <ion-card-content>
             Login to start buying and selling shares.
         </ion-card-content>
     </ion-card>
 
     <ion-card *ngIf="userPortfolio">
+        <ion-row center text-center>
+            <ion-col>Stock Price: {{artist?.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
+            <ion-col>Market Cap: {{artist?.marketCap | currency:'USD':true:'1.2-2'}}</ion-col>
+        </ion-row>
         <ion-card-header>
             <ion-segment [(ngModel)]="action">
-                <ion-segment-button value="buy">
+                <ion-segment-button value="buy" ng-click="onBuyClick()">
                     Buy
                 </ion-segment-button>
                 <ion-segment-button value="sell">
@@ -88,7 +90,7 @@
 
                     <!--<button ion-button outline item-right>Buy</button>  color="moneygreen"-->
                 </ion-item>
-                <button ion-button block round color="secondary" class="center" [disabled]="!canAfford()">Buy</button>
+                <button ion-button block round color="secondary" class="center" (click)="onBuyClick()" [disabled]="!canAfford()">Buy</button>
             </ion-list>
 
             <ion-list *ngSwitchCase="'sell'">

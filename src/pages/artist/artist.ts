@@ -46,7 +46,7 @@ export class ArtistPage {
     }
 
     ionViewDidLoad() {
-        // TODO: 
+        // TODO:
         // Only purchase when logged in
 
         const spotifyId = this.navParams.get('spotifyId');
@@ -121,21 +121,43 @@ export class ArtistPage {
         actionSheet.present();
     }
 
-    onSharesChange(value: number) {
-        this.total = this.calcTotal(value, this.artist.marketPrice);
-    }
-
-    calcTotal(shares: number = 0, price: number = 0): number {
-        return shares * price;
+    onSharesChange(value: number = 0): void {
+        // this.total = this.calcTotal(value, this.artist.marketPrice);
+        this.total = value * (this.artist.marketPrice || 0);
     }
 
     canAfford(): boolean {
-        let userBalance = (this.userPortfolio ? this.userPortfolio.balance : 0);
+        const userBalance = (this.userPortfolio ? this.userPortfolio.balance : 0);
         return (this.total < userBalance ? true : false);
     }
 
     getColor() {
         return (this.canAfford() ? 'moneygreen' : 'danger');
+    }
+
+    onBuyClick(): void {
+        const purchase = () => {
+            this.artistService.userBuyArtist(this.userPortfolio, this.artist, this.numberOfShares);
+        };
+
+        const actionSheet = this.actionSheetCtrl.create({
+            title: this.artist.name,
+            buttons: [
+                {
+                    text: 'buy',
+                    handler: () => {
+                        purchase();
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    role: 'cancel',
+                    handler: () => { }
+                }
+            ]
+        });
+
+        actionSheet.present();
     }
 
     //Sell - make sure they have shares

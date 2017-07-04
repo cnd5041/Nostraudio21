@@ -1,9 +1,12 @@
-export interface IDictionary {
-    //[key: string]: boolean;
-    $key?: string;
-    $value?: boolean;
-    $exists?: () => boolean;
-}
+
+
+// export interface IDictionary {
+//     $key?: string;
+//     $value?: boolean;
+//     $exists?: () => boolean;
+// }
+
+import { IDictionary } from '../models';
 
 export interface INosArtist extends IDbArtist {
     // // id: string;
@@ -27,8 +30,8 @@ export interface INosArtist extends IDbArtist {
     // transactions: any[];
 
     // genres will be tracked seperately
-    // portfolio follows will be tracked seperately 
-    // portfolio investors will be tracked seperately 
+    // portfolio follows will be tracked seperately
+    // portfolio investors will be tracked seperately
 }
 
 export interface ISpotifyArtist {
@@ -69,7 +72,10 @@ export class NosArtist {
 export function nosArtistFromDbArtist(dbArtist: IDbArtist, stockholdersPerArtist: IDictionary[]): INosArtist {
     let artist = <INosArtist>Object.create(dbArtist);
 
-    artist.shareCount = stockholdersPerArtist.length;
+    artist.shareCount = <number>stockholdersPerArtist.reduce((sum, value) => {
+        return sum + value.$value;
+    }, 0);
+
     artist.stockholdersPerArtist = stockholdersPerArtist;
 
     let price = (50 * (artist.spotifyPopularity / 100)) + (35 * (artist.spotifyFollowers / 5000000)) + (15 * (artist.shareCount / 5000));
@@ -131,19 +137,6 @@ export class SpotifyTrack implements ISpotifyTrack {
 export interface ISpotifyTopTracks {
     list?: ISpotifyTrack[];
     txtList?: string;
-}
-
-export interface ITransaction {
-    id: string;
-    //artist: INosArtist
-    //artistId: string;
-    //user: IUser;
-    //userId: string;
-    price: number;
-    action: string;
-    //shareId: string;
-    //share: IShare;
-    metrics: string;
 }
 
 export interface IStatsGraphData {

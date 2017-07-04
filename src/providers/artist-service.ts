@@ -3,7 +3,11 @@ import { Http } from '@angular/http';
 import { Observable, BehaviorSubject } from 'rxjs/Rx';
 import 'rxjs/add/operator/map';
 
-import { INosArtist, IDbArtist, ISpotifyArtist, dbArtistFromSpotifyArtist, nosArtistFromDbArtist, IDictionary, IGenre } from '../models/artist.model';
+import {
+    INosArtist, dbArtistFromSpotifyArtist, nosArtistFromDbArtist,
+    IDictionary, IGenre, IPortfolio, INosTransaction, NosTransaction
+} from '../models';
+
 import { NosSpotifyService } from './spotify-service';
 import { FirebaseStore } from './firebase-store';
 
@@ -76,22 +80,19 @@ export class ArtistService {
     }
 
     createArtist(spotifyId) {
+        // TODO: make sure I update the firebase artist with this info sometimes
         this.spotifyService.getArtistById(spotifyId)
             .subscribe(result => {
                 let newArtist = dbArtistFromSpotifyArtist(result);
 
                 console.log('create this artist', newArtist);
-
-                // Set the Artist
-                // Set the Artists Genres, 
-                // Set the Genre, and make sure the artist is added to the list
-                // set seperately 
+                // set seperately
                 // genres, portoflio follows, portfolios
 
                 let updates = {};
                 // Set the Artist
                 updates[`/artists/${spotifyId}`] = newArtist;
-                // Set Genre and add artist to Genre list                
+                // Set Genre and add artist to Genre list
                 result.spotifyGenres.forEach((genre) => {
                     let genreKey = _.camelCase(genre);
                     // Set the genre name in genre list
@@ -104,23 +105,14 @@ export class ArtistService {
                     updates[`/genresPerArtist/${spotifyId}/${genreKey}`] = true;
                 });
 
-                // Perform the updates                
+                // Perform the updates
                 this.db.object('/').update(updates);
             });
-
-        // TODO: create the rest of the artist (genres, follows, etc)
-        // create the artist..
-        // have to transform the lists like genres into a list I can push 
-        // into firebase (use the fan out where you get the id them update them all) 
-        // - https://firebase.google.com/docs/database/web/read-and-write
-
-        // TODO: 
-        // Set up the Artist page and then do Follows (use the Per)
     }
 
     followArtist(spotifyId: string, uid: string): void {
         let updates = {};
-        // Add to list track all users following an artist        
+        // Add to list track all users following an artist
         updates[`/followsPerArtist/${spotifyId}/${uid}`] = true;
         // Add to list to track which artists a user is following
         updates[`/artistFollowsPerUser/${uid}/${spotifyId}`] = true;
@@ -130,7 +122,7 @@ export class ArtistService {
 
     unFollowArtist(spotifyId: string, uid: string): void {
         let updates = {};
-        // Add to list track all users following an artist        
+        // Add to list track all users following an artist
         updates[`/followsPerArtist/${spotifyId}/${uid}`] = false;
         // Add to list to track which artists a user is following
         updates[`/artistFollowsPerUser/${uid}/${spotifyId}`] = false;
@@ -161,6 +153,30 @@ export class ArtistService {
                 });
             });
 
+    }
+
+    userBuyArtist(portfolio: IPortfolio, artist: INosArtist, numberOfShares: number = 0): void {
+        const total = artist.marketPrice * numberOfShares;
+        const newBalance = portfolio.balance - total;
+        // Safety Checks:
+        // If no shares - do not continue
+        if (numberOfShares < 1) {
+            return;
+        }
+        // If new balance will be negative - do not continue
+        if (newBalance < 0) {
+            return;
+        }
+        // Record the Transaction
+        const transaction: INosTransaction = new NosTransaction(artist.$key, portfolio.$key, numberOfShares, total, 'buy');
+        this.firebaseStore.transactions.push(transaction);
+        // Add Shares to Portfolio
+        this.firebaseStore.updateSharesPerPortolio(artist.$key, portfolio.$key, numberOfShares);
+        // Add Shares to Artist
+        this.firebaseStore.updateStockholdersPerArtist(artist.$key, portfolio.$key, numberOfShares);
+        // Update Portfolio Balance
+        const portfolioObservable = this.db.object(`/portfolios/${portfolio.$key}`);
+        portfolioObservable.update({ balance: newBalance });
     }
 
 
