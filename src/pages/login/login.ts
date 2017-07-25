@@ -8,7 +8,7 @@ import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
 
 import { AuthData, PortfolioService } from '../../providers/';
-import { IPortfolio } from '../../models/';
+import { INosPortfolio } from '../../models/';
 import { SignupPage, ResetPasswordPage } from '../';
 import { GlobalValidator } from '../../validators/global-validator';
 
@@ -25,7 +25,7 @@ export class LoginPage {
     loading: Loading;
     // Track user login state
     userState: firebase.User;
-    userPortfolio$: Observable<IPortfolio>;
+    userPortfolio$: Observable<INosPortfolio>;
     userStateSubscription: ISubscription;
 
 

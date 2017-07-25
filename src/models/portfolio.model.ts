@@ -1,38 +1,44 @@
+import { IDictionary } from '../models';
+
+
 interface IFireBaseIdReference extends String {
 
 }
 
-export interface IPortfolio {
-    $key?: string;
+export interface IDbPortfolio extends IDictionary {
     balance: number;
     displayName: string;
+    hitCount: number;
     imageUrl?: string;
     userProfile: IFireBaseIdReference;
     userProfileLink: string;
-    hitCount: number;
-    //Id is reference to Firebase Object
-    artists: boolean[];
-    artistFollows: boolean[];
-    achievements: boolean[];
-    friends: boolean[];
+}
+
+
+export interface INosPortfolio extends IDbPortfolio {
+    // artists: boolean[];
+    // artistFollows: boolean[];
+    // achievements: boolean[];
+    // friends: boolean[];
+    shares?: IDictionary[];
+    artistFollows?: IDictionary[];
 }
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-export class Portfolio implements IPortfolio {
+export class Portfolio implements INosPortfolio {
     balance: number;
     displayName: string;
     imageUrl?: string;
     userProfile: IFireBaseIdReference;
     userProfileLink: string;
     hitCount: number;
-    //Id is reference to Firebase Object
-    artists: boolean[];
-    artistFollows: boolean[];
-    achievements: boolean[];
-    friends: boolean[];
+    // artists: boolean[];
+    // artistFollows: boolean[];
+    // achievements: boolean[];
+    // friends: boolean[];
 
     constructor(uid: string, obj: any = {}) {
         this.balance = obj.balance || 100;
@@ -41,9 +47,15 @@ export class Portfolio implements IPortfolio {
         this.userProfile = uid;
         this.userProfileLink = obj.userProfileLink || '';
         this.hitCount = obj.hitCount || 1;
-        this.artists = obj.artists || [];
-        this.artistFollows = obj.artistFollows || [];
-        this.achievements = obj.achievements || [];
-        this.friends = obj.friends || [];
+        // this.artists = obj.artists || [];
+        // this.artistFollows = obj.artistFollows || [];
+        // this.achievements = obj.achievements || [];
+        // this.friends = obj.friends || [];
     }
 }
+
+export function constructPortfolio(portfolio: IDbPortfolio, sharesPerPortfolio: IDictionary[], artistFollowsPerUser: IDictionary[]) {
+    let nosPortfolio: INosPortfolio = Object.assign({}, portfolio);
+    nosPortfolio.shares = sharesPerPortfolio;
+    nosPortfolio.artistFollows = artistFollowsPerUser;
+};

@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/map';
 import { Observable } from 'rxjs/Rx';
 
-import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
-import { IDbArtist, IGenre, IDbTransaction } from '../models';
+import { AngularFireDatabase, FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2/database';
+import { IDbArtist, IGenre, IDbTransaction, IDictionary, IDbPortfolio } from '../models';
 import * as _ from 'lodash';
 
 
@@ -61,6 +61,31 @@ export class FirebaseStore {
         // this.af.database.object(`/genres/${genreKey}/`)
         //     .update({ name: genre });
 
+
+         // //Example of getting list
+    // examples() {
+    //   //List
+    //   // this.af.database.list('items').subscribe(items => console.log(items));
+    //   // //1 item - where 1 is the id
+    //   // this.af.database.object('items/1').subscribe(items => console.log(items));
+
+    //   //Not having to subscribe
+    //   // this.exampleItem = this.af.database.object('items/1');
+    //   //rtFYvr3Q3YM5ULh0kWzpUXBKh5b2
+
+    //   //Filter Example
+    //   // let exampleFilter: Observable<any> = this.af.database.list('items')
+    //   //   .map(items => {
+    //   //     return items.filter(item => item.name === 'Jeff');
+    //   //   })
+    //   //   .do(item => console.log('good for debugs - but bad practice', item));
+    // }
+
+    // // getExamplePortfolio(): FirebaseObjectObservable<any> {
+    // getExamplePortfolio(): any {
+    //   return this.exampleItem;
+    // }
+
     }
 
     updateStockholdersPerArtist(artistId: string, portfolioId: string, numberOfShares: number): void {
@@ -78,21 +103,31 @@ export class FirebaseStore {
             });
     }
 
-    updateSharesPerPortolio(artistId: string, portfolioId: string, numberOfShares: number): void {
-        this.db.object(`/sharesPerPortolio/${portfolioId}/${artistId}`)
+    updateSharesPerPortfolio(artistId: string, portfolioId: string, numberOfShares: number): void {
+        this.db.object(`/sharesPerPortfolio/${portfolioId}/${artistId}`)
             .take(1)
-            .subscribe(sharesPerPortolio => {
+            .subscribe(sharesPerPortfolio => {
                 let updatedShareCount = numberOfShares;
                 // If they already have shares - update the count
-                if (sharesPerPortolio.$exists()) {
-                    updatedShareCount += sharesPerPortolio.$value;
+                if (sharesPerPortfolio.$exists()) {
+                    updatedShareCount += sharesPerPortfolio.$value;
                 }
                 // Update the endpoint with the share count
-                this.db.object(`/sharesPerPortolio/${portfolioId}/${artistId}`)
+                this.db.object(`/sharesPerPortfolio/${portfolioId}/${artistId}`)
                     .set(updatedShareCount);
             });
     }
 
+    sharesPerPortfolio(uid: string): FirebaseListObservable<IDictionary[]> {
+        return this.db.list(`/sharesPerPortfolio/${uid}`);
+    }
 
+    artistFollowsPerUser(uid: string): FirebaseListObservable<IDictionary[]> {
+        return this.db.list(`/artistFollowsPerUser/${uid}`);
+    }
+
+    portfolioById(uid: string): FirebaseObjectObservable<IDbPortfolio> {
+        return this.db.object(`/portfolios/${uid}`);
+    }
 
 }

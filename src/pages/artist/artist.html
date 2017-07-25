@@ -7,7 +7,7 @@
     </ion-navbar>
 </ion-header>
 
-<ion-content>
+<ion-content *ngIf="artist">
     <ion-card>
         <ion-card-content>
             <ion-card-title>
@@ -17,7 +17,7 @@
                 {{artistGenres}}
             </p>
         </ion-card-content>
-        <img *ngIf="artist" [src]="artist?.largeImage" />
+        <img [src]="artist?.largeImage" />
 
         <ion-list>
             <ion-item>
@@ -59,11 +59,52 @@
     </ion-card>
 
     <ion-card *ngIf="userPortfolio">
-        <ion-row center text-center>
-            <ion-col>Stock Price: {{artist?.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
-            <ion-col>Market Cap: {{artist?.marketCap | currency:'USD':true:'1.2-2'}}</ion-col>
-        </ion-row>
-        <ion-card-header>
+        <ion-card-header center text-center>
+            <ion-row center text-center>
+                <ion-col>Stock Price: {{artist?.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
+                <ion-col>Market Cap: {{artist?.marketCap | currency:'USD':true:'1.2-2'}}</ion-col>
+            </ion-row>
+            <hr />
+            <!--<ion-row center text-center>
+                <ion-col>Cash: {{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}</ion-col>
+            </ion-row>-->
+            Cash: {{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}
+        </ion-card-header>
+
+        <ion-list>
+            <div ion-item>
+                <ion-segment [(ngModel)]="action">
+                    <ion-segment-button value="buy" ng-click="onBuyClick()">
+                        Buy
+                    </ion-segment-button>
+                    <ion-segment-button value="sell">
+                        Sell
+                    </ion-segment-button>
+                </ion-segment>
+            </div>
+            <div [ngSwitch]="action">
+                <div *ngSwitchCase="'buy'">
+                    <ion-item *ngSwitchCase="'buy'">
+                        <ion-label color="primary" stacked>Number of Shares</ion-label>
+                        <ion-input id="numberOfShares" type="number" placeholder="Shares" [ngModel]="numberOfShares" (ngModelChange)="onSharesChange($event)">
+                        </ion-input>
+                        <ion-badge [color]="getBuyBadgeColor()" item-right>{{total | currency:'USD':true:'1.2-2'}}</ion-badge>
+                    </ion-item>
+                    <div padding>
+                        <button ion-button block color="secondary" (click)="onBuyClick()" [disabled]="!canAfford()">Buy</button>
+                    </div>
+                </div>
+
+                <div *ngSwitchCase="'sell'">
+                    <ion-item>
+                        Sell
+                    </ion-item>
+                </div>
+            </div>
+        </ion-list>
+
+        <!--<hr />-->
+        <!--<ion-card-header>
             <ion-segment [(ngModel)]="action">
                 <ion-segment-button value="buy" ng-click="onBuyClick()">
                     Buy
@@ -72,23 +113,19 @@
                     Sell
                 </ion-segment-button>
             </ion-segment>
-        </ion-card-header>
+        </ion-card-header>-->
 
-        <ion-item>
+        <!--<ion-item>
             Cash: {{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}
-        </ion-item>
+        </ion-item>-->
 
-        <div [ngSwitch]="action">
+        <!--<div [ngSwitch]="action">
             <ion-list *ngSwitchCase="'buy'">
                 <ion-item>
                     <ion-label color="primary" stacked>Number of Shares</ion-label>
                     <ion-input id="numberOfShares" type="number" placeholder="Shares" [ngModel]="numberOfShares" (ngModelChange)="onSharesChange($event)">
                     </ion-input>
-                    <!--<ion-label color="primary" stacked [ngModel]="numberOfShares" (ngModelChange)="onSharesChange($event)">Number of Shares</ion-label>-->
-
                     <ion-badge [color]="getColor()" item-right>{{total | currency:'USD':true:'1.2-2'}}</ion-badge>
-
-                    <!--<button ion-button outline item-right>Buy</button>  color="moneygreen"-->
                 </ion-item>
                 <button ion-button block round color="secondary" class="center" (click)="onBuyClick()" [disabled]="!canAfford()">Buy</button>
             </ion-list>
@@ -98,7 +135,7 @@
                     Sell
                 </ion-item>
             </ion-list>
-        </div>
+        </div>-->
     </ion-card>
 
 

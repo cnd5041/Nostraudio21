@@ -9,13 +9,13 @@ import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 
 
-import { IPortfolio, Portfolio } from '../models';
-import { AuthData } from '../providers/';
+import { INosPortfolio, Portfolio, constructPortfolio } from '../models';
+import { AuthData, FirebaseStore } from '../providers/';
 
 
 @Injectable()
 export class PortfolioService {
-    private _userPortfolio$: BehaviorSubject<IPortfolio> = new BehaviorSubject(undefined);
+    private _userPortfolio$: BehaviorSubject<INosPortfolio> = new BehaviorSubject(undefined);
     public userPortfolio$: Observable<any>;
 
 
@@ -42,19 +42,38 @@ export class PortfolioService {
         private http: Http,
         private db: AngularFireDatabase,
         private afAuth: AngularFireAuth,
-        private authData: AuthData
+        private authData: AuthData,
+        private firebaseStore: FirebaseStore
     ) {
-        // const path = `/portfolios/${auth.id}`;
 
         // Set up userPortfolio Observable - emit all defined results
         this.userPortfolio$ = this._userPortfolio$.asObservable()
             .filter(data => data !== undefined);
     }
 
+    getNosUserPortolio(uid: string) {
+        const portfolioSource = this.firebaseStore.portfolioById(uid);
+        const sharePerPortolioSource = this.firebaseStore.sharesPerPortfolio(uid);
+        const artistFollowsPerPortolioSource = this.firebaseStore.artistFollowsPerUser(uid);
+
+        const stream = portfolioSource.combineLatest(sharePerPortolioSource, artistFollowsPerPortolioSource);
+
+        const sourceMap = stream.map(queriedItems => {
+            const portfolio = queriedItems[0];
+            const sharesPerPortfolio = queriedItems[1];
+            const artistFollowsPerUser = queriedItems[2];
+            const nosPortfolio = constructPortfolio(portfolio, sharesPerPortfolio, artistFollowsPerUser);
+            return nosPortfolio;
+        });
+
+        return sourceMap;
+    }
+
     getUserPortfolio(uid: string): void {
+        this.getNosUserPortolio(uid).subscribe();
         console.log('getUserPortfolio', uid);
         // This continuously updates the subscription
-        this.db.object('/portfolios/' + uid)
+        this.db.object(`/portfolios/${uid}`)
             .subscribe((result) => {
                 console.log('portfolio', result);
                 if (result.$exists()) {
@@ -83,29 +102,5 @@ export class PortfolioService {
                     .set(newPortfolio);
             });
     }
-
-    // //Example of getting list
-    // examples() {
-    //   //List 
-    //   // this.af.database.list('items').subscribe(items => console.log(items));
-    //   // //1 item - where 1 is the id
-    //   // this.af.database.object('items/1').subscribe(items => console.log(items));
-
-    //   //Not having to subscribe
-    //   // this.exampleItem = this.af.database.object('items/1');
-    //   //rtFYvr3Q3YM5ULh0kWzpUXBKh5b2
-
-    //   //Filter Example
-    //   // let exampleFilter: Observable<any> = this.af.database.list('items')
-    //   //   .map(items => {
-    //   //     return items.filter(item => item.name === 'Jeff');
-    //   //   })
-    //   //   .do(item => console.log('good for debugs - but bad practice', item));
-    // }
-
-    // // getExamplePortfolio(): FirebaseObjectObservable<any> {
-    // getExamplePortfolio(): any {
-    //   return this.exampleItem;
-    // }
 
 }

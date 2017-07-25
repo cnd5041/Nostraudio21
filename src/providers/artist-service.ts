@@ -5,7 +5,7 @@ import 'rxjs/add/operator/map';
 
 import {
     INosArtist, dbArtistFromSpotifyArtist, nosArtistFromDbArtist,
-    IDictionary, IGenre, IPortfolio, INosTransaction, NosTransaction
+    IDictionary, IGenre, INosPortfolio, INosTransaction, NosTransaction
 } from '../models';
 
 import { NosSpotifyService } from './spotify-service';
@@ -155,7 +155,7 @@ export class ArtistService {
 
     }
 
-    userBuyArtist(portfolio: IPortfolio, artist: INosArtist, numberOfShares: number = 0): void {
+    userBuyArtist(portfolio: INosPortfolio, artist: INosArtist, numberOfShares: number = 0): void {
         const total = artist.marketPrice * numberOfShares;
         const newBalance = portfolio.balance - total;
         // Safety Checks:
@@ -171,7 +171,7 @@ export class ArtistService {
         const transaction: INosTransaction = new NosTransaction(artist.$key, portfolio.$key, numberOfShares, total, 'buy');
         this.firebaseStore.transactions.push(transaction);
         // Add Shares to Portfolio
-        this.firebaseStore.updateSharesPerPortolio(artist.$key, portfolio.$key, numberOfShares);
+        this.firebaseStore.updateSharesPerPortfolio(artist.$key, portfolio.$key, numberOfShares);
         // Add Shares to Artist
         this.firebaseStore.updateStockholdersPerArtist(artist.$key, portfolio.$key, numberOfShares);
         // Update Portfolio Balance

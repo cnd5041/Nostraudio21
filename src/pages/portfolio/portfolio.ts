@@ -2,7 +2,7 @@
 import { NavController } from 'ionic-angular';
 
 import { PortfolioService } from '../../providers/';
-import { IPortfolio } from '../../models/';
+import { INosPortfolio } from '../../models/';
 
 import { ISubscription } from "rxjs/Subscription";
 
@@ -12,7 +12,7 @@ import { ISubscription } from "rxjs/Subscription";
 })
 export class PortfolioPage {
 
-    userPortfolio: IPortfolio;
+    userPortfolio: INosPortfolio;
     portfolioSubscription: ISubscription;
 
     constructor(

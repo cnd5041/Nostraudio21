@@ -1,14 +1,10 @@
 ﻿import { Component } from '@angular/core';
-import { NavController, NavParams } from 'ionic-angular';
-// import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { NavController, NavParams, ActionSheetController, LoadingController, LoadingOptions } from 'ionic-angular';
 
-import { INosArtist, IPortfolio } from '../../models';
+import { INosArtist, INosPortfolio } from '../../models';
 import { ArtistService, PortfolioService } from '../../providers/';
 import { ISubscription } from "rxjs/Subscription";
-// import 'rxjs/add/operator/combineLatest';
-// import { Observable } from 'rxjs/Observable';
 
-import { ActionSheetController } from 'ionic-angular'
 
 @Component({
     selector: 'page-artist',
@@ -19,7 +15,7 @@ export class ArtistPage {
     artistSubscription: ISubscription;
 
     portfolioSubscription: ISubscription;
-    userPortfolio: IPortfolio;
+    userPortfolio: INosPortfolio;
 
     artistFollowersSubscription: ISubscription;
     artistFollowers: any[];
@@ -37,24 +33,31 @@ export class ArtistPage {
         public navParams: NavParams,
         public artistService: ArtistService,
         public portfolioService: PortfolioService,
-        public actionSheetCtrl: ActionSheetController
+        public actionSheetCtrl: ActionSheetController,
+        public loadingCtrl: LoadingController
     ) {
         // this.buyForm = this.formBuilder.group({
         //     email: ['', Validators.compose([Validators.required])]
         //     // password: ['', Validators.compose([Validators.minLength(6), Validators.required])]
         // });
+
     }
 
     ionViewDidLoad() {
-        // TODO:
-        // Only purchase when logged in
-
         const spotifyId = this.navParams.get('spotifyId');
+        const loadingOptions: LoadingOptions = {
+            dismissOnPageChange: true
+        };
+        const loader = this.loadingCtrl.create(loadingOptions);
 
+        loader.present();
+
+        // Setup Artist Stream and Subscription
         const artistStream = this.artistService.getArtistById(spotifyId);
         this.artistSubscription = artistStream
             .subscribe(result => {
                 if (result.$exists()) {
+                    loader.dismiss();
                     // Set artist and trigger share change
                     this.artist = result;
                     this.onSharesChange(this.numberOfShares);
@@ -68,19 +71,16 @@ export class ArtistPage {
                 }
             });
 
+        // Setup Artist Followers Stream and Subscription
         const artistFollowersStream = this.artistService.getArtistFollowers(spotifyId);
         this.artistFollowersSubscription = artistFollowersStream
             .subscribe(artistFollowers => {
-                console.log('artistFollowers', artistFollowers);
                 this.artistFollowers = artistFollowers;
                 // Check if the current user is one of the followers
-                if (this.userPortfolio && artistFollowers.find(x => x.$key === this.userPortfolio.$key)) {
-                    this.isFollowing = true;
-                } else {
-                    this.isFollowing = false;
-                }
+                this.setIsFollowing();
             });
 
+        // Setup Portfolio Stream and Subscription
         const portfolioStream = this.portfolioService.userPortfolio$;
         this.portfolioSubscription = portfolioStream
             .subscribe(portfolio => {
@@ -89,10 +89,19 @@ export class ArtistPage {
             });
     }
 
+    setIsFollowing(): void {
+        // Check if the current user is one of the followers
+        if (this.userPortfolio && this.artistFollowers.find(x => x.$key === this.userPortfolio.$key)) {
+            this.isFollowing = true;
+        } else {
+            this.isFollowing = false;
+        }
+    }
+
     ionViewWillUnload() {
         this.artistSubscription.unsubscribe();
-        this.portfolioSubscription.unsubscribe();
         this.artistFollowersSubscription.unsubscribe();
+        this.portfolioSubscription.unsubscribe();
     }
 
     follow(): void {
@@ -131,7 +140,7 @@ export class ArtistPage {
         return (this.total < userBalance ? true : false);
     }
 
-    getColor() {
+    getBuyBadgeColor() {
         return (this.canAfford() ? 'moneygreen' : 'danger');
     }
 
@@ -144,7 +153,7 @@ export class ArtistPage {
             title: this.artist.name,
             buttons: [
                 {
-                    text: 'buy',
+                    text: 'Buy',
                     handler: () => {
                         purchase();
                     }
