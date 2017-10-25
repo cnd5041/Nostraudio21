@@ -67,7 +67,6 @@ export class ArtistService {
 
         const sourceMap = stream.map(queriedItems => {
             let artist = queriedItems[0];
-            console.log('fb artist', artist);
             let stockholdersPerArtist: IDictionary[] = queriedItems[1];
             let nosArtist = nosArtistFromDbArtist(artist, stockholdersPerArtist);
 
@@ -169,6 +168,7 @@ export class ArtistService {
         }
         // Record the Transaction
         const transaction: INosTransaction = new NosTransaction(artist.$key, portfolio.$key, numberOfShares, total, 'buy');
+
         this.firebaseStore.transactions.push(transaction);
         // Add Shares to Portfolio
         this.firebaseStore.updateSharesPerPortfolio(artist.$key, portfolio.$key, numberOfShares);

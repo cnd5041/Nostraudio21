@@ -51,37 +51,25 @@ export class PortfolioService {
             .filter(data => data !== undefined);
     }
 
-    getNosUserPortolio(uid: string) {
+    getUserPortfolio(uid: string): void {
         const portfolioSource = this.firebaseStore.portfolioById(uid);
         const sharePerPortolioSource = this.firebaseStore.sharesPerPortfolio(uid);
         const artistFollowsPerPortolioSource = this.firebaseStore.artistFollowsPerUser(uid);
-
         const stream = portfolioSource.combineLatest(sharePerPortolioSource, artistFollowsPerPortolioSource);
 
-        const sourceMap = stream.map(queriedItems => {
+        stream.subscribe(queriedItems => {
             const portfolio = queriedItems[0];
             const sharesPerPortfolio = queriedItems[1];
             const artistFollowsPerUser = queriedItems[2];
-            const nosPortfolio = constructPortfolio(portfolio, sharesPerPortfolio, artistFollowsPerUser);
-            return nosPortfolio;
+
+            if (portfolio.$exists()) {
+                const nosPortfolio = constructPortfolio(portfolio, sharesPerPortfolio, artistFollowsPerUser);
+                console.log('nosPortfolio', nosPortfolio);
+                this._userPortfolio$.next(nosPortfolio);
+            } else {
+                this.createPortfolio(uid);
+            }
         });
-
-        return sourceMap;
-    }
-
-    getUserPortfolio(uid: string): void {
-        this.getNosUserPortolio(uid).subscribe();
-        console.log('getUserPortfolio', uid);
-        // This continuously updates the subscription
-        this.db.object(`/portfolios/${uid}`)
-            .subscribe((result) => {
-                console.log('portfolio', result);
-                if (result.$exists()) {
-                    this._userPortfolio$.next(result);
-                } else {
-                    this.createPortfolio(uid);
-                }
-            });
     }
 
     private createPortfolio(uid: string): void {

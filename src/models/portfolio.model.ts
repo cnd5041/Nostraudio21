@@ -22,6 +22,8 @@ export interface INosPortfolio extends IDbPortfolio {
     // friends: boolean[];
     shares?: IDictionary[];
     artistFollows?: IDictionary[];
+
+    sharesPerArtist?(artistId: string): number;
 }
 
 function getRandomInt(min, max) {
@@ -55,7 +57,15 @@ export class Portfolio implements INosPortfolio {
 }
 
 export function constructPortfolio(portfolio: IDbPortfolio, sharesPerPortfolio: IDictionary[], artistFollowsPerUser: IDictionary[]) {
-    let nosPortfolio: INosPortfolio = Object.assign({}, portfolio);
+    // let nosPortfolio: INosPortfolio = Object.assign({}, portfolio);
+    let nosPortfolio: INosPortfolio = Object.create(portfolio);
     nosPortfolio.shares = sharesPerPortfolio;
     nosPortfolio.artistFollows = artistFollowsPerUser;
+
+    nosPortfolio.sharesPerArtist = (artistId: string) => {
+        const isOwned = (nosPortfolio.shares ? nosPortfolio.shares.find(share => share.$key === artistId) : 0);
+        return (isOwned ? isOwned.$value : 0);
+    };
+
+    return nosPortfolio;
 };

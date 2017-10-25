@@ -27,7 +27,7 @@
     "angular2-spotify": "^1.3.5",
     "angularfire2": "^4.0.0-rc.1",
     "firebase": "^3.9.0",
-    "ionic-angular": "3.5.3",
+    "ionic-angular": "^3.6.0",
     "ionicons": "3.0.0",
     "lodash": "^4.17.4",
     "rxjs": "5.4.0",
@@ -35,8 +35,8 @@
     "zone.js": "0.8.12"
   },
   "devDependencies": {
-    "@ionic/app-scripts": "2.0.2",
-    "@ionic/cli-plugin-ionic-angular": "1.3.1",
+    "@ionic/app-scripts": "^2.1.4",
+    "install": "^0.10.1",
     "typescript": "2.3.4"
   },
   "cordovaPlugins": [

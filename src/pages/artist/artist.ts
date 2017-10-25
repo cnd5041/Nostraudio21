@@ -25,8 +25,11 @@ export class ArtistPage {
 
     // buyForm: FormGroup;
     action = 'buy';
-    numberOfShares = 1;
-    total: number;
+    buyShareCount = 1;
+    buyTotal: number;
+    sellShareCount = 1;
+    sellTotal: number;
+    ownedShares = 0;
 
     constructor(
         public navCtrl: NavController,
@@ -36,31 +39,24 @@ export class ArtistPage {
         public actionSheetCtrl: ActionSheetController,
         public loadingCtrl: LoadingController
     ) {
-        // this.buyForm = this.formBuilder.group({
-        //     email: ['', Validators.compose([Validators.required])]
-        //     // password: ['', Validators.compose([Validators.minLength(6), Validators.required])]
-        // });
-
     }
 
     ionViewDidLoad() {
         const spotifyId = this.navParams.get('spotifyId');
-        const loadingOptions: LoadingOptions = {
-            dismissOnPageChange: true
-        };
-        const loader = this.loadingCtrl.create(loadingOptions);
 
-        loader.present();
+        const loading = this.loadingCtrl.create({});
+        loading.present();
 
         // Setup Artist Stream and Subscription
         const artistStream = this.artistService.getArtistById(spotifyId);
         this.artistSubscription = artistStream
             .subscribe(result => {
                 if (result.$exists()) {
-                    loader.dismiss();
+                    loading.dismiss();
                     // Set artist and trigger share change
                     this.artist = result;
-                    this.onSharesChange(this.numberOfShares);
+                    this.onBuySharesChange(this.buyShareCount);
+                    this.onSellSharesChange(this.sellShareCount);
                     // Get Genres
                     this.artistService.getGenresByArtistId(result.spotifyId)
                         .subscribe(genres => {
@@ -86,6 +82,7 @@ export class ArtistPage {
             .subscribe(portfolio => {
                 console.log('portfolio', portfolio);
                 this.userPortfolio = portfolio;
+                this.ownedShares = this.userPortfolio.sharesPerArtist(spotifyId);
             });
     }
 
@@ -130,24 +127,37 @@ export class ArtistPage {
         actionSheet.present();
     }
 
-    onSharesChange(value: number = 0): void {
-        // this.total = this.calcTotal(value, this.artist.marketPrice);
-        this.total = value * (this.artist.marketPrice || 0);
+    onBuySharesChange(value: number = 0): void {
+        this.buyTotal = value * (this.artist.marketPrice || 0);
+    }
+
+    onSellSharesChange(value: number = 0): void {
+        this.sellTotal = value * (this.artist.marketPrice || 0);
     }
 
     canAfford(): boolean {
         const userBalance = (this.userPortfolio ? this.userPortfolio.balance : 0);
-        return (this.total < userBalance ? true : false);
+        return (this.buyTotal < userBalance ? true : false);
     }
 
     getBuyBadgeColor() {
         return (this.canAfford() ? 'moneygreen' : 'danger');
     }
 
+    isValidNumber(value: number): boolean {
+        console.log('Number.isInteger(value)', Number.isInteger(value));
+        console.log('value > 0', value > 0);
+        return Number.isInteger(value) && value > 0;
+    }
+
     onBuyClick(): void {
         const purchase = () => {
-            this.artistService.userBuyArtist(this.userPortfolio, this.artist, this.numberOfShares);
+            this.artistService.userBuyArtist(this.userPortfolio, this.artist, this.buyShareCount);
         };
+
+        if (!this.isValidNumber(this.buyShareCount)) {
+            return;
+        }
 
         const actionSheet = this.actionSheetCtrl.create({
             title: this.artist.name,
@@ -169,6 +179,37 @@ export class ArtistPage {
         actionSheet.present();
     }
 
-    //Sell - make sure they have shares
+    onSellClick(): void {
+        const sell = () => {
+            alert('sell');
+        };
+
+        if (!this.isValidNumber(this.sellShareCount)) {
+            return;
+        }
+
+        if (this.sellShareCount > this.ownedShares){
+            return;
+        }
+
+        const actionSheet = this.actionSheetCtrl.create({
+            title: this.artist.name,
+            buttons: [
+                {
+                    text: 'Sell',
+                    handler: () => {
+                        sell();
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    role: 'cancel',
+                    handler: () => { }
+                }
+            ]
+        });
+
+        actionSheet.present();
+    }
 
 }

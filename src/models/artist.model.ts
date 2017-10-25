@@ -70,8 +70,8 @@ export class NosArtist {
 }
 
 export function nosArtistFromDbArtist(dbArtist: IDbArtist, stockholdersPerArtist: IDictionary[]): INosArtist {
-    // maybe do extend here...
-    let artist = <INosArtist>Object.create(dbArtist);
+    const artist = <INosArtist>Object.create(dbArtist);
+    // const artist = <INosArtist>Object.assign({}, dbArtist);
 
     artist.shareCount = <number>stockholdersPerArtist.reduce((sum, value) => {
         return sum + value.$value;

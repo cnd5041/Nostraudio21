@@ -17,7 +17,7 @@
                 {{artistGenres}}
             </p>
         </ion-card-content>
-        <img [src]="artist?.largeImage" />
+        <img *ngIf="artist" [src]="artist?.largeImage" />
 
         <ion-list>
             <ion-item>
@@ -65,10 +65,10 @@
                 <ion-col>Market Cap: {{artist?.marketCap | currency:'USD':true:'1.2-2'}}</ion-col>
             </ion-row>
             <hr />
-            <!--<ion-row center text-center>
+            <ion-row center text-center>
                 <ion-col>Cash: {{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}</ion-col>
-            </ion-row>-->
-            Cash: {{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}
+                <ion-col *ngIf="artist">Shares({{ownedShares}}): {{ownedShares * artist.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
+            </ion-row>
         </ion-card-header>
 
         <ion-list>
@@ -77,18 +77,18 @@
                     <ion-segment-button value="buy" ng-click="onBuyClick()">
                         Buy
                     </ion-segment-button>
-                    <ion-segment-button value="sell">
+                    <ion-segment-button value="sell" [disabled]="ownedShares < 1">
                         Sell
                     </ion-segment-button>
                 </ion-segment>
             </div>
             <div [ngSwitch]="action">
                 <div *ngSwitchCase="'buy'">
-                    <ion-item *ngSwitchCase="'buy'">
+                    <ion-item>
                         <ion-label color="primary" stacked>Number of Shares</ion-label>
-                        <ion-input id="numberOfShares" type="number" placeholder="Shares" [ngModel]="numberOfShares" (ngModelChange)="onSharesChange($event)">
+                        <ion-input id="buyShareCount" type="number" placeholder="Shares" [(ngModel)]="buyShareCount" (ngModelChange)="onBuySharesChange($event)" [min]="1" step="1">
                         </ion-input>
-                        <ion-badge [color]="getBuyBadgeColor()" item-right>{{total | currency:'USD':true:'1.2-2'}}</ion-badge>
+                        <ion-badge [color]="getBuyBadgeColor()" item-right>{{buyTotal | currency:'USD':true:'1.2-2'}}</ion-badge>
                     </ion-item>
                     <div padding>
                         <button ion-button block color="secondary" (click)="onBuyClick()" [disabled]="!canAfford()">Buy</button>
@@ -97,8 +97,14 @@
 
                 <div *ngSwitchCase="'sell'">
                     <ion-item>
-                        Sell
+                        <ion-label color="primary" stacked>Number of Shares</ion-label>
+                        <ion-input id="sellShareCount" type="number" placeholder="Shares" [(ngModel)]="sellShareCount" (ngModelChange)="onSellSharesChange($event)" [min]="1" [max]="ownedShares" step="1">
+                        </ion-input>
+                        <ion-badge [color]="'moneygreen'" item-right>{{sellTotal | currency:'USD':true:'1.2-2'}}</ion-badge>
                     </ion-item>
+                    <div padding>
+                        <button ion-button block color="danger" (click)="onSellClick()">Sell</button>
+                    </div>
                 </div>
             </div>
         </ion-list>
