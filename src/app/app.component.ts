@@ -12,78 +12,87 @@ import { LoginPage } from '../pages/login/login';
 import { AuthData } from '../providers/auth-data';
 import { PortfolioService } from '../providers/portfolio-service';
 
+import { Store } from '@ngrx/store';
+
+import * as reducer from '../app/store/reducers';
+import * as appActions from '../app/store/actions';
+
 export interface IAppPage {
-  title: string;
-  component: any;
-  icon: string;
-  logsOut?: boolean;
-  index?: number;
-  tabComponent?: any;
+    title: string;
+    component: any;
+    icon: string;
+    logsOut?: boolean;
+    index?: number;
+    tabComponent?: any;
 }
 
 @Component({
-  templateUrl: 'app.html'
+    templateUrl: 'app.html'
 })
 export class MyApp {
-  @ViewChild(Nav) nav: Nav;
+    @ViewChild(Nav) nav: Nav;
 
-  rootPage: any;
+    rootPage: any;
 
-  pages: IAppPage[] = [
-    { title: 'Portfolio', component: PortfolioPage, icon: 'folder-open' },
-    { title: 'Search', component: SearchPage, icon: 'search' },
-    { title: 'Stats', component: StatsPage, icon: 'stats' },
-    { title: 'About', component: AboutPage, icon: 'information-circle' },
-    { title: 'Support', component: SupportPage, icon: 'help-buoy' },
-    { title: 'Login', component: LoginPage, icon: 'cog' }
-  ];
+    pages: IAppPage[] = [
+        { title: 'Portfolio', component: PortfolioPage, icon: 'folder-open' },
+        { title: 'Search', component: SearchPage, icon: 'search' },
+        { title: 'Stats', component: StatsPage, icon: 'stats' },
+        { title: 'About', component: AboutPage, icon: 'information-circle' },
+        { title: 'Support', component: SupportPage, icon: 'help-buoy' },
+        { title: 'Login', component: LoginPage, icon: 'cog' }
+    ];
 
-  constructor(
-    public platform: Platform,
-    public splashScreen: SplashScreen,
-    public authData: AuthData,
-    public portfolioService: PortfolioService
-  ) {
-    this.rootPage = AboutPage;
+    constructor(
+        public platform: Platform,
+        public splashScreen: SplashScreen,
+        public authData: AuthData,
+        public portfolioService: PortfolioService,
+        private store: Store<reducer.State>
+    ) {
+        this.rootPage = AboutPage;
 
-    this.initializeApp();
-  }
+        this.initializeApp();
+    }
 
-  initializeApp() {
-    this.platform.ready().then(() => {
-      // Okay, so the platform is ready and our plugins are available.
-      // Here you can do any higher level native things you might need.
-      // StatusBar.styleDefault();
-      this.splashScreen.hide();
+    initializeApp() {
+        this.platform.ready().then(() => {
+            // Okay, so the platform is ready and our plugins are available.
+            // Here you can do any higher level native things you might need.
+            // StatusBar.styleDefault();
+            this.splashScreen.hide();
 
-      // firebase.auth().onAuthStateChanged((user) => {
-      //   if (user) {
-      //     //this.rootPage = PortfolioPage;
-      //     this.rootPage = LoginPage;
-      //     console.log("Logged in - HomePage");
-      //   } else {
-      //     this.rootPage = LoginPage;
-      //     console.log("No User -  LoginPage");
-      //   }
-      // });
-      //       this.navCtrl.push(ArtistPage, { spotifyId: '168dgYui7ExaU612eooDF1' });
-      // Subscribe to the authState
-      // When we get a new authState, get the portfolio
-      this.authData.authState
-        .subscribe(userState => {
-          console.log('userState app component subscription', userState);
-          if (userState && userState.uid) {
-            this.portfolioService.getUserPortfolio(userState.uid);
-          }
-        }, error => {
-          console.log('getAuthState error', error);
+            // firebase.auth().onAuthStateChanged((user) => {
+            //   if (user) {
+            //     //this.rootPage = PortfolioPage;
+            //     this.rootPage = LoginPage;
+            //     console.log("Logged in - HomePage");
+            //   } else {
+            //     this.rootPage = LoginPage;
+            //     console.log("No User -  LoginPage");
+            //   }
+            // });
+            //       this.navCtrl.push(ArtistPage, { spotifyId: '168dgYui7ExaU612eooDF1' });
+            // Subscribe to the authState
+            // When we get a new authState, get the portfolio
+            this.authData.authState
+                .subscribe(userState => {
+                    console.log('userState app component subscription', userState);
+                    if (userState && userState.uid) {
+                        this.portfolioService.getUserPortfolio(userState.uid);
+                    }
+                }, error => {
+                    console.log('getAuthState error', error);
+                });
+
+            // Do Store Init Stuff:
+            // this.store.dispatch(new appActions.FetchGenres());
         });
-    });
-  }
+    }
 
-  openPage(page: IAppPage) {
-    // Reset the content nav to have just this page
-    // we wouldn't want the back button to show in this scenario
-    this.nav.setRoot(page.component);
-  }
+    openPage(page: IAppPage) {
+        // Reset the content nav to have just this page
+        // we wouldn't want the back button to show in this scenario
+        this.nav.setRoot(page.component);
+    }
 }

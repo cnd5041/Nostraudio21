@@ -5,6 +5,13 @@ import { INosArtist, INosPortfolio } from '../../models';
 import { ArtistService, PortfolioService } from '../../providers/';
 import { ISubscription } from "rxjs/Subscription";
 
+import { Store } from '@ngrx/store';
+
+import * as reducer from '../../app/store/reducers';
+// import * as appActions from '../../app/store/actions';
+import * as artistsActions from '../../app/store/artists/artist.actions';
+import * as fromArtists from '../../app/store/artists/artist.reducers';
+
 
 @Component({
     selector: 'page-artist',
@@ -23,7 +30,6 @@ export class ArtistPage {
 
     artistGenres = '';
 
-    // buyForm: FormGroup;
     action = 'buy';
     buyShareCount = 1;
     buyTotal: number;
@@ -37,7 +43,8 @@ export class ArtistPage {
         public artistService: ArtistService,
         public portfolioService: PortfolioService,
         public actionSheetCtrl: ActionSheetController,
-        public loadingCtrl: LoadingController
+        public loadingCtrl: LoadingController,
+        private store: Store<fromArtists.State>
     ) {
     }
 
@@ -80,10 +87,30 @@ export class ArtistPage {
         const portfolioStream = this.portfolioService.userPortfolio$;
         this.portfolioSubscription = portfolioStream
             .subscribe(portfolio => {
-                console.log('portfolio', portfolio);
+                // console.log('portfolio', portfolio);
                 this.userPortfolio = portfolio;
                 this.ownedShares = this.userPortfolio.sharesPerArtist(spotifyId);
             });
+
+        this.store.dispatch(new artistsActions.FetchArtists());
+        this.store.select(state => state.artists).subscribe(results => {
+            console.log('artists sub', results);
+        });
+
+        // this.store.dispatch(new appActions.FetchGenres());
+        // this.store.select(state => state.app.genres)
+        //     .subscribe(result => {
+        //         console.log('genres store sub: ', result);
+        //     });
+
+        // this.store.dispatch(new appActions.FetchArtistGenres(spotifyId));
+        // this.store.select(state => state.app.artistGenres)
+        //     .subscribe(result => {
+        //         console.log('artistGenres store sub: ', result);
+        //         let testGenres = result.map(g => g.name).join(', ');
+        //         console.log('testGenres: ', testGenres);
+        //     });
+
     }
 
     setIsFollowing(): void {
@@ -145,8 +172,8 @@ export class ArtistPage {
     }
 
     isValidNumber(value: number): boolean {
-        console.log('Number.isInteger(value)', Number.isInteger(value));
-        console.log('value > 0', value > 0);
+        // console.log('Number.isInteger(value)', Number.isInteger(value));
+        // console.log('value > 0', value > 0);
         return Number.isInteger(value) && value > 0;
     }
 
@@ -188,7 +215,7 @@ export class ArtistPage {
             return;
         }
 
-        if (this.sellShareCount > this.ownedShares){
+        if (this.sellShareCount > this.ownedShares) {
             return;
         }
 

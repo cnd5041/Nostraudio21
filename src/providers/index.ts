@@ -6,3 +6,4 @@ export * from './portfolio-service';
 export * from './spotify-service';
 export * from './stats-service';
 export * from './discogs-service';
+export * from './firebase';
