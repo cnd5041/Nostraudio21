@@ -13,9 +13,7 @@ import { AuthData } from '../providers/auth-data';
 import { PortfolioService } from '../providers/portfolio-service';
 
 import { Store } from '@ngrx/store';
-
-import * as reducer from '../app/store/reducers';
-import * as appActions from '../app/store/actions';
+import * as fromStore from '../app/store';
 
 export interface IAppPage {
     title: string;
@@ -48,7 +46,7 @@ export class MyApp {
         public splashScreen: SplashScreen,
         public authData: AuthData,
         public portfolioService: PortfolioService,
-        private store: Store<reducer.State>
+        private store: Store<fromStore.MusicState>
     ) {
         this.rootPage = AboutPage;
 
@@ -85,9 +83,10 @@ export class MyApp {
                     console.log('getAuthState error', error);
                 });
 
-            // Do Store Init Stuff:
-            // this.store.dispatch(new appActions.FetchGenres());
+
         });
+
+        this.store.dispatch(new fromStore.FetchArtists());
     }
 
     openPage(page: IAppPage) {

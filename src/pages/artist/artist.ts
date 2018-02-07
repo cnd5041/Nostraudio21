@@ -1,16 +1,12 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, state } from '@angular/core';
 import { NavController, NavParams, ActionSheetController, LoadingController, LoadingOptions } from 'ionic-angular';
 
 import { INosArtist, INosPortfolio } from '../../models';
 import { ArtistService, PortfolioService } from '../../providers/';
-import { ISubscription } from "rxjs/Subscription";
+import { ISubscription } from 'rxjs/Subscription';
 
 import { Store } from '@ngrx/store';
-
-import * as reducer from '../../app/store/reducers';
-// import * as appActions from '../../app/store/actions';
-import * as artistsActions from '../../app/store/artists/artist.actions';
-import * as fromArtists from '../../app/store/artists/artist.reducers';
+import * as fromStore from '../../app/store';
 
 
 @Component({
@@ -44,7 +40,9 @@ export class ArtistPage {
         public portfolioService: PortfolioService,
         public actionSheetCtrl: ActionSheetController,
         public loadingCtrl: LoadingController,
-        private store: Store<fromArtists.State>
+        // private store: Store<fromArtists.State>,
+        // private fullStore: Store<fromStore.ProjectState>,
+        private store: Store<fromStore.MusicState>
     ) {
     }
 
@@ -92,10 +90,19 @@ export class ArtistPage {
                 this.ownedShares = this.userPortfolio.sharesPerArtist(spotifyId);
             });
 
-        this.store.dispatch(new artistsActions.FetchArtists());
-        this.store.select(state => state.artists).subscribe(results => {
-            console.log('artists sub', results);
-        });
+
+        this.store.select(fromStore.getArtistEntities)
+            .subscribe(x => console.log('artists', x));;
+
+
+        // this.store.dispatch(new artistsActions.FetchArtists());
+        // this.store.select(state => state.artists).subscribe(results => {
+        //     console.log('artists sub', results);
+        // });
+
+        // this.fullStore.select(fromStore.getSelectedArtist).subscribe(result => {
+        //     console.log('getSelectedArtist result', result);
+        // });
 
         // this.store.dispatch(new appActions.FetchGenres());
         // this.store.select(state => state.app.genres)

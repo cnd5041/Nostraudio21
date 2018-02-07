@@ -3,3 +3,7 @@ export interface IDictionary {
     $value?: any;
     $exists?: () => boolean;
 }
+
+export interface IReferenceDictionary {
+    [key: string]: boolean;
+}

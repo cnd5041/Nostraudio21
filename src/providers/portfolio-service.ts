@@ -64,7 +64,7 @@ export class PortfolioService {
 
             if (portfolio.$exists()) {
                 const nosPortfolio = constructPortfolio(portfolio, sharesPerPortfolio, artistFollowsPerUser);
-                console.log('nosPortfolio', nosPortfolio);
+                // console.log('nosPortfolio', nosPortfolio);
                 this._userPortfolio$.next(nosPortfolio);
             } else {
                 this.createPortfolio(uid);
@@ -73,7 +73,7 @@ export class PortfolioService {
     }
 
     private createPortfolio(uid: string): void {
-        console.log('createPortfolio', uid);
+        // console.log('createPortfolio', uid);
         // Get current auth state and create user based on that
         this.authData.authState
             .filter(user => user !== null && user !== undefined)

@@ -2,8 +2,8 @@ import { Action } from '@ngrx/store';
 
 import { IGenre, IDbArtist } from '../../../models';
 
-export const FETCH_ARTISTS = 'Fetch ARTISTS';
-export const FETCH_ARTISTS_SUCCESS = 'Fetch ARTISTS Success';
+export const FETCH_ARTISTS = '[music] Fetch ARTISTS';
+export const FETCH_ARTISTS_SUCCESS = '[music] Fetch ARTISTS Success';
 
 export class FetchArtists implements Action {
     readonly type = FETCH_ARTISTS;

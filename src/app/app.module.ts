@@ -36,13 +36,7 @@ export const firebaseConfig = {
 // NGRX
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
-// import { appReducer, initialState, reducers } from './store/reducers';
-// import { initialState } from './store/reducers';
-
-import { reducers } from './store';
-
-import { GenresEffects } from './store/effects';
-import { ArtistsEffects } from './store/artists/artist.effects';
+import { reducers, effects } from './store';
 
 
 @NgModule({
@@ -66,13 +60,8 @@ import { ArtistsEffects } from './store/artists/artist.effects';
         AngularFireModule.initializeApp(firebaseConfig),
         AngularFireDatabaseModule,
         AngularFireAuthModule,
-        // StoreModule.forRoot(reducers, {
-        //     initialState
-        // }),
         StoreModule.forRoot(reducers, {}),
-        EffectsModule.forRoot([
-            GenresEffects, ArtistsEffects
-        ]),
+        EffectsModule.forRoot(effects),
     ],
     bootstrap: [IonicApp],
     entryComponents: [

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/map';
 import { Observable } from 'rxjs/Observable';
 
-import { IGenre, IDictionary, IDbArtist } from '../models';
+import { IGenre, IDictionary, IDbArtist, IReferenceDictionary } from '../models';
 
 import {
     AngularFireDatabase,
@@ -13,15 +13,18 @@ import {
 export class FirebaseProvider {
     artists: FirebaseListObservable<IDbArtist[]>;
     genres: FirebaseListObservable<IGenre[]>;
+    genresPerArtist: FirebaseListObservable<any>;
 
     constructor(
         private db: AngularFireDatabase
     ) {
         this.artists = this.db.list('/artists');
         this.genres = this.db.list('/genres');
+
+        this.genresPerArtist = this.db.list('/genresPerArtist');
     }
 
-    genresByArtist(spotifyId: string): Observable<IDictionary[]> {
+    genresByArtist(spotifyId: string): FirebaseListObservable<any> {
         return this.db.list(`/genresPerArtist/${spotifyId}`);
     }
 

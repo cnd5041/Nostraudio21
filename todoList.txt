@@ -1,4 +1,14 @@
 
+Priorities:
+** === done
+-Convert to new version of Firebase (Angular Fire 5)
+
+
+
+
+
+
+
 Hook up discogs and add pull there (on Artist)
     Just make it an additional set of functionality that will extend the classes/objects
     Have an option for user to mark the info as wrong
@@ -8,6 +18,7 @@ Add loading to Artist page, wait until artist is defined to show rest of page
 Complete sell and show ownership on page
 
 -- Redo the share count to aggregate the count of each node (reduce) use the sharesPerPortfolio to show that the user owns x amount of shares (then do sell)
-
+-- upgrade to Angular Fire 5, probably breaking, Database is deprecated
+-- check for CRUD ops: https://www.youtube.com/watch?v=13nWhUndQo4
 
 Create alerts for movement on stock prices with the cloud functions (or other events)
