@@ -1,27 +1,23 @@
-import { IDictionary } from '../models';
-
-
-interface IFireBaseIdReference extends String {
-
-}
-
-export interface IDbPortfolio extends IDictionary {
+export interface IDbPortfolio {
     balance: number;
     displayName: string;
     hitCount: number;
     imageUrl?: string;
-    userProfile: IFireBaseIdReference;
+    userProfile: string;
     userProfileLink: string;
 }
 
+export interface ISharesPerPortfolioItem {
+    [spotifyId: string]: number;
+}
+
+export interface IArtistFollowsPerUserItem {
+    [spotifyId: string]: boolean;
+}
 
 export interface INosPortfolio extends IDbPortfolio {
-    // artists: boolean[];
-    // artistFollows: boolean[];
-    // achievements: boolean[];
-    // friends: boolean[];
-    shares?: IDictionary[];
-    artistFollows?: IDictionary[];
+    shares?: ISharesPerPortfolioItem;
+    artistFollows?: IArtistFollowsPerUserItem;
 
     sharesPerArtist?(artistId: string): number;
 }
@@ -34,13 +30,9 @@ export class Portfolio implements INosPortfolio {
     balance: number;
     displayName: string;
     imageUrl?: string;
-    userProfile: IFireBaseIdReference;
+    userProfile: string;
     userProfileLink: string;
     hitCount: number;
-    // artists: boolean[];
-    // artistFollows: boolean[];
-    // achievements: boolean[];
-    // friends: boolean[];
 
     constructor(uid: string, obj: any = {}) {
         this.balance = obj.balance || 100;
@@ -49,23 +41,21 @@ export class Portfolio implements INosPortfolio {
         this.userProfile = uid;
         this.userProfileLink = obj.userProfileLink || '';
         this.hitCount = obj.hitCount || 1;
-        // this.artists = obj.artists || [];
-        // this.artistFollows = obj.artistFollows || [];
-        // this.achievements = obj.achievements || [];
-        // this.friends = obj.friends || [];
     }
 }
 
-export function constructPortfolio(portfolio: IDbPortfolio, sharesPerPortfolio: IDictionary[], artistFollowsPerUser: IDictionary[]) {
-    // let nosPortfolio: INosPortfolio = Object.assign({}, portfolio);
-    let nosPortfolio: INosPortfolio = Object.create(portfolio);
+export function constructPortfolio(
+    portfolio: IDbPortfolio,
+    sharesPerPortfolio: ISharesPerPortfolioItem,
+    artistFollowsPerUser: IArtistFollowsPerUserItem
+): INosPortfolio {
+    const nosPortfolio: INosPortfolio = { ...portfolio };
     nosPortfolio.shares = sharesPerPortfolio;
     nosPortfolio.artistFollows = artistFollowsPerUser;
 
     nosPortfolio.sharesPerArtist = (artistId: string) => {
-        const isOwned = (nosPortfolio.shares ? nosPortfolio.shares.find(share => share.$key === artistId) : 0);
-        return (isOwned ? isOwned.$value : 0);
+        return sharesPerPortfolio[artistId] || 0;
     };
 
     return nosPortfolio;
-};
+}

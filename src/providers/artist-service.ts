@@ -5,7 +5,7 @@ import 'rxjs/add/operator/map';
 
 import {
     INosArtist, dbArtistFromSpotifyArtist, nosArtistFromDbArtist,
-    IDictionary, IGenre, INosPortfolio, INosTransaction, NosTransaction
+    IGenre, INosPortfolio, IDbTransaction, NosTransaction
 } from '../models';
 
 import { NosSpotifyService } from './spotify-service';
@@ -63,37 +63,39 @@ export class ArtistService {
 
         // maybe do a once on genres here, or do it separate in view
 
-        let stream = artistSource.combineLatest(stocksSource);
+        // let stream = artistSource.combineLatest(stocksSource);
 
-        const sourceMap = stream.map(queriedItems => {
-            let artist = queriedItems[0];
-            let stockholdersPerArtist: IDictionary[] = queriedItems[1];
-            let nosArtist = nosArtistFromDbArtist(artist, stockholdersPerArtist);
+        // const sourceMap = stream.map(queriedItems => {
+        //     let artist = queriedItems[0];
+        //     let stockholdersPerArtist: IDictionary[] = queriedItems[1];
+        //     let nosArtist = nosArtistFromDbArtist(artist, stockholdersPerArtist);
 
-            console.log('nosArtist', nosArtist);
+        //     console.log('nosArtist', nosArtist);
 
-            return nosArtist;
-        });
+        //     return nosArtist;
+        // });
 
-        return sourceMap;
+        return Observable.of(null);
+
+        // return sourceMap;
     }
 
     createArtist(spotifyId) {
         // TODO: make sure I update the firebase artist with this info sometimes
         this.spotifyService.getArtistById(spotifyId)
             .subscribe(result => {
-                let newArtist = dbArtistFromSpotifyArtist(result);
+                const newArtist = dbArtistFromSpotifyArtist(result);
 
                 console.log('create this artist', newArtist);
                 // set seperately
                 // genres, portoflio follows, portfolios
 
-                let updates = {};
+                const updates = {};
                 // Set the Artist
                 updates[`/artists/${spotifyId}`] = newArtist;
                 // Set Genre and add artist to Genre list
                 result.spotifyGenres.forEach((genre) => {
-                    let genreKey = _.camelCase(genre);
+                    const genreKey = _.camelCase(genre);
                     // Set the genre name in genre list
                     updates[`/genres/${genreKey}/name`] = genre;
                     // Set the genres artist list in association node
@@ -110,7 +112,7 @@ export class ArtistService {
     }
 
     followArtist(spotifyId: string, uid: string): void {
-        let updates = {};
+        const updates = {};
         // Add to list track all users following an artist
         updates[`/followsPerArtist/${spotifyId}/${uid}`] = true;
         // Add to list to track which artists a user is following
@@ -120,7 +122,7 @@ export class ArtistService {
     }
 
     unFollowArtist(spotifyId: string, uid: string): void {
-        let updates = {};
+        const updates = {};
         // Add to list track all users following an artist
         updates[`/followsPerArtist/${spotifyId}/${uid}`] = false;
         // Add to list to track which artists a user is following
@@ -129,29 +131,30 @@ export class ArtistService {
         this.db.object('/').update(updates);
     }
 
-    getArtistFollowers(spotifyId: string): Observable<IDictionary[]> {
-        const source = this.db.list(`/followsPerArtist/${spotifyId}`);
+    // getArtistFollowers(spotifyId: string): Observable<IDictionary[]> {
+    //     const source = this.db.list(`/followsPerArtist/${spotifyId}`);
 
-        const sourceMap = source
-            .map(list => {
-                return list.filter(f => f.$value === true);
-            });
+    //     // const sourceMap = source
+    //     //     .map(list => {
+    //     //         return list.filter(f => f.$value === true);
+    //     //     });
 
-        return sourceMap;
-    }
+    //     // return sourceMap;
+    //     return Observable.of([]);
+    // }
 
     getGenresByArtistId(spotifyId: string): Observable<IGenre[]> {
-        return this.db.list(`/genresPerArtist/${spotifyId}`)
-            .combineLatest(this.firebaseStore.genres)
-            .map((results) => {
-                let artistGenres = results[0];
-                let genres = results[1];
-                return genres.filter(genre => {
-                    let result = artistGenres.findIndex(g => g.$key === genre.$key);
-                    return (result ? true : false);
-                });
-            });
-
+        // return this.db.list(`/genresPerArtist/${spotifyId}`)
+        //     .combineLatest(this.firebaseStore.genres)
+        //     .map((results) => {
+        //         let artistGenres = results[0];
+        //         let genres = results[1];
+        //         return genres.filter(genre => {
+        //             let result = artistGenres.findIndex(g => g.$key === genre.$key);
+        //             return (result ? true : false);
+        //         });
+        //     });
+        return Observable.of([]);
     }
 
     userBuyArtist(portfolio: INosPortfolio, artist: INosArtist, numberOfShares: number = 0): void {
@@ -167,16 +170,16 @@ export class ArtistService {
             return;
         }
         // Record the Transaction
-        const transaction: INosTransaction = new NosTransaction(artist.$key, portfolio.$key, numberOfShares, total, 'buy');
+        // const transaction: IDbTransaction = new NosTransaction(artist.$key, portfolio.$key, numberOfShares, total, 'buy');
 
-        this.firebaseStore.transactions.push(transaction);
-        // Add Shares to Portfolio
-        this.firebaseStore.updateSharesPerPortfolio(artist.$key, portfolio.$key, numberOfShares);
-        // Add Shares to Artist
-        this.firebaseStore.updateStockholdersPerArtist(artist.$key, portfolio.$key, numberOfShares);
-        // Update Portfolio Balance
-        const portfolioObservable = this.db.object(`/portfolios/${portfolio.$key}`);
-        portfolioObservable.update({ balance: newBalance });
+        // this.firebaseStore.transactions.push(transaction);
+        // // Add Shares to Portfolio
+        // this.firebaseStore.updateSharesPerPortfolio(artist.$key, portfolio.$key, numberOfShares);
+        // // Add Shares to Artist
+        // this.firebaseStore.updateStockholdersPerArtist(artist.$key, portfolio.$key, numberOfShares);
+        // // Update Portfolio Balance
+        // const portfolioObservable = this.db.object(`/portfolios/${portfolio.$key}`);
+        // portfolioObservable.update({ balance: newBalance });
     }
 
 

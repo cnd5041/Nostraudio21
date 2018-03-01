@@ -1,12 +1,68 @@
+import lodash from 'lodash';
+
+import { IReferenceDictionary } from './firebase-objects.model';
+
+// Artists
+export interface IArtistEntity {
+    firebaseKey?: string;
+    value?: IDbArtist;
+}
+
+export interface IArtistEntityList {
+    [firebaseKey: string]: IArtistEntity;
+}
+
+// Genre
+export interface IGenreEntity {
+    firebaseKey?: string;
+    value?: IGenre;
+}
+
+export interface IGenreEntityList {
+    [firebaseKey: string]: IGenreEntity;
+}
 
 
-// export interface IDictionary {
-//     $key?: string;
-//     $value?: boolean;
-//     $exists?: () => boolean;
-// }
+// Genre Per Artist
+export interface IGenresPerArtistEntity {
+    firebaseKey?: string;
+    value?: { [genre: string]: boolean | string };
+}
 
-import { IDictionary } from '../models';
+export interface IGenresPerArtistEntityList {
+    [firebaseKey: string]: IGenresPerArtistEntity;
+}
+
+// Followers Per Artist
+export interface IFollowsPerArtistEntity {
+    firebaseKey?: string;
+    value?: { [artistKey: string]: IReferenceDictionary };
+}
+
+export interface IFollowsPerArtistEntityList {
+    [artistKey: string]: IFollowsPerArtistEntity;
+}
+
+export interface IFollowsPerArtistItem {
+    firebaseKey?: string;
+    value?: IReferenceDictionary;
+}
+
+// Stockholders Per Artist
+export interface IStockholdersPerArtistEntity {
+    firebaseKey?: string;
+    value?: { [artistKey: string]: IReferenceDictionary };
+}
+
+export interface IStockholdersPerArtistEntityList {
+    [artistKey: string]: IStockholdersPerArtistEntity;
+}
+
+export interface IStockholdersPerArtistItem {
+    firebaseKey?: string;
+    value?: IReferenceDictionary;
+}
+
 
 export interface INosArtist extends IDbArtist {
     // // id: string;
@@ -24,7 +80,8 @@ export interface INosArtist extends IDbArtist {
     // smallImage: string;
 
     shareCount?: number;
-    stockholdersPerArtist: IDictionary[];
+    // stockholdersPerArtist: IDictionary[];
+    stockholdersPerArtist: IReferenceDictionary;
     marketPrice?: number;
     marketCap?: number;
     // transactions: any[];
@@ -49,7 +106,7 @@ export interface ISpotifyArtist {
     smallImage: string;
 }
 
-export interface IDbArtist extends IDictionary {
+export interface IDbArtist {
     name: string;
     spotifyId: string;
     spotifyUri: string;
@@ -62,22 +119,11 @@ export interface IDbArtist extends IDictionary {
     smallImage: string;
 }
 
-export class NosArtist {
-
-    constructor() {
-
-    }
-}
-
-export function nosArtistFromDbArtist(dbArtist: IDbArtist, stockholdersPerArtist: IDictionary[]): INosArtist {
-    const artist = <INosArtist>Object.create(dbArtist);
-    // const artist = <INosArtist>Object.assign({}, dbArtist);
-
-    artist.shareCount = <number>stockholdersPerArtist.reduce((sum, value) => {
-        return sum + value.$value;
-    }, 0);
+export function nosArtistFromDbArtist(dbArtist: IDbArtist, stockholdersPerArtist: IReferenceDictionary): INosArtist {
+    const artist = lodash.clone(dbArtist);
 
     artist.stockholdersPerArtist = stockholdersPerArtist;
+    artist.shareCount = lodash.values(stockholdersPerArtist).reduce((a, b) => a + b, 0);
 
     let price = (50 * (artist.spotifyPopularity / 100)) + (35 * (artist.spotifyFollowers / 5000000)) + (15 * (artist.shareCount / 5000));
     price = Math.round(price * 100) / 100;
@@ -102,7 +148,7 @@ export function dbArtistFromSpotifyArtist(artist: ISpotifyArtist): IDbArtist {
     };
 }
 
-export interface IGenre extends IDictionary {
+export interface IGenre {
     name: string;
 }
 

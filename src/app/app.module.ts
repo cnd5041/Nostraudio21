@@ -3,9 +3,11 @@ import { IonicApp, IonicModule, IonicErrorHandler } from 'ionic-angular';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpModule } from '@angular/http';
 
+// Ionic Imports
 import { InAppBrowser } from '@ionic-native/in-app-browser';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
+// Angular Fire Imports
 import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFireAuthModule } from 'angularfire2/auth';
@@ -20,9 +22,7 @@ import {
 import { ArtistListItem } from '../components/artist-list-item/artist-list-item';
 
 //Import Providers
-import {
-    NosSpotifyService, ArtistService, DateService, AuthData, PortfolioService, FirebaseStore, DiscogsService, FirebaseProvider
-} from '../providers/';
+import * as fromProviders from '../providers';
 
 // AF2 Settings
 export const firebaseConfig = {
@@ -78,16 +78,9 @@ import { reducers, effects } from './store';
     ],
     providers: [
         { provide: ErrorHandler, useClass: IonicErrorHandler },
-        NosSpotifyService,
-        DiscogsService,
-        ArtistService,
-        DateService,
-        AuthData,
-        PortfolioService,
-        FirebaseStore,
-        InAppBrowser,
         SplashScreen,
-        FirebaseProvider,
+        InAppBrowser,
+        ...fromProviders.providers
     ]
 })
 export class AppModule { }

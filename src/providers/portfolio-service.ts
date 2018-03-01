@@ -1,5 +1,4 @@
 ﻿import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
 
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
 import 'rxjs/add/operator/map';
@@ -39,11 +38,10 @@ export class PortfolioService {
     // // });
 
     constructor(
-        private http: Http,
-        private db: AngularFireDatabase,
-        private afAuth: AngularFireAuth,
-        private authData: AuthData,
-        private firebaseStore: FirebaseStore
+        // private db: AngularFireDatabase,
+        // private afAuth: AngularFireAuth,
+        // private authData: AuthData,
+        // private firebaseStore: FirebaseStore
     ) {
 
         // Set up userPortfolio Observable - emit all defined results
@@ -52,43 +50,43 @@ export class PortfolioService {
     }
 
     getUserPortfolio(uid: string): void {
-        const portfolioSource = this.firebaseStore.portfolioById(uid);
-        const sharePerPortolioSource = this.firebaseStore.sharesPerPortfolio(uid);
-        const artistFollowsPerPortolioSource = this.firebaseStore.artistFollowsPerUser(uid);
-        const stream = portfolioSource.combineLatest(sharePerPortolioSource, artistFollowsPerPortolioSource);
+        // const portfolioSource = this.firebaseStore.portfolioById(uid);
+        // const sharePerPortolioSource = this.firebaseStore.sharesPerPortfolio(uid);
+        // const artistFollowsPerPortolioSource = this.firebaseStore.artistFollowsPerUser(uid);
+        // const stream = portfolioSource.combineLatest(sharePerPortolioSource, artistFollowsPerPortolioSource);
 
-        stream.subscribe(queriedItems => {
-            const portfolio = queriedItems[0];
-            const sharesPerPortfolio = queriedItems[1];
-            const artistFollowsPerUser = queriedItems[2];
+        // stream.subscribe(queriedItems => {
+        //     const portfolio = queriedItems[0];
+        //     const sharesPerPortfolio = queriedItems[1];
+        //     const artistFollowsPerUser = queriedItems[2];
 
-            if (portfolio.$exists()) {
-                const nosPortfolio = constructPortfolio(portfolio, sharesPerPortfolio, artistFollowsPerUser);
-                // console.log('nosPortfolio', nosPortfolio);
-                this._userPortfolio$.next(nosPortfolio);
-            } else {
-                this.createPortfolio(uid);
-            }
-        });
+        //     // if (portfolio.$exists()) {
+        //     //     const nosPortfolio = constructPortfolio(portfolio, sharesPerPortfolio, artistFollowsPerUser);
+        //     //     // console.log('nosPortfolio', nosPortfolio);
+        //     //     this._userPortfolio$.next(nosPortfolio);
+        //     // } else {
+        //     //     this.createPortfolio(uid);
+        //     // }
+        // });
     }
 
     private createPortfolio(uid: string): void {
         // console.log('createPortfolio', uid);
         // Get current auth state and create user based on that
-        this.authData.authState
-            .filter(user => user !== null && user !== undefined)
-            .take(1)
-            .subscribe(user => {
-                const options = {
-                    displayName: user.displayName || undefined,
-                    imageUrl: user.photoURL || undefined
-                };
-                let newPortfolio = new Portfolio(uid, options);
-                console.log('newPortfolio', newPortfolio);
-                // Set the new /portfolio with the uid as key
-                this.db.object(`/portfolios/${uid}`)
-                    .set(newPortfolio);
-            });
+        // this.authData.authState
+        //     .filter(user => user !== null && user !== undefined)
+        //     .take(1)
+        //     .subscribe(user => {
+        //         const options = {
+        //             displayName: user.displayName || undefined,
+        //             imageUrl: user.photoURL || undefined
+        //         };
+        //         const newPortfolio = new Portfolio(uid, options);
+        //         console.log('newPortfolio', newPortfolio);
+        //         // Set the new /portfolio with the uid as key
+        //         this.db.object(`/portfolios/${uid}`)
+        //             .set(newPortfolio);
+        //     });
     }
 
 }

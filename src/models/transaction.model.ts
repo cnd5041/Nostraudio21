@@ -1,6 +1,4 @@
-import { IDictionary } from '../models';
-
-export interface INosTransaction {
+export interface IDbTransaction {
     artistId: string;
     portfolioId: string;
     numberOfShares: number;
@@ -8,11 +6,7 @@ export interface INosTransaction {
     action: string;
 }
 
-export interface IDbTransaction extends INosTransaction, IDictionary {
-
-}
-
-export class NosTransaction implements INosTransaction {
+export class NosTransaction implements IDbTransaction {
     constructor(
         public artistId: string,
         public portfolioId: string,

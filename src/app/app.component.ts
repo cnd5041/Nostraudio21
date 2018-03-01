@@ -10,7 +10,6 @@ import { StatsPage } from '../pages/stats/stats';
 import { LoginPage } from '../pages/login/login';
 
 import { AuthData } from '../providers/auth-data';
-import { PortfolioService } from '../providers/portfolio-service';
 
 import { Store } from '@ngrx/store';
 import * as fromStore from '../app/store';
@@ -45,7 +44,6 @@ export class MyApp {
         public platform: Platform,
         public splashScreen: SplashScreen,
         public authData: AuthData,
-        public portfolioService: PortfolioService,
         private store: Store<fromStore.MusicState>
     ) {
         this.rootPage = AboutPage;
@@ -71,22 +69,26 @@ export class MyApp {
             //   }
             // });
             //       this.navCtrl.push(ArtistPage, { spotifyId: '168dgYui7ExaU612eooDF1' });
+
             // Subscribe to the authState
             // When we get a new authState, get the portfolio
             this.authData.authState
                 .subscribe(userState => {
-                    console.log('userState app component subscription', userState);
+                    console.log('userState Change', userState.uid);
                     if (userState && userState.uid) {
-                        this.portfolioService.getUserPortfolio(userState.uid);
+                        this.store.dispatch(new fromStore.FetchPortfolio(userState.uid));
+                    } else {
+                        this.store.dispatch(new fromStore.ResetPorfolio());
                     }
                 }, error => {
                     console.log('getAuthState error', error);
+                    this.store.dispatch(new fromStore.ResetPorfolio());
                 });
-
-
         });
 
         this.store.dispatch(new fromStore.FetchArtists());
+        this.store.dispatch(new fromStore.FetchGenresPerArtist());
+        this.store.dispatch(new fromStore.FetchGenres());
     }
 
     openPage(page: IAppPage) {
