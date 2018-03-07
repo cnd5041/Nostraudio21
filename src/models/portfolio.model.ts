@@ -19,7 +19,7 @@ export interface INosPortfolio extends IDbPortfolio {
     shares?: ISharesPerPortfolioItem;
     artistFollows?: IArtistFollowsPerUserItem;
 
-    sharesPerArtist?(artistId: string): number;
+    getSharesByArtistId?(artistId: string): number;
 }
 
 function getRandomInt(min, max) {
@@ -53,7 +53,7 @@ export function constructPortfolio(
     nosPortfolio.shares = sharesPerPortfolio;
     nosPortfolio.artistFollows = artistFollowsPerUser;
 
-    nosPortfolio.sharesPerArtist = (artistId: string) => {
+    nosPortfolio.getSharesByArtistId = (artistId: string) => {
         return sharesPerPortfolio[artistId] || 0;
     };
 

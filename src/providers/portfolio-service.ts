@@ -9,7 +9,7 @@ import { AngularFireAuth } from 'angularfire2/auth';
 
 
 import { INosPortfolio, Portfolio, constructPortfolio } from '../models';
-import { AuthData, FirebaseStore } from '../providers/';
+import { AuthData } from '../providers/';
 
 
 @Injectable()

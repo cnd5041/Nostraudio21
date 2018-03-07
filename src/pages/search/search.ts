@@ -28,9 +28,9 @@ export class SearchPage {
 
   search(event: any): void {
     // http://ionicframework.com/docs/v2/api/components/searchbar/Searchbar/
-    let val: string = event.target.value;
+    const val: string = event.target.value;
 
-    // If string is not empty, search, otherwise, clear the results    
+    // If string is not empty, search, otherwise, clear the results
     if (val && val.length > 0) {
       this.artistService.search(val);
     } else {

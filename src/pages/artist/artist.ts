@@ -12,7 +12,6 @@ import { Observable } from 'rxjs/Observable';
 import { Store } from '@ngrx/store';
 import * as fromStore from '../../app/store';
 
-
 @Component({
     selector: 'page-artist',
     templateUrl: 'artist.html'
@@ -45,6 +44,7 @@ export class ArtistPage {
 
     ionViewDidLoad() {
         const spotifyId = this.navParams.get('spotifyId');
+        this.store.dispatch(new fromStore.StartArtistSubscription(spotifyId));
         this.store.dispatch(new fromStore.SetSelectedArtistId(spotifyId));
 
         // Start Loading
@@ -70,7 +70,7 @@ export class ArtistPage {
             .subscribe((state) => {
                 console.log('getNosPortfolio', state);
                 this.userPortfolio = state;
-                this.ownedShares = this.userPortfolio.sharesPerArtist(spotifyId);
+                this.ownedShares = this.userPortfolio.getSharesByArtistId(spotifyId);
             });
 
         // Get a string of artist genres

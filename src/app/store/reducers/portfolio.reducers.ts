@@ -4,10 +4,8 @@ import {
 } from '../../../models';
 
 export interface PortfolioState {
-    // artistEntities: IArtistEntityList;
     loading: boolean;
     loaded: boolean;
-    // selectedArtistId: string;
     // genresPerArtistEntities: IGenresPerArtistEntityList;
     userId: string;
     nosPortfolio: INosPortfolio;

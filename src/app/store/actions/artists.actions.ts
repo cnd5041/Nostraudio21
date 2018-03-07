@@ -2,7 +2,7 @@ import { Action } from '@ngrx/store';
 
 import {
     IArtistEntityList, IGenresPerArtistEntityList, IStockholdersPerArtistItem, IFollowsPerArtistEntity,
-    IFollowsPerArtistItem, INosPortfolio
+    IFollowsPerArtistItem, INosPortfolio, INosArtist
 } from '../../../models';
 
 export const FETCH_ARTISTS = '[music] Fetch ARTISTS';
@@ -22,6 +22,11 @@ export const USER_UNFOLLOW_ARTIST = '[music] USER_UNFOLLOW_ARTIST';
 
 export const USER_BUY_ARTIST = '[music] USER_BUY_ARTIST';
 export const USER_SELL_ARTIST = '[music] USER_SELL_ARTIST';
+
+export const START_ARTIST_SUBSCRIPTION = '[music] START_ARTIST_SUBSCRIPTION';
+export const STOP_ARTIST_SUBSCRIPTION = '[music] STOP_ARTIST_SUBSCRIPTION';
+
+export const SET_CLIENT_ARTIST = '[music] SET_CLIENT_ARTIST';
 
 export class FetchArtists implements Action {
     readonly type = FETCH_ARTISTS;
@@ -83,6 +88,22 @@ export class UserSellArtist implements Action {
     constructor(public payload: { portfolio: INosPortfolio, artistKey: string, shareCount: number, price: number }) { }
 }
 
+
+export class StartArtistSubscription implements Action {
+    readonly type = START_ARTIST_SUBSCRIPTION;
+    constructor(public payload: string) { }
+}
+
+export class StopArtistSubscription implements Action {
+    readonly type = STOP_ARTIST_SUBSCRIPTION;
+    constructor(public payload: string) { }
+}
+
+export class SetClientArtist implements Action {
+    readonly type = SET_CLIENT_ARTIST;
+    constructor(public payload: INosArtist) { }
+}
+
 export type ArtistsActions =
     FetchArtists |
     FetchArtistsSuccess |
@@ -95,4 +116,7 @@ export type ArtistsActions =
     UserFollowArtist |
     UserUnfollowArtist |
     UserBuyArtist |
-    UserSellArtist;
+    UserSellArtist |
+    StartArtistSubscription |
+    StopArtistSubscription |
+    SetClientArtist;

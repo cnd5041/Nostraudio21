@@ -33,3 +33,6 @@ Complete sell and show ownership on page
 -- check for CRUD ops: https://www.youtube.com/watch?v=13nWhUndQo4
 
 Create alerts for movement on stock prices with the cloud functions (or other events)
+
+- Create a cloud function that calculates the artist price (when the artist is updated and when a 
+ child is pushed to the stockholders)

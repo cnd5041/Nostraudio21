@@ -5,9 +5,8 @@ import * as fromPortfolio from '../reducers/portfolio.reducers';
 
 import * as fromArtistSelectors from './artists.selectors';
 
-import * as fromModels from '../../../models';
-
 import lodash from 'lodash';
+import { INosArtist } from '../../../models';
 
 export const getPortfolioState = createSelector(
     fromFeature.getMusicState,
@@ -40,5 +39,39 @@ export const isFollowingCurrentArtist = createSelector(
     fromArtistSelectors.getSelectedArtistFollows,
     (portfolio, selectedArtistFollows): boolean => {
         return portfolio && selectedArtistFollows && selectedArtistFollows.value[portfolio.userProfile];
+    }
+);
+
+export const getPortfolioStockNosArtists = createSelector(
+    getNosPortfolio,
+    fromArtistSelectors.getClientArtists,
+    (portfolio, clientArtists): INosArtist[] => {
+        const result = [];
+        if (portfolio && portfolio.shares) {
+            const artistKeys = portfolio.shares;
+            Object.keys(portfolio.shares).forEach((key) => {
+                if (clientArtists[key]) {
+                    result.push(clientArtists[key]);
+                }
+            });
+        }
+        return result;
+    }
+);
+
+export const getPortfolioFollowingNosArtists = createSelector(
+    getNosPortfolio,
+    fromArtistSelectors.getClientArtists,
+    (portfolio, clientArtists): INosArtist[] => {
+        const result = [];
+        if (portfolio && portfolio.artistFollows) {
+            const artistKeys = portfolio.artistFollows;
+            Object.keys(portfolio.artistFollows).forEach((key) => {
+                if (clientArtists[key]) {
+                    result.push(clientArtists[key]);
+                }
+            });
+        }
+        return result;
     }
 );

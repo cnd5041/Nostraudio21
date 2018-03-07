@@ -46,7 +46,7 @@ export class MyApp {
         public authData: AuthData,
         private store: Store<fromStore.MusicState>
     ) {
-        this.rootPage = AboutPage;
+        this.rootPage = PortfolioPage;
 
         this.initializeApp();
     }

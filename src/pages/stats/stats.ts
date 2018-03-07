@@ -2,8 +2,6 @@ import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
 import { Observable } from 'rxjs/Rx';
 
-import { ArtistService } from '../../providers/artist-service';
-
 @Component({
   selector: 'page-stats',
   templateUrl: 'stats.html'
@@ -13,14 +11,13 @@ export class StatsPage {
 
   constructor(
     public navCtrl: NavController,
-    public navParams: NavParams,
-    public artistService: ArtistService
+    public navParams: NavParams
   ) {
 
   }
 
   ionViewDidLoad() {
-    this.artists = this.artistService.artists;
+    // this.artists = this.artistService.artists;
   }
 
 }

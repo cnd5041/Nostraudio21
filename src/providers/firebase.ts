@@ -1,6 +1,4 @@
 import { Injectable } from '@angular/core';
-import 'rxjs/add/operator/map';
-import { Observable } from 'rxjs/Observable';
 
 import {
     IGenre, IDbArtist, IArtistEntityList, IGenreEntityList,
@@ -8,13 +6,19 @@ import {
     IStockholdersPerArtistEntity, IStockholdersPerArtistItem, IFollowsPerArtistEntity,
     IDbPortfolio, constructPortfolio, Portfolio,
     IReferenceDictionary, ISharesPerPortfolioItem, IArtistFollowsPerUserItem,
-    IFollowsPerArtistItem, IDbTransaction, INosPortfolio, INosArtist, NosTransaction
+    IFollowsPerArtistItem, IDbTransaction, INosPortfolio, INosArtist, NosTransaction, nosArtistFromDbArtist
 } from '../models';
 
 import { AuthData } from '../providers/auth-data';
 
 import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
+// Library Imports
 import lodash from 'lodash';
+import { Subscription } from 'rxjs';
+import 'rxjs/add/operator/map';
+import { Observable } from 'rxjs/Observable';
+import { Store } from '@ngrx/store';
+import * as fromStore from '../app/store';
 
 @Injectable()
 export class FirebaseProvider {
@@ -27,10 +31,30 @@ export class FirebaseProvider {
     followsPerArtistRef = this.db.list('/followsPerArtist');
     stockholdersPerArtistRef = this.db.list('/stockholdersPerArtist');
 
+    clientArtistsSubs: { [key: string]: Subscription } = {};
+
     constructor(
         private db: AngularFireDatabase,
-        public authData: AuthData,
+        private authData: AuthData,
+        private store: Store<fromStore.MusicState>
     ) {
+
+        this.store.select(state => state.artists.activeArtistSubscriptions)
+            .subscribe(activeArtistSubscriptions => {
+                console.log('activeArtistSubscriptions', activeArtistSubscriptions);
+                Object.keys(activeArtistSubscriptions).forEach(key => {
+                    // Check if the key is true or false
+                    if (activeArtistSubscriptions[key] === true) {
+                        // If it's off, turn it on.
+                        console.log('start the sub', key);
+                        this.setArtistSubscription(key);
+                    } else {
+                        console.log('stop the sub', key);
+                        this.clientArtistsSubs[key].unsubscribe();
+                    }
+                });
+            });
+
         // https://github.com/angular/angularfire2/blob/5.0.0-rc.6/docs/rtdb/lists.md
         // .valueChanges is for read only
         // .snapshot changes returns key
@@ -103,6 +127,36 @@ export class FirebaseProvider {
 
     }
 
+    // Set the Artist Subscription, which will dispatch SetClientArtist
+    setArtistSubscription(spotifyId: string): void {
+        // If there is no open sub, open one
+        if (!this.clientArtistsSubs[spotifyId] || this.clientArtistsSubs[spotifyId].closed === true) {
+            const artistRef = this.db.object<IDbArtist>(`/artists/${spotifyId}`)
+                .valueChanges();
+            const stockholdersPerArtist = this.db.object<IReferenceDictionary>(`/stockholdersPerArtist/${spotifyId}`)
+                .valueChanges();
+
+            this.clientArtistsSubs[spotifyId] = Observable.combineLatest(artistRef, stockholdersPerArtist)
+                .subscribe((result) => {
+                    const artist = result[0];
+                    const stockholdersPerArtist = result[1];
+                    const nosArtist = nosArtistFromDbArtist(artist, stockholdersPerArtist);
+
+                    // Update the marketPrice if necessary
+                    // TODO: Move to server function
+                    const oldPrice = artist.marketPrice;
+                    const newPrice = nosArtist.marketPrice;
+                    if (oldPrice !== newPrice) {
+                        this.db.object<IDbArtist>(`/artists/${spotifyId}`)
+                            .update({ marketPrice: newPrice });
+                    }
+                    this.store.dispatch(new fromStore.SetClientArtist(nosArtist));
+                });
+        } else {
+            console.log('artist sub already set', spotifyId);
+        }
+    }
+
     genresByArtist(spotifyId: string): Observable<any[]> {
         return this.db.list<any>(`/genresPerArtist/${spotifyId}`).valueChanges();
     }
@@ -123,7 +177,7 @@ export class FirebaseProvider {
             });
     }
 
-    getUserPortfolio(uid: string): Observable<any> {
+    getUserPortfolio(uid: string): Observable<INosPortfolio> {
         const portfolioSource = this.db.object<IDbPortfolio>(`/portfolios/${uid}`)
             .valueChanges();
         const sharePerPortolioSource = this.db.object<ISharesPerPortfolioItem>(`/sharesPerPortfolio/${uid}`)

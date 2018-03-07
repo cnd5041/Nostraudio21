@@ -50,6 +50,21 @@ export const getSelectedArtistStockholders = createSelector(
     fromArtists.getSelectedArtistStockholders
 );
 
+export const getLoadingClientArtistIds = createSelector(
+    getArtistsState,
+    fromArtists.getLoadingClientArtistIds
+);
+
+export const getLoadedClientArtistIds = createSelector(
+    getArtistsState,
+    fromArtists.getLoadedClientArtistIds
+);
+
+export const getClientArtists = createSelector(
+    getArtistsState,
+    fromArtists.getClientArtists
+);
+
 
 // Combined Selectors
 
@@ -73,27 +88,11 @@ export const getGenreListPerArtistEntity = createSelector(
     }
 );
 
-// Get the selected artist
-export const getSelectedArtist = createSelector(
-    getSelectedArtistId,
-    getArtistEntities,
-    (id, entities): fromModels.IArtistEntity => {
-        return entities[id];
-    }
-);
-
 export const getSelectedNosArtist = createSelector(
-    getSelectedArtist,
-    getSelectedArtistStockholders,
-    (artistItem, stockholdersItem) => {
-        if (artistItem && stockholdersItem) {
-            const artist = artistItem.value;
-            const stockholdersPerArtist = stockholdersItem.value;
-            const nosArtist = fromModels.nosArtistFromDbArtist(artist, stockholdersPerArtist);
-            return nosArtist;
-        } else {
-            return null;
-        }
+    getSelectedArtistId,
+    getClientArtists,
+    (id, entities): fromModels.INosArtist => {
+        return entities[id];
     }
 );
 
@@ -106,6 +105,9 @@ export const getSelectedArtistGenres = createSelector(
     }
 );
 
+
+// TODO: refactor the be off of getSelectedNosArtist
+// the follows would have to be a part of the Artist sub
 export const getSelectedFollowersCount = createSelector(
     getSelectedArtistFollows,
     (selectedArtistFollows): number => {

@@ -117,6 +117,8 @@ export interface IDbArtist {
     largeImage: string;
     mediumImage: string;
     smallImage: string;
+
+    marketPrice?: number;
 }
 
 export function nosArtistFromDbArtist(dbArtist: IDbArtist, stockholdersPerArtist: IReferenceDictionary): INosArtist {
