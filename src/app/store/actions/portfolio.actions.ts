@@ -24,7 +24,7 @@ export class FetchPortfolioSuccess implements Action {
 
 export class FetchPortfolioFail implements Action {
     readonly type = FETCH_PORTFOLIO_FAIL;
-    constructor(public payload: any) { }
+    constructor(public payload?: any) { }
 }
 
 export class ResetPorfolio implements Action {

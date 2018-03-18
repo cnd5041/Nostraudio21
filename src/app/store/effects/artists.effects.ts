@@ -6,15 +6,12 @@ import { Action, Store } from '@ngrx/store';
 
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
+import { map, switchMap, catchError, tap } from 'rxjs/operators';
 
 import { FirebaseProvider } from '../../../providers';
 
 import * as appActions from '../actions';
-import * as fromReducers from '../reducers';
-import * as fromSelectors from '../selectors';
-// import * as fromStore from '../';
-
-
+import { MusicState } from '../reducers';
 
 @Injectable()
 export class ArtistEffects {
@@ -22,119 +19,100 @@ export class ArtistEffects {
     constructor(
         private actions$: Actions,
         private firebaseProvider: FirebaseProvider,
-        private store: Store<fromReducers.MusicState>
+        private store: Store<MusicState>
     ) {
     }
 
-    @Effect()
-    FetchArtists$: Observable<Action> = this.actions$
-        .ofType(appActions.FETCH_ARTISTS)
-        .switchMap(() => {
-            return this.firebaseProvider.artists
-                .map(payload => new appActions.FetchArtistsSuccess(payload))
-                .catch((error) => of(new appActions.FetchArtistsFail(error)));
-        });
-
-    @Effect()
-    FetchGenresPerArtist$: Observable<Action> = this.actions$
-        .ofType(appActions.FETCH_GENRES_PER_ARTIST)
-        .switchMap(() => {
-            return this.firebaseProvider.genresPerArtist
-                .map(payload => new appActions.FetchGenresPerArtistSuccess(payload))
-                .catch((error) => of(new appActions.FetchGenresPerArtistSuccess({})));
-        });
-
+    // TODO: Remove effect and drive set selected based on the the artist object
     @Effect()
     SetSelectedArtistFollows$: Observable<Action> = this.actions$
         .ofType(appActions.SET_SELECTED_ARTIST_ID)
-        .map((action: appActions.SetSelectedArtistId) => action.payload)
-        .switchMap((spotifyId) => {
-            if (spotifyId) {
-                return this.firebaseProvider.followsPerArtistByArtistId(spotifyId)
-                    .map(payload => new appActions.SetSelectedArtistFollows(payload));
-                // .catch((error) => of(new appActions.FetchGenresPerArtistSuccess({})));
-            } else {
-                return of(new appActions.SetSelectedArtistFollows(null));
-            }
-        });
-
-    @Effect()
-    SetSelectedArtistStockholders$: Observable<Action> = this.actions$
-        .ofType(appActions.SET_SELECTED_ARTIST_ID)
-        .map((action: appActions.SetSelectedArtistId) => action.payload)
-        .switchMap((spotifyId) => {
-            if (spotifyId) {
-                return this.firebaseProvider.stockholdersPerArtistByArtistId(spotifyId)
-                    .map(payload => new appActions.SetSelectedArtistStockholders(payload));
-                // .catch((error) => of(new appActions.FetchGenresPerArtistSuccess({})));
-            } else {
-                return of(new appActions.SetSelectedArtistStockholders(null));
-            }
-        });
+        .pipe(
+            map((action: appActions.SetSelectedArtistId) => action.payload),
+            switchMap((spotifyId) => {
+                if (spotifyId) {
+                    return this.firebaseProvider.followsPerArtistByArtistId(spotifyId)
+                        .map(payload => new appActions.SetSelectedArtistFollows(payload));
+                } else {
+                    return of(new appActions.SetSelectedArtistFollows(null));
+                }
+            }));
 
     @Effect({ dispatch: false })
     UserFollowArtist$ = this.actions$
         .ofType(appActions.USER_FOLLOW_ARTIST)
-        .map((action: appActions.UserFollowArtist) => action.payload)
-        .do(payload => {
-            this.firebaseProvider.followArtist(payload.artistKey, payload.portfolioKey, 'follow');
-        });
+        .pipe(
+            map((action: appActions.UserFollowArtist) => action.payload),
+            tap(payload => {
+                this.firebaseProvider.followArtist(payload.artistKey, payload.portfolioKey, 'follow');
+            })
+        );
 
     @Effect({ dispatch: false })
     UserUnfollowArtist$ = this.actions$
         .ofType(appActions.USER_UNFOLLOW_ARTIST)
-        .map((action: appActions.UserUnfollowArtist) => action.payload)
-        .do(payload => {
-            this.firebaseProvider.followArtist(payload.artistKey, payload.portfolioKey, 'unfollow');
-        });
+        .pipe(
+            map((action: appActions.UserUnfollowArtist) => action.payload),
+            tap(payload => {
+                this.firebaseProvider.followArtist(payload.artistKey, payload.portfolioKey, 'unfollow');
+            })
+        );
 
     @Effect({ dispatch: false })
     UserBuyArtist$ = this.actions$
         .ofType(appActions.USER_BUY_ARTIST)
-        .map((action: appActions.UserBuyArtist) => action.payload)
-        .switchMap((payload) => {
-            return this.firebaseProvider
-                .userBuyArtist(payload.portfolio, payload.artistKey, payload.shareCount, payload.price)
-                .map((result) => {
-                    this.store.dispatch(new appActions.ShowToast({
-                        message: 'Purchase was successful!',
-                        position: 'top',
-                        duration: 4000
-                    }));
-                })
-                .catch((error) => {
-                    this.store.dispatch(new appActions.ShowBasicAlert({
-                        title: 'Error',
-                        subTitle: error,
-                        buttons: ['Ok']
-                    }));
-                    return Observable.of();
-                });
-        });
+        .pipe(
+            map((action: appActions.UserBuyArtist) => action.payload),
+            switchMap((payload) => {
+                return this.firebaseProvider
+                    .userBuyArtist(payload.portfolio, payload.artistKey, payload.shareCount, payload.price)
+                    .pipe(
+                        map((result) => {
+                            this.store.dispatch(new appActions.ShowToast({
+                                message: 'Purchase was successful!',
+                                position: 'top',
+                                duration: 4000
+                            }));
+                        }),
+                        catchError((error) => {
+                            this.store.dispatch(new appActions.ShowBasicAlert({
+                                title: 'Error',
+                                subTitle: error,
+                                buttons: ['Ok']
+                            }));
+                            return Observable.of();
+                        })
+                    );
+            })
+        );
 
     @Effect({ dispatch: false })
     UserSellArtist$ = this.actions$
         .ofType(appActions.USER_SELL_ARTIST)
-        .map((action: appActions.UserSellArtist) => action.payload)
-        .switchMap((payload) => {
-            return this.firebaseProvider
-                .userSellArtist(payload.portfolio, payload.artistKey, payload.shareCount, payload.price)
-                .map((result) => {
-                    this.store.dispatch(new appActions.ShowToast({
-                        message: 'Sale was successful!',
-                        position: 'top',
-                        duration: 4000
-                    }));
-                })
-                .catch((error) => {
-                    this.store.dispatch(new appActions.ShowBasicAlert({
-                        title: 'Error',
-                        subTitle: error,
-                        buttons: ['Ok']
-                    }));
-                    return Observable.of();
-                });
-        });
+        .pipe(
+            map((action: appActions.UserSellArtist) => action.payload),
+            switchMap((payload) => {
+                return this.firebaseProvider
+                    .userSellArtist(payload.portfolio, payload.artistKey, payload.shareCount, payload.price)
+                    .pipe(
+                        map((result) => {
+                            this.store.dispatch(new appActions.ShowToast({
+                                message: 'Sale was successful!',
+                                position: 'top',
+                                duration: 4000
+                            }));
+                        }),
+                        catchError((error) => {
+                            this.store.dispatch(new appActions.ShowBasicAlert({
+                                title: 'Error',
+                                subTitle: error,
+                                buttons: ['Ok']
+                            }));
+                            return Observable.of();
+                        })
+                    );
+            })
+        );
 
 
     // Example From: https://www.youtube.com/watch?v=13nWhUndQo4

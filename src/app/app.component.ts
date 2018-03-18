@@ -85,10 +85,6 @@ export class MyApp {
                     this.store.dispatch(new fromStore.ResetPorfolio());
                 });
         });
-
-        this.store.dispatch(new fromStore.FetchArtists());
-        this.store.dispatch(new fromStore.FetchGenresPerArtist());
-        this.store.dispatch(new fromStore.FetchGenres());
     }
 
     openPage(page: IAppPage) {

@@ -14,7 +14,7 @@
                 {{artist?.name}}
             </ion-card-title>
             <p>
-                {{ (artistGenres$ | async)?.join(', ') }}
+                {{ artist?.genresArray?.join(', ') }}
             </p>
         </ion-card-content>
         <hr>

@@ -3,9 +3,9 @@ import { createSelector } from '@ngrx/store';
 import * as fromFeature from '../reducers';
 import * as fromGenres from '../reducers/genres.reducers';
 
-import * as fromModels from '../../../models';
+import { IDbGenre } from '../../../models';
 
-import * as _ from 'lodash';
+import { forOwn, startCase } from 'lodash';
 
 export const getGenresState = createSelector(
     fromFeature.getMusicState,
@@ -26,8 +26,8 @@ export const getGenreKeyNameMap = createSelector(
     (genreEntities): { [firebaseKey: string]: string } => {
         const map = {};
 
-        _.forOwn(genreEntities, (entity: fromModels.IGenreEntity, key: string) => {
-            map[key] = _.startCase(entity.value.name);
+        forOwn(genreEntities, (entity: IDbGenre, key: string) => {
+            map[key] = startCase(entity.name);
         });
 
         return map;

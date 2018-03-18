@@ -1,5 +1,5 @@
 ﻿import { Component } from '@angular/core';
-import { NavController, NavParams, ActionSheetController, LoadingController } from 'ionic-angular';
+import { NavController, NavParams, ActionSheetController } from 'ionic-angular';
 
 // Models
 import { INosArtist, INosPortfolio } from '../../models';
@@ -24,7 +24,7 @@ export class ArtistPage {
 
     artistFollowerCount$: Observable<number>;
     isFollowing$: Observable<boolean>;
-    artistGenres$: Observable<string[]>;
+    artistGenres: string[];
 
     action = 'buy';
     buyShareCount = 1;
@@ -37,19 +37,16 @@ export class ArtistPage {
         public navCtrl: NavController,
         public navParams: NavParams,
         public actionSheetCtrl: ActionSheetController,
-        public loadingCtrl: LoadingController,
         private store: Store<fromStore.MusicState>
     ) {
     }
 
     ionViewDidLoad() {
         const spotifyId = this.navParams.get('spotifyId');
-        this.store.dispatch(new fromStore.StartArtistSubscription(spotifyId));
         this.store.dispatch(new fromStore.SetSelectedArtistId(spotifyId));
 
         // Start Loading
-        const loading = this.loadingCtrl.create({});
-        loading.present();
+        this.store.dispatch(new fromStore.ShowLoading());
 
         this.store.select(fromStore.getSelectedNosArtist)
             .takeUntil(this.unsubscribe)
@@ -57,7 +54,7 @@ export class ArtistPage {
             .subscribe(state => {
                 console.log('getSelectedNosArtist', state);
                 // Stop Loading
-                loading.dismiss();
+                this.store.dispatch(new fromStore.HideLoading());
                 this.artist = <any>state;
                 this.onBuySharesChange(this.buyShareCount);
                 this.onSellSharesChange(this.sellShareCount);
@@ -72,9 +69,6 @@ export class ArtistPage {
                 this.userPortfolio = state;
                 this.ownedShares = this.userPortfolio.getSharesByArtistId(spotifyId);
             });
-
-        // Get a string of artist genres
-        this.artistGenres$ = this.store.select(fromStore.getSelectedArtistGenres);
         // Follower Count
         this.artistFollowerCount$ = this.store.select(fromStore.getSelectedFollowersCount);
         // isFollowing

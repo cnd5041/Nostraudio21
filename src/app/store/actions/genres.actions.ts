@@ -1,6 +1,6 @@
 import { Action } from '@ngrx/store';
 
-import { IGenre, IGenreEntityList } from '../../../models';
+import { IDbGenre, IDbGenreMap } from '../../../models';
 
 export const FETCH_GENRES = '[music] Fetch GENRES';
 export const FETCH_GENRES_SUCCESS = '[music] Fetch GENRES Success';
@@ -13,12 +13,12 @@ export class FetchGenres implements Action {
 
 export class FetchGenresSuccess implements Action {
     readonly type = FETCH_GENRES_SUCCESS;
-    constructor(public payload: IGenreEntityList) { }
+    constructor(public payload: IDbGenreMap) { }
 }
 
 export class FetchGenresFail implements Action {
     readonly type = FETCH_GENRES_FAIL;
-    constructor(public payload: any) { }
+    constructor(public payload?: any) { }
 }
 
 export type GenresActions =

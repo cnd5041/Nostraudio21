@@ -1,21 +1,15 @@
 import { Action } from '@ngrx/store';
 
 import {
-    IArtistEntityList, IGenresPerArtistEntityList, IStockholdersPerArtistItem, IFollowsPerArtistEntity,
-    IFollowsPerArtistItem, INosPortfolio, INosArtist
+    IFollowsPerArtistItem, INosPortfolio, INosArtist, IDbArtistMap, IDbArtist, INosArtistMap
 } from '../../../models';
 
-export const FETCH_ARTISTS = '[music] Fetch ARTISTS';
-export const FETCH_ARTISTS_SUCCESS = '[music] Fetch ARTISTS Success';
-export const FETCH_ARTISTS_FAIL = '[music] Fetch ARTISTS Fail';
+export const SET_ARTISTS_MAP = '[music] Set Artists Map';
+export const ARTISTS_MAP_ADD = '[music] ARTISTS_MAP_ADD';
 
 export const SET_SELECTED_ARTIST_ID = '[music] Set Selected Artist Id';
 
-export const FETCH_GENRES_PER_ARTIST = '[music] Fetch FETCH_GENRES_PER_ARTIST';
-export const FETCH_GENRES_PER_ARTIST_SUCCESS = '[music] Fetch FETCH_GENRES_PER_ARTIST Success';
-
 export const SET_SELECTED_ARTIST_FOLLOWS = '[music] Fetch SET_SELECTED_ARTIST_FOLLOWS';
-export const SET_SELECTED_ARTIST_STOCKHOLDERS = '[music] Fetch SET_SELECTED_ARTIST_STOCKHOLDERS';
 
 export const USER_FOLLOW_ARTIST = '[music] USER_FOLLOW_ARTIST';
 export const USER_UNFOLLOW_ARTIST = '[music] USER_UNFOLLOW_ARTIST';
@@ -23,24 +17,14 @@ export const USER_UNFOLLOW_ARTIST = '[music] USER_UNFOLLOW_ARTIST';
 export const USER_BUY_ARTIST = '[music] USER_BUY_ARTIST';
 export const USER_SELL_ARTIST = '[music] USER_SELL_ARTIST';
 
-export const START_ARTIST_SUBSCRIPTION = '[music] START_ARTIST_SUBSCRIPTION';
-export const STOP_ARTIST_SUBSCRIPTION = '[music] STOP_ARTIST_SUBSCRIPTION';
-
-export const SET_CLIENT_ARTIST = '[music] SET_CLIENT_ARTIST';
-
-export class FetchArtists implements Action {
-    readonly type = FETCH_ARTISTS;
-    constructor() { }
+export class SetArtistsMap implements Action {
+    readonly type = SET_ARTISTS_MAP;
+    constructor(public payload: INosArtistMap) { }
 }
 
-export class FetchArtistsSuccess implements Action {
-    readonly type = FETCH_ARTISTS_SUCCESS;
-    constructor(public payload: IArtistEntityList) { }
-}
-
-export class FetchArtistsFail implements Action {
-    readonly type = FETCH_ARTISTS_FAIL;
-    constructor(public payload: any) { }
+export class ArtistMapAdd implements Action {
+    readonly type = ARTISTS_MAP_ADD;
+    constructor(public payload: { key: string, artist: INosArtist }) { }
 }
 
 export class SetSelectedArtistId implements Action {
@@ -48,24 +32,9 @@ export class SetSelectedArtistId implements Action {
     constructor(public payload: string) { }
 }
 
-export class FetchGenresPerArtist implements Action {
-    readonly type = FETCH_GENRES_PER_ARTIST;
-    constructor() { }
-}
-
-export class FetchGenresPerArtistSuccess implements Action {
-    readonly type = FETCH_GENRES_PER_ARTIST_SUCCESS;
-    constructor(public payload: IGenresPerArtistEntityList) { }
-}
-
 export class SetSelectedArtistFollows implements Action {
     readonly type = SET_SELECTED_ARTIST_FOLLOWS;
     constructor(public payload: IFollowsPerArtistItem) { }
-}
-
-export class SetSelectedArtistStockholders implements Action {
-    readonly type = SET_SELECTED_ARTIST_STOCKHOLDERS;
-    constructor(public payload: IStockholdersPerArtistItem) { }
 }
 
 export class UserFollowArtist implements Action {
@@ -89,34 +58,12 @@ export class UserSellArtist implements Action {
 }
 
 
-export class StartArtistSubscription implements Action {
-    readonly type = START_ARTIST_SUBSCRIPTION;
-    constructor(public payload: string) { }
-}
-
-export class StopArtistSubscription implements Action {
-    readonly type = STOP_ARTIST_SUBSCRIPTION;
-    constructor(public payload: string) { }
-}
-
-export class SetClientArtist implements Action {
-    readonly type = SET_CLIENT_ARTIST;
-    constructor(public payload: INosArtist) { }
-}
-
 export type ArtistsActions =
-    FetchArtists |
-    FetchArtistsSuccess |
-    FetchArtistsFail |
+    SetArtistsMap |
+    ArtistMapAdd |
     SetSelectedArtistId |
-    FetchGenresPerArtist |
-    FetchGenresPerArtistSuccess |
     SetSelectedArtistFollows |
-    SetSelectedArtistStockholders |
     UserFollowArtist |
     UserUnfollowArtist |
     UserBuyArtist |
-    UserSellArtist |
-    StartArtistSubscription |
-    StopArtistSubscription |
-    SetClientArtist;
+    UserSellArtist;

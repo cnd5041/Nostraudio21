@@ -42,28 +42,12 @@ export const isFollowingCurrentArtist = createSelector(
     }
 );
 
-export const getPortfolioStockNosArtists = createSelector(
-    getNosPortfolio,
-    fromArtistSelectors.getClientArtists,
-    (portfolio, clientArtists): INosArtist[] => {
-        const result = [];
-        if (portfolio && portfolio.shares) {
-            const artistKeys = portfolio.shares;
-            Object.keys(portfolio.shares).forEach((key) => {
-                if (clientArtists[key]) {
-                    result.push(clientArtists[key]);
-                }
-            });
-        }
-        return result;
-    }
-);
-
 export const getPortfolioFollowingNosArtists = createSelector(
     getNosPortfolio,
-    fromArtistSelectors.getClientArtists,
+    fromArtistSelectors.getArtistsMap,
     (portfolio, clientArtists): INosArtist[] => {
         const result = [];
+        // TODO: Fix to be on artist map
         if (portfolio && portfolio.artistFollows) {
             const artistKeys = portfolio.artistFollows;
             Object.keys(portfolio.artistFollows).forEach((key) => {
@@ -75,3 +59,8 @@ export const getPortfolioFollowingNosArtists = createSelector(
         return result;
     }
 );
+
+// export const getTransactionsWithArtists = createSelector(
+//     getNosPortfolio,
+//     fromArtistSelectors.getArtistEntities
+// );

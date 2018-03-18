@@ -1,9 +1,9 @@
 ﻿import { Component } from '@angular/core';
-import { NavController, LoadingController } from 'ionic-angular';
+import { NavController } from 'ionic-angular';
 
 import { ArtistPage } from '../../pages';
-// import { PortfolioService } from '../../providers/';
-import { INosPortfolio, INosArtist } from '../../models/';
+import { FirebaseProvider } from '../../providers';
+import { INosPortfolio, INosArtist, IDbTransaction, IPortfolioShare } from '../../models/';
 
 import { Subject } from "rxjs/Subject";
 // Store imports
@@ -19,42 +19,33 @@ export class PortfolioPage {
 
     userPortfolio: INosPortfolio;
 
-    stocks: INosArtist[];
+    stocks: IPortfolioShare[];
     artistFollows: INosArtist[];
+    transactions: IDbTransaction[];
 
     constructor(
         public navCtrl: NavController,
-        public loadingCtrl: LoadingController,
-        private store: Store<fromStore.MusicState>,
-        // public portfolioService: PortfolioService
+        public store: Store<fromStore.MusicState>,
+        public firebaseProvider: FirebaseProvider
     ) {
         // Start Loading
-        const loading = this.loadingCtrl.create({});
-        loading.present();
+        this.store.dispatch(new fromStore.ShowLoading());
 
         this.store.select(fromStore.getNosPortfolio)
             .takeUntil(this.unsubscribe)
             .subscribe(state => {
-                loading.dismiss();
+                this.store.dispatch(new fromStore.HideLoading());
                 console.log('getNosPortfolio', state);
                 this.userPortfolio = state;
                 if (this.userPortfolio) {
-                    // Load each artist in the portfolio
-                    Object.keys(this.userPortfolio.shares).forEach((key) => {
-                        this.store.dispatch(new fromStore.StartArtistSubscription(key));
-                    });
+                    // Get transactions that are not hidden
+                    this.transactions = this.userPortfolio.transactions;
+                    this.stocks = this.userPortfolio.shares;
                     // Load each artist in the follows
                     Object.keys(this.userPortfolio.artistFollows).forEach((key) => {
-                        this.store.dispatch(new fromStore.StartArtistSubscription(key));
+                        // this.store.dispatch(new fromStore.StartArtistSubscription(key));
                     });
                 }
-            });
-
-        this.store.select(fromStore.getPortfolioStockNosArtists)
-            .takeUntil(this.unsubscribe)
-            .subscribe(state => {
-                console.log('getPortfolioNosArtists', state);
-                this.stocks = state;
             });
 
         this.store.select(fromStore.getPortfolioFollowingNosArtists)
@@ -62,6 +53,12 @@ export class PortfolioPage {
             .subscribe(state => {
                 console.log('getPortfolioFollowingNosArtists', state);
                 this.artistFollows = state;
+            });
+
+            this.store.select(fromStore.getArtistsMap)
+            .takeUntil(this.unsubscribe)
+            .subscribe(state => {
+                console.log('getArtistsMap', state);
             });
     }
 
@@ -71,11 +68,8 @@ export class PortfolioPage {
 
     ionViewWillUnload() {
         // Stop the artist subscriptions
-        Object.keys(this.userPortfolio.shares).forEach((key) => {
-            this.store.dispatch(new fromStore.StopArtistSubscription(key));
-        });
         Object.keys(this.userPortfolio.artistFollows).forEach((key) => {
-            this.store.dispatch(new fromStore.StopArtistSubscription(key));
+            // this.store.dispatch(new fromStore.StopArtistSubscription(key));
         });
         // End Subscriptions
         this.unsubscribe.next();
@@ -84,6 +78,10 @@ export class PortfolioPage {
 
     onHoldingSelect(spotifyId: string): void {
         this.navCtrl.push(ArtistPage, { spotifyId: spotifyId });
+    }
+
+    onTransHide(transaction: IDbTransaction): void {
+        this.firebaseProvider.hideTransaction(transaction.firebaseKey);
     }
 
 }

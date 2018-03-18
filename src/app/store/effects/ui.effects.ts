@@ -35,4 +35,20 @@ export class UiEffects {
             this.uiService.showToast(payload);
         });
 
+    @Effect({ dispatch: false })
+    ShowLoading$ = this.actions$
+        .ofType(uiActions.SHOW_LOADING)
+        .map((action: uiActions.ShowLoading) => action.payload)
+        .do(payload => {
+            this.uiService.showLoading(payload);
+        });
+
+    @Effect({ dispatch: false })
+    HideLoading$ = this.actions$
+        .ofType(uiActions.HIDE_LOADING)
+        .map((action: uiActions.HideLoading) => action.payload)
+        .do(payload => {
+            this.uiService.hideLoading();
+        });
+
 }
