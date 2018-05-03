@@ -12,7 +12,7 @@ import { LoginPage } from '../pages/login/login';
 import { AuthData } from '../providers/auth-data';
 
 import { Store } from '@ngrx/store';
-import * as fromStore from '../app/store';
+import * as fromStore from '../store';
 
 export interface IAppPage {
     title: string;
@@ -46,7 +46,7 @@ export class MyApp {
         public authData: AuthData,
         private store: Store<fromStore.MusicState>
     ) {
-        this.rootPage = PortfolioPage;
+        this.rootPage = AboutPage;
 
         this.initializeApp();
     }

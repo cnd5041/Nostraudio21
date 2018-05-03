@@ -2,7 +2,7 @@ import { Action } from '@ngrx/store';
 
 import {
     IDbPortfolio, INosPortfolio
-} from '../../../models';
+} from '../../models';
 
 export const FETCH_PORTFOLIO = '[music] Fetch PORTFOLIO';
 export const FETCH_PORTFOLIO_SUCCESS = '[music] Fetch PORTFOLIO Success';

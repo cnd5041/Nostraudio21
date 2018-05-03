@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Http, Response, RequestOptionsArgs, Headers } from '@angular/http';
 
 import { Observable } from 'rxjs/Rx';
-import 'rxjs/add/operator/map';
 
 import { INosArtist, ISpotifyTopTracks, ISpotifyArtist } from '../models/artist.model';
 

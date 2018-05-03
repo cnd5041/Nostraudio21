@@ -1,9 +1,7 @@
 {
   "rules": {
     "no-duplicate-variable": true,
-    "no-unused-variable": [
-      true
-    ],
+    "no-unused-variable": [true],
     "prefer-const": true,
     "no-duplicate-imports": true,
     "semicolon": [true, "always"]

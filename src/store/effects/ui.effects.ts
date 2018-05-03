@@ -7,7 +7,7 @@ import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 
 import * as uiActions from '../actions/ui.actions';
-import { UiService } from '../../../providers';
+import { UiService } from '../../providers/ui-service';
 
 @Injectable()
 export class UiEffects {

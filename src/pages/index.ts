@@ -1,4 +1,20 @@
-﻿export * from './about/about';
+﻿import { AboutPage } from './about/about';
+import { ArtistPage } from './artist/artist';
+import { LoginPage } from './login/login';
+import { PortfolioPage } from './portfolio/portfolio';
+import { ResetPasswordPage } from './reset-password/reset-password';
+import { SearchPage } from './search/search';
+import { SignupPage } from './signup/signup';
+import { StatsPage } from './stats/stats';
+import { SupportPage } from './support/support';
+import { EventsModal } from './events-modal/events-modal';
+
+export const pages: any[] = [
+    AboutPage, ArtistPage, LoginPage, PortfolioPage, ResetPasswordPage,
+    SearchPage, SignupPage, StatsPage, SupportPage, EventsModal
+];
+
+export * from './about/about';
 export * from './artist/artist';
 export * from './login/login';
 export * from './portfolio/portfolio';
@@ -7,3 +23,4 @@ export * from './search/search';
 export * from './signup/signup';
 export * from './stats/stats';
 export * from './support/support';
+export * from './events-modal/events-modal';

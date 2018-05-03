@@ -1,11 +1,59 @@
 <ion-header>
-  <ion-navbar>
-    <button ion-button menuToggle>
-      <ion-icon name="menu"></ion-icon>
-    </button>
-    <ion-title>Stats</ion-title>
-  </ion-navbar>
+    <ion-navbar>
+        <button ion-button menuToggle>
+            <ion-icon name="menu"></ion-icon>
+        </button>
+        <ion-title>Stats</ion-title>
+    </ion-navbar>
 </ion-header>
 <ion-content>
-  <artist-list-item *ngFor="let artist of artists | async" [artist]="artist"></artist-list-item>
+    <ion-segment [(ngModel)]="primarySort" color="primary" (ionChange)="primarySortChanged($event)">
+        <ion-segment-button value="marketPrice" (click)="segmentClick('marketPrice')">
+            Market Price
+        </ion-segment-button>
+        <ion-segment-button value="marketCap" (click)="segmentClick('marketCap')">
+            Market Cap
+        </ion-segment-button>
+    </ion-segment>
+
+    <ion-list>
+        <ion-item>
+            <ion-label>Genres</ion-label>
+            <ion-select [(ngModel)]="filter" (ngModelChange)="onGenreChange($event)" multiple="true">
+                <ion-option *ngFor="let genre of genres" value="{{genre.firebaseKey}}">{{genre.name}}</ion-option>
+            </ion-select>
+        </ion-item>
+        <ion-item>
+            <ion-label>Search</ion-label>
+            <ion-input type="text" [formControl]="searchControl"></ion-input>
+        </ion-item>
+    </ion-list>
+
+    <!-- <ion-list [virtualScroll]="artists" [headerFn]="myHeaderFn"> -->
+    <ion-list>
+        <!-- <ion-item *virtualItem="let artist"> -->
+        <ion-item *ngFor="let artist of artists">
+            <ion-thumbnail item-left class="thumb-container">
+                <ion-badge class="thumb-badge">
+                    <span class="thumb-badge-text">{{getRank(artist.spotifyId)}}</span>
+                </ion-badge>
+                <!-- <ion-img [src]="artist.smallImage" class="thumb-base"></ion-img> -->
+                <img [src]="artist.smallImage" class="thumb-base">
+            </ion-thumbnail>
+
+            <h2>{{artist.name}} </h2>
+            <h3>{{artist.genresArray[0]}}</h3>
+            <p>
+                <b>Market Price:</b> {{artist.marketPrice | currency:'USD':true:'1.2-2'}}
+            </p>
+            <p>
+                <b>Market Cap:</b> {{artist.marketCap | currency:'USD':true:'1.2-2'}}
+            </p>
+            <button ion-button clear item-end (click)="onArtistSelect(artist.spotifyId)">
+                <ion-icon name="arrow-forward"></ion-icon>
+            </button>
+
+        </ion-item>
+    </ion-list>
+
 </ion-content>

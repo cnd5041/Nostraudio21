@@ -1,16 +1,18 @@
 ﻿import { Component } from '@angular/core';
-import { NavController, NavParams, ActionSheetController } from 'ionic-angular';
+import { NavController, NavParams, ActionSheetController, ModalController } from 'ionic-angular';
 
-// Models
+// App Imports
 import { INosArtist, INosPortfolio } from '../../models';
+import { UiService, NosSongkickService } from '../../providers';
+import { EventsModal } from '../events-modal/events-modal';
 
-import lodash from 'lodash';
-// rxjs imports
+// library imports
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
+import { toInteger, isInteger } from 'lodash';
 // Store imports
 import { Store } from '@ngrx/store';
-import * as fromStore from '../../app/store';
+import * as fromStore from '../../store';
 
 @Component({
     selector: 'page-artist',
@@ -37,7 +39,10 @@ export class ArtistPage {
         public navCtrl: NavController,
         public navParams: NavParams,
         public actionSheetCtrl: ActionSheetController,
-        private store: Store<fromStore.MusicState>
+        public modalCtrl: ModalController,
+        public store: Store<fromStore.MusicState>,
+        public uiService: UiService,
+        public songkick: NosSongkickService
     ) {
     }
 
@@ -47,6 +52,14 @@ export class ArtistPage {
 
         // Start Loading
         this.store.dispatch(new fromStore.ShowLoading());
+
+        this.uiService.navBackSubject$
+            .filter(state => state === true)
+            .takeUntil(this.unsubscribe)
+            .subscribe((navBack) => {
+                this.store.dispatch(new fromStore.HideLoading());
+                this.navCtrl.pop();
+            });
 
         this.store.select(fromStore.getSelectedNosArtist)
             .takeUntil(this.unsubscribe)
@@ -129,8 +142,8 @@ export class ArtistPage {
     }
 
     isValidNumber(value: number | string): boolean {
-        const intVal = lodash.toInteger(value);
-        return value !== '' && lodash.isInteger(intVal) && intVal > 0;
+        const intVal = toInteger(value);
+        return value !== '' && isInteger(intVal) && intVal > 0;
     }
 
     isSellValid(): boolean {
@@ -158,7 +171,7 @@ export class ArtistPage {
             const params = {
                 portfolio: this.userPortfolio,
                 artistKey: this.artist.spotifyId,
-                shareCount: lodash.toInteger(this.buyShareCount),
+                shareCount: toInteger(this.buyShareCount),
                 price: this.artist.marketPrice
             };
             this.store.dispatch(new fromStore.UserBuyArtist(params));
@@ -193,7 +206,7 @@ export class ArtistPage {
             const params = {
                 portfolio: this.userPortfolio,
                 artistKey: this.artist.spotifyId,
-                shareCount: lodash.toInteger(this.sellShareCount),
+                shareCount: toInteger(this.sellShareCount),
                 price: this.artist.marketPrice
             };
             this.store.dispatch(new fromStore.UserSellArtist(params));
@@ -225,6 +238,11 @@ export class ArtistPage {
         });
 
         actionSheet.present();
+    }
+
+    onEventsClick() {
+        const modal = this.modalCtrl.create(EventsModal);
+        modal.present();
     }
 
 }

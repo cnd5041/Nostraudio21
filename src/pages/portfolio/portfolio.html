@@ -93,15 +93,19 @@
         <ion-card-header>
             Transactions
         </ion-card-header>
-        <ion-list inset *ngIf="transactions && transactions.length > 0">
-            <button ion-item *ngFor="let trans of transactions">
-                <h5>{{trans.action}} - {{trans.artist.name}}</h5>
+        <ion-list *ngIf="transactions && transactions.length > 0">
+            <ion-item *ngFor="let trans of transactions">
+                <h5>
+                    <ion-badge [color]="getTransactionBadgeColor(trans)">{{trans.action}}</ion-badge> {{trans.artist.name}}
+                </h5>
                 <p>
                     {{trans.total | currency:'USD':true:'1.2-2'}} - {{trans.numberOfShares}} Share(s)
-                    <br> {{trans.date | date:mediumDate}}
+                </p>
+                <p>
+                    {{trans.date | date:mediumDate}}
                 </p>
                 <button ion-button outline dark item-end (click)="onTransHide(trans)">Hide</button>
-            </button>
+            </ion-item>
         </ion-list>
         <ion-card-content *ngIf="!transactions || transactions.length < 1">
             No Transactions.

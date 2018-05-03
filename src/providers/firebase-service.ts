@@ -3,67 +3,62 @@ import { Injectable } from '@angular/core';
 import {
     IDbGenre, IDbArtist,
     IStockholdersPerArtistItem,
-    IDbPortfolio, constructPortfolio, Portfolio,
-    IReferenceDictionary, ISharesPerPortfolioItem, IArtistFollowsPerUserItem,
-    IFollowsPerArtistItem, IDbTransaction, INosPortfolio, INosArtist, NosTransaction, nosArtistFromDbArtist, IPortfolioShare,
+    IDbPortfolio, constructPortfolio, DbPortfolio,
+    IReferenceDictionary, ISharesPerPortfolioItem, IDbArtistFollowsPerUserItem,
+    IFollowsPerArtistItem, IDbTransaction, INosPortfolio, NosTransaction, nosArtistFromDbArtist, IPortfolioShare,
     ICountReferenceDictionary,
-    IDbArtistMap,
     IDbGenreMap,
     IGenresPerArtistMap,
+    IArtistsPerGenreMap,
     IFollowersPerArtistMap,
-    IStockholdersPerArtistMap,
-    IDbGenreNameMap
+    IDbGenreNameMap,
+    INosArtist
 } from '../models';
 
-import { AuthData } from '../providers/auth-data';
+// App Imports
+import { AuthData } from './auth-data';
+import { ArtistService } from './artist-service';
 
-import { AngularFireDatabase, AngularFireList, AngularFireAction } from 'angularfire2/database';
-// import { DataSnapshot } from '@firebase/database';
 // Library Imports
-import { keyBy, startCase, toInteger, round, isNull, forOwn, keysIn } from 'lodash';
-import { Subscription } from 'rxjs/Subscription';
+import { startCase, toInteger, round, isNull, forOwn } from 'lodash';
 import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import {
-    map, switchMap, catchError, tap, withLatestFrom, filter, take, skip,
-    share, shareReplay
+    map, catchError, withLatestFrom, take, switchMap
 } from 'rxjs/operators';
 // NGRX
 import { Store } from '@ngrx/store';
-import * as fromStore from '../app/store';
-
-import { BehaviorSubject, Subject } from 'rxjs';
+import * as fromStore from '../store';
+// Angular Fire Imports
+import { AngularFireDatabase, AngularFireAction } from 'angularfire2/database';
+import { DataSnapshot } from '@firebase/database-types';
+import { Subject } from 'rxjs';
 
 @Injectable()
-export class FirebaseProvider {
+export class NosFirebaseService {
     // Artist Observables
-    // private artists: Observable<IDbArtistMap>;
-    private artists: BehaviorSubject<IDbArtistMap> = new BehaviorSubject(null);
-    private genresPerArtist: Observable<IGenresPerArtistMap>;
     // TODO: only count true followers
-    private followersPerArtist: Observable<IFollowersPerArtistMap>;
-    // private stockholdersPerArtist: Observable<IStockholdersPerArtistMap>;
-    private stockholdersPerArtist: BehaviorSubject<IStockholdersPerArtistMap> = new BehaviorSubject(null);
+    private followersPerArtist$: Observable<IFollowersPerArtistMap>;
+
     // Artist References
-    // artistsRef = this.db.list<IDbArtist>('/artists');
-    artistsRef = this.db.list<IDbArtist>('/artists', ref => ref.orderByKey());
-    genresPerArtistRef = this.db.list<IReferenceDictionary>('/genresPerArtist');
-    followsPerArtistRef = this.db.list<IReferenceDictionary>('/followsPerArtist');
-    stockholdersPerArtistRef = this.db.list<ICountReferenceDictionary>('/stockholdersPerArtist');
+    private genresPerArtistRef = this.db.list<IReferenceDictionary>('/genresPerArtist');
+    private followsPerArtistRef = this.db.list<IReferenceDictionary>('/followsPerArtist');
+    private stockholdersPerArtistRef = this.db.list<ICountReferenceDictionary>('/stockholdersPerArtist');
+    private artistsRef = this.db.list<IDbArtist>('/artists', ref => ref.orderByKey());
 
-    // Genre Observables
-    // genres: Observable<IDbGenreMap>;
-    private genres: BehaviorSubject<IDbGenreMap> = new BehaviorSubject(null);
-    // Genre Refs
-    genresRef = this.db.list<IDbGenre>('/genres');
-    artistsPerGenreRef = this.db.list<IReferenceDictionary>('/artistsPerGenre');
+    // Genres
+    private genresRef = this.db.list<IDbGenre>('/genres');
+    public genresList$: Observable<IDbGenreMap>;
+    private artistsPerGenreRef = this.db.list<IReferenceDictionary>('/artistsPerGenre');
+    public artistsPerGenre$: Observable<any>;
 
-    // TODO: remove
-    clientArtistsSubs: { [key: string]: Subscription } = {};
+    private _nosArtists: Subject<{ key: string, artist: INosArtist }> = new Subject();
+    public nosArtists$: Observable<{ key: string, artist: INosArtist }> = this._nosArtists.asObservable();
 
     constructor(
         private db: AngularFireDatabase,
         private authData: AuthData,
-        private store: Store<fromStore.MusicState>
+        private artistService: ArtistService
     ) {
 
         // https://github.com/angular/angularfire2/blob/5.0.0-rc.6/docs/rtdb/lists.md
@@ -72,52 +67,35 @@ export class FirebaseProvider {
         // .stateChanges is list of actions
         //    https://github.com/angular/angularfire2/blob/master/docs/version-5-upgrade.md#50-1
 
-
-        // Artists
         this.artistsRef
-            .snapshotChanges()
-            .pipe(
-                map((actions) => this.mapValueToKey(actions))
-            ).subscribe((value: IDbArtistMap) => {
-                this.artists.next(value);
-            });
-
-        // Stockholders Per Artist
-        this.stockholdersPerArtistRef
-            .snapshotChanges()
-            .pipe(
-                map((actions) => this.mapValueToKey(actions))
-            ).subscribe((value: IStockholdersPerArtistMap) => {
-                this.stockholdersPerArtist.next(value);
+            .stateChanges(['child_added'])
+            .subscribe(change => {
+                this.setNosArtistSubs(change.key);
             });
 
         // Genres
-        this.genresRef
+        this.genresList$ = this.genresRef
             .snapshotChanges()
             .pipe(
                 map((actions) => this.mapValueToKey(actions))
-            ).subscribe((value: IDbGenreMap) => {
-                this.genres.next(value);
-            });
+            );
 
-        // Genres Per Artist
-        this.genresPerArtist = this.genresPerArtistRef
+        // // Genres Per Artist
+        this.artistsPerGenre$ = this.artistsPerGenreRef
             .snapshotChanges()
             .pipe(
                 map((actions) => this.mapValueToKey(actions))
             );
 
         // Followers Per Artist
-        this.followersPerArtist = this.followsPerArtistRef
+        this.followersPerArtist$ = this.followsPerArtistRef
             .snapshotChanges()
             .pipe(
-                map((actions) => this.mapValueToKey(actions))
+                map((actions: AngularFireAction<DataSnapshot>[]) => this.mapValueToKey(actions))
             );
-
-        this.addArtistChildren();
     }
 
-    private mapValueToKey(actions: AngularFireAction<any>[]) {
+    private mapValueToKey(actions: AngularFireAction<any>[]): any {
         const map = {};
         actions.forEach((action) => {
             map[action.key] = action.payload.val();
@@ -125,23 +103,18 @@ export class FirebaseProvider {
         return map;
     }
 
-    addArtistChildren(): void {
-        this.artistsRef
-            .stateChanges(['child_added'])
-            .subscribe(change => {
-                this.setNosArtistSubs(change.key);
-            });
-    }
-
-    setNosArtistSubs(artistKey: string): void {
+    private setNosArtistSubs(artistKey: string): void {
         const artists = this.db.object<IDbArtist>(`/artists/${artistKey}`)
             .valueChanges();
         const stockholdersPerArtist = this.db.object<ICountReferenceDictionary>(`/stockholdersPerArtist/${artistKey}`)
             .valueChanges();
+        const genres = this.genresList$
+            .pipe(take(1));
+
         const genresPerArtist = this.db.object<IReferenceDictionary>(`/genresPerArtist/${artistKey}`)
             .valueChanges()
             .pipe(
-                withLatestFrom(this.genres),
+                withLatestFrom(genres),
                 map(([genresPerArtist, genres]): IDbGenreNameMap => {
                     const genresMap = {};
                     forOwn(genresPerArtist, (value, key) => {
@@ -156,43 +129,17 @@ export class FirebaseProvider {
             stockholdersPerArtist,
             genresPerArtist,
         ).subscribe(([artist, stockholdersPerArtist, genresPerArtist]) => {
+            // TODO:
             // Update the marketPrice if necessary
             // TODO: Move to server function
             // const oldPrice = artist.marketPrice;
             // const newPrice = nosArtist.marketPrice;
-            // const genresMap = {};
-            // forOwn(genresPerArtist, (value, key) => {
-            //     genresMap[key] = genres[key].name;
-            // });
+
             // Create nos artists
             const nosArtist = nosArtistFromDbArtist(artist, stockholdersPerArtist, genresPerArtist);
             // Update the store
-            // this.store.dispatch(new fromStore.ArtistMapAdd({ key: artistKey, artist: nosArtist }));
-            this.store.dispatch(new fromStore.ArtistMapAdd({key: artistKey, artist: nosArtist}));
+            this._nosArtists.next({ key: artistKey, artist: nosArtist });
         });
-    }
-
-    getArtistList() {
-        /*
-            have some main centric calls, portfolio, artist, only drive updates with changes to the main call
-            do the look up tables and stuff in the firebase, then put that in the store
-            make it easy to trigger update calls
-            make sure it's easy to get the artist related to each genre
-
-            I have all the basic stuff set up.
-            Map an artist object that combines all the lookup tables genres
-            make sure only updates to 'artists' are driving the push to the store
-
-            when I do the portfolio and artist combinations, just do that in selectors
-            use the portfolio artist ids, then use that against the artists list
-
-
-            leaving off: figure out what store subscriptions to set and how often.
-            see if there would be a way to limit it to certain artists,
-            try to keep in mind it may have a ton of updates if I watch everything.
-            do new setters, then clean up the existing stuff
-        */
-
     }
 
     genresByArtist(spotifyId: string): Observable<any[]> {
@@ -203,7 +150,11 @@ export class FirebaseProvider {
     followsPerArtistByArtistId(spotifyId: string): Observable<IFollowsPerArtistItem> {
         return this.db.object<any>(`/followsPerArtist/${spotifyId}`).snapshotChanges()
             .map(action => {
-                return { firebaseKey: action.key, value: action.payload.val() };
+                if (action.key) {
+                    return { firebaseKey: action.key, value: action.payload.val() };
+                } else {
+                    return null;
+                }
             });
     }
 
@@ -216,24 +167,15 @@ export class FirebaseProvider {
     }
 
     // Get the shares and the artist
-    getSharesPerPortfolio(uid: string): Observable<IPortfolioShare[]> {
+    private getSharesPerPortfolio(uid: string): Observable<IPortfolioShare[]> {
         return this.db.object<ISharesPerPortfolioItem>(`/sharesPerPortfolio/${uid}`)
             .valueChanges()
             .pipe(
-                withLatestFrom(this.artists),
-                map(([shares, artists]): IPortfolioShare[] => {
-                    if (shares) {
-                        return Object.keys(shares).reduce((accum: any[], current: string) => {
-                            // only return if count > 0
-                            if (shares[current] > 0) {
-                                return [...accum, { sharesCount: shares[current], artist: artists[current] }];
-                            } else {
-                                return accum;
-                            }
-                        }, []);
-                    } else {
-                        return [];
-                    }
+                map((shares): IPortfolioShare[] => {
+
+                    return Object.keys(shares).map((key) => {
+                        return { sharesCount: shares[key], artistKey: key };
+                    });
                 })
             );
     }
@@ -243,7 +185,7 @@ export class FirebaseProvider {
         return this.db.list<IDbTransaction>('/transactions', ref => ref.orderByChild('portfolioId').equalTo(uid))
             .snapshotChanges()
             .pipe(
-                map((actions) => {
+                map((actions: AngularFireAction<DataSnapshot>[]) => {
                     // Add the firebase key
                     return actions.map((action) => {
                         return {
@@ -253,13 +195,11 @@ export class FirebaseProvider {
                     });
                 }),
                 map((transactions: IDbTransaction[]) => transactions.filter(t => t.isHidden !== true)),
-                withLatestFrom(this.artists),
-                map(([transactions, artists]) => {
+                map((transactions: IDbTransaction[]) => {
                     return transactions.map(t => {
                         return {
                             ...t,
                             action: startCase(t.action),
-                            artist: artists[t.artistId]
                         };
                     });
                 }),
@@ -276,7 +216,7 @@ export class FirebaseProvider {
 
         const sharesPerPortolioSource = this.getSharesPerPortfolio(uid);
 
-        const artistFollowsPerPortolioSource = this.db.object<IArtistFollowsPerUserItem>(`/artistFollowsPerUser/${uid}`)
+        const artistFollowsPerPortfolioSource = this.db.object<IDbArtistFollowsPerUserItem>(`/artistFollowsPerUser/${uid}`)
             .valueChanges();
 
         const transactionsSource = this.getTransactionsPerPortfolio(uid);
@@ -284,16 +224,11 @@ export class FirebaseProvider {
         const stream = Observable.combineLatest(
             portfolioSource,
             sharesPerPortolioSource,
-            artistFollowsPerPortolioSource,
+            artistFollowsPerPortfolioSource,
             transactionsSource
         );
 
-        return stream.map((queriedItems) => {
-            const portfolio = queriedItems[0];
-            const sharesPerPortfolio = queriedItems[1];
-            const artistFollowsPerUser = queriedItems[2];
-            const transactions = queriedItems[3];
-
+        return stream.map(([portfolio, sharesPerPortfolio, artistFollowsPerUser, transactions]) => {
             if (portfolio) {
                 const nosPortfolio = constructPortfolio(portfolio, sharesPerPortfolio, artistFollowsPerUser, transactions);
                 return nosPortfolio;
@@ -314,7 +249,7 @@ export class FirebaseProvider {
                     displayName: user.displayName || undefined,
                     imageUrl: user.photoURL || undefined
                 };
-                const newPortfolio = new Portfolio(uid, options);
+                const newPortfolio = new DbPortfolio(uid, options);
                 console.log('newPortfolio', newPortfolio);
                 // // Set the new /portfolio with the uid as key
                 this.db.object(`/portfolios/${uid}`)
@@ -426,6 +361,37 @@ export class FirebaseProvider {
                 // Update the endpoint with the share count
                 this.db.object(`/stockholdersPerArtist/${artistId}/${portfolioId}`)
                     .set(updatedShareCount);
+            });
+    }
+
+    public checkSpotifyId(spotifyId: string): Observable<boolean> {
+        return this.db.object<IDbArtist>(`/artists/${spotifyId}`)
+            .valueChanges()
+            .pipe(
+                take(1),
+                catchError((error) => {
+                    console.error('artist valueChanges error', error);
+                    return Observable.throw(error);
+                })
+        ).switchMap((artist: IDbArtist) => {
+                // Create if null
+                if (isNull(artist)) {
+                    console.log('call create artist!');
+
+                    return this.artistService.createArtist(spotifyId)
+                        .pipe(
+                            switchMap((result) => {
+                                console.log('create result!');
+                                return Observable.of(true);
+                            }),
+                            catchError((error) => {
+                                console.error('createArtist error catch', error);
+                                return Observable.throw(error);
+                            })
+                        );
+                } else {
+                    return Observable.of(true);
+                }
             });
     }
 

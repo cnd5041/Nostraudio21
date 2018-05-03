@@ -9,31 +9,31 @@ import { Validators, FormBuilder } from '@angular/forms';
   Ionic pages and navigation.
 */
 @Component({
-  selector: 'page-support',
-  templateUrl: 'support.html'
+    selector: 'page-support',
+    templateUrl: 'support.html'
 })
 export class SupportPage {
-  supportForm;
+    supportForm;
 
-  constructor(
-    public navCtrl: NavController,
-    public navParams: NavParams,
-    private formBuilder: FormBuilder
-  ) {
+    constructor(
+        public navCtrl: NavController,
+        public navParams: NavParams,
+        private formBuilder: FormBuilder
+    ) {
 
-  }
+    }
 
-  ionViewDidLoad() {
-    this.supportForm = this.formBuilder.group({
-      category: ['', Validators.required],
-      response: ['', Validators.required],
-      comments: ['', Validators.required]
-    });
+    ionViewDidLoad() {
+        this.supportForm = this.formBuilder.group({
+            category: ['', Validators.required],
+            response: ['', Validators.required],
+            comments: ['', Validators.required]
+        });
 
-  }
+    }
 
-  logForm() {
-    console.log(this.supportForm.value)
-  }
+    logForm() {
+        console.log(this.supportForm.value);
+    }
 
 }

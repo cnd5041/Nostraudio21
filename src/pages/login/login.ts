@@ -7,7 +7,7 @@ import { ISubscription } from "rxjs/Subscription";
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
 
-import { AuthData, PortfolioService } from '../../providers/';
+import { AuthData } from '../../providers/';
 import { INosPortfolio } from '../../models/';
 import { SignupPage, ResetPasswordPage } from '../';
 import { GlobalValidator } from '../../validators/global-validator';
@@ -25,7 +25,7 @@ export class LoginPage {
     loading: Loading;
     // Track user login state
     userState: firebase.User;
-    userPortfolio$: Observable<INosPortfolio>;
+    // userPortfolio$: Observable<INosPortfolio>;
     userStateSubscription: ISubscription;
 
 
@@ -35,7 +35,6 @@ export class LoginPage {
         public formBuilder: FormBuilder,
         public alertCtrl: AlertController,
         public loadingCtrl: LoadingController,
-        public portfolioService: PortfolioService,
         public afAuth: AngularFireAuth,
         public actionSheetCtrl: ActionSheetController
     ) {
@@ -55,9 +54,9 @@ export class LoginPage {
 
     ionViewDidLoad() {
         // Setup Portfolio Subscription
-        this.userPortfolio$ = this.portfolioService.userPortfolio$;
+        // this.userPortfolio$ = this.portfolioService.userPortfolio$;
 
-        // Setup UserState Stream/Subscription        
+        // Setup UserState Stream/Subscription
         const userStateStream = this.authData.authState;
         this.userStateSubscription = userStateStream
             .subscribe(userState => {
@@ -76,7 +75,7 @@ export class LoginPage {
      * Receives an input field and sets the corresponding fieldChanged property to 'true' to help with the styles.
      */
     elementChanged(input) {
-        let field = input.inputControl.name;
+        const field = input.inputControl.name;
         this[field + "Changed"] = true;
     }
 
@@ -117,7 +116,7 @@ export class LoginPage {
     }
 
     logOut() {
-        let actionSheet = this.actionSheetCtrl.create({
+        const actionSheet = this.actionSheetCtrl.create({
             title: 'Confirm Log Out',
             buttons: [
                 {
@@ -141,7 +140,7 @@ export class LoginPage {
     }
 
     showError(message: string): void {
-        let alert = this.alertCtrl.create({
+        const alert = this.alertCtrl.create({
             message: message,
             buttons: [
                 {

@@ -33,8 +33,10 @@
         <img *ngIf="artist" [src]="artist?.largeImage" />
 
         <ion-row center text-center>
-            <ion-col><b>Stock Price: </b>{{artist?.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
-            <ion-col><b>Market Cap: </b>{{artist?.marketCap | currency:'USD':true:'1.2-2'}}</ion-col>
+            <ion-col>
+                <b>Stock Price: </b>{{artist?.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
+            <ion-col>
+                <b>Market Cap: </b>{{artist?.marketCap | currency:'USD':true:'1.2-2'}}</ion-col>
         </ion-row>
     </ion-card>
 
@@ -50,8 +52,10 @@
         </ion-card-header>
         <ion-card-content>
             <ion-row center text-center>
-                <ion-col><b>Cash: </b>{{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}</ion-col>
-                <ion-col *ngIf="artist"><b>Shares ({{ownedShares}}): </b>{{ownedShares * artist.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
+                <ion-col>
+                    <b>Cash: </b>{{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}</ion-col>
+                <ion-col *ngIf="artist">
+                    <b>Shares ({{ownedShares}}): </b>{{ownedShares * artist.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
             </ion-row>
         </ion-card-content>
 
@@ -95,4 +99,18 @@
             </div>
         </ion-list>
     </ion-card>
+
+    <!-- <ion-item>
+        <button ion-button block outline icon-right (click)="onEventsClick()">
+            See Events
+            <ion-icon name="arrow-forward"></ion-icon>
+        </button>
+    </ion-item> -->
+    <div padding>
+        <button ion-button block outline icon-right (click)="onEventsClick()">
+            See Events
+            <ion-icon name="arrow-forward"></ion-icon>
+        </button>
+    </div>
+
 </ion-content>

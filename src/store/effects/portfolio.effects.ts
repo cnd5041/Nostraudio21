@@ -7,7 +7,7 @@ import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 import { map, switchMap, catchError, tap } from 'rxjs/operators';
 
-import { FirebaseProvider } from '../../../providers';
+import { NosFirebaseService } from '../../providers/firebase-service';
 
 import * as appActions from '../actions';
 
@@ -16,7 +16,7 @@ export class PortfolioEffects {
 
     constructor(
         private actions$: Actions,
-        private firebaseProvider: FirebaseProvider
+        private firebaseProvider: NosFirebaseService
     ) {
     }
 

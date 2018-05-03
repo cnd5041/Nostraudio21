@@ -2,7 +2,7 @@ import { Action } from '@ngrx/store';
 
 import {
     IFollowsPerArtistItem, INosPortfolio, INosArtist, IDbArtistMap, IDbArtist, INosArtistMap
-} from '../../../models';
+} from '../../models';
 
 export const SET_ARTISTS_MAP = '[music] Set Artists Map';
 export const ARTISTS_MAP_ADD = '[music] ARTISTS_MAP_ADD';
@@ -16,6 +16,8 @@ export const USER_UNFOLLOW_ARTIST = '[music] USER_UNFOLLOW_ARTIST';
 
 export const USER_BUY_ARTIST = '[music] USER_BUY_ARTIST';
 export const USER_SELL_ARTIST = '[music] USER_SELL_ARTIST';
+
+export const SEARCH_ARTIST = '[music] SEARCH_ARTIST';
 
 export class SetArtistsMap implements Action {
     readonly type = SET_ARTISTS_MAP;
@@ -57,6 +59,10 @@ export class UserSellArtist implements Action {
     constructor(public payload: { portfolio: INosPortfolio, artistKey: string, shareCount: number, price: number }) { }
 }
 
+export class SearchArtist implements Action {
+    readonly type = SEARCH_ARTIST;
+    constructor(public payload: string) { }
+}
 
 export type ArtistsActions =
     SetArtistsMap |
@@ -66,4 +72,5 @@ export type ArtistsActions =
     UserFollowArtist |
     UserUnfollowArtist |
     UserBuyArtist |
-    UserSellArtist;
+    UserSellArtist |
+    SearchArtist;

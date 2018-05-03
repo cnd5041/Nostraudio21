@@ -5,10 +5,15 @@ import {
     LoadingOptions, LoadingController
 } from 'ionic-angular';
 
+import { Subject, BehaviorSubject, Observable } from 'rxjs';
+
 @Injectable()
 export class UiService {
 
     private loading;
+
+    private _navBackSubject$: Subject<boolean> = new Subject();
+    public navBackSubject$: Observable<boolean> = this._navBackSubject$.asObservable();
 
     constructor(
         private alertCtrl: AlertController,
@@ -26,7 +31,7 @@ export class UiService {
         toast.present();
     }
 
-    showLoading(options: LoadingOptions = { content: 'Loading...' }): void {
+    public showLoading(options: LoadingOptions = { content: 'Loading...' }): void {
         const loading = this.loadingCtrl.create();
         if (!this.loading) {
             this.loading = this.loadingCtrl.create(options);
@@ -34,11 +39,15 @@ export class UiService {
         }
     }
 
-    hideLoading(): void {
+    public hideLoading(): void {
         if (this.loading) {
             this.loading.dismiss();
             this.loading = null;
         }
+    }
+
+    public goBack(): void {
+        this._navBackSubject$.next(true);
     }
 
 }

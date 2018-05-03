@@ -1,18 +1,23 @@
-import { Component, Input, OnInit } from '@angular/core';
-//import { INosArtist } from '../../models/artists.models';
+import { Component, Input } from '@angular/core';
+import { NavController } from 'ionic-angular';
+
+import { INosArtist } from '../../models';
+import { ArtistPage } from '../../pages';
+
 
 @Component({
-  selector: 'artist-list-item',
-  templateUrl: 'artist-list-item.html'
+    selector: 'artist-list-item',
+    templateUrl: 'artist-list-item.html'
 })
-export class ArtistListItem implements OnInit {
-  //@Input() artist: INosArtist;
-  @Input() artist: any;
+export class ArtistListItem {
+    @Input() artist: INosArtist;
 
-  constructor() {
+    constructor(
+        public navCtrl: NavController
+    ) { }
 
-  }
-
-  ngOnInit() { }
+    onArtistSelect(spotifyId: string): void {
+        this.navCtrl.push(ArtistPage, { spotifyId: spotifyId });
+    }
 
 }

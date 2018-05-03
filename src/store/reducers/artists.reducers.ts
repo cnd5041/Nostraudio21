@@ -1,25 +1,21 @@
 import * as fromArtists from '../actions/artists.actions';
 import {
     IFollowsPerArtistItem, IStockholdersPerArtistItem, INosArtist, IDbArtistMap, INosArtistMap
-} from '../../../models';
-
-import { cloneDeep } from 'lodash';
+} from '../../models';
 
 export interface ArtistState {
     artistsMap: INosArtistMap;
-
     selectedArtistId: string;
-    // These Reference Tables will be mapped per selectedArtistId
+    // Follows is currenlty seperate, because it might change a lot
     selectedArtistFollows: IFollowsPerArtistItem;
+    query: string;
 }
-/*
-    do /artists and each /*PerArtist so all relevant data is here.
-*/
 
 const initialState: ArtistState = {
     artistsMap: {},
     selectedArtistId: null,
-    selectedArtistFollows: null
+    selectedArtistFollows: null,
+    query: null
 };
 
 export function reducer(
@@ -39,7 +35,6 @@ export function reducer(
                 ...state.artistsMap,
                 [action.payload.key]: action.payload.artist
             };
-            // console.log('woot woot', newMap);
             return {
                 ...state,
                 artistsMap: newMap
@@ -60,6 +55,13 @@ export function reducer(
             };
         }
 
+        case fromArtists.SEARCH_ARTIST: {
+            return {
+                ...state,
+                query: action.payload
+            };
+        }
+
         default: {
             return state;
         }
@@ -68,5 +70,5 @@ export function reducer(
 
 export const getArtistsMap = (state: ArtistState) => state.artistsMap;
 export const getSelectedArtistId = (state: ArtistState) => state.selectedArtistId;
-
 export const getSelectedArtistFollows = (state: ArtistState) => state.selectedArtistFollows;
+export const getSearchArtistQuery = (state: ArtistState) => state.query;

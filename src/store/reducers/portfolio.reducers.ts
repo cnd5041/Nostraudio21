@@ -1,7 +1,5 @@
 import * as fromActions from '../actions/portfolio.actions';
-import {
-    IDbPortfolio, INosPortfolio
-} from '../../../models';
+import { INosPortfolio } from '../../models';
 
 export interface PortfolioState {
     loading: boolean;

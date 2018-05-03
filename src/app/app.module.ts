@@ -15,7 +15,8 @@ import { AngularFireAuthModule } from 'angularfire2/auth';
 import { MyApp } from './app.component';
 
 import {
-    AboutPage, SupportPage, PortfolioPage, SearchPage, ArtistPage, StatsPage, LoginPage, ResetPasswordPage, SignupPage
+    AboutPage, SupportPage, PortfolioPage, SearchPage, ArtistPage,
+    StatsPage, LoginPage, ResetPasswordPage, SignupPage, EventsModal
 } from '../pages/';
 
 //Import Components
@@ -36,7 +37,7 @@ export const firebaseConfig = {
 // NGRX
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
-import { reducers, effects } from './store';
+import { reducers, effects } from '../store';
 
 
 @NgModule({
@@ -51,7 +52,8 @@ import { reducers, effects } from './store';
         StatsPage,
         LoginPage,
         ResetPasswordPage,
-        SignupPage
+        SignupPage,
+        EventsModal
     ],
     imports: [
         BrowserModule,
@@ -74,7 +76,8 @@ import { reducers, effects } from './store';
         StatsPage,
         LoginPage,
         ResetPasswordPage,
-        SignupPage
+        SignupPage,
+        EventsModal
     ],
     providers: [
         { provide: ErrorHandler, useClass: IonicErrorHandler },

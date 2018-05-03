@@ -2,13 +2,13 @@
 import { NavController } from 'ionic-angular';
 
 import { ArtistPage } from '../../pages';
-import { FirebaseProvider } from '../../providers';
-import { INosPortfolio, INosArtist, IDbTransaction, IPortfolioShare } from '../../models/';
+import { NosFirebaseService } from '../../providers';
+import { INosPortfolio, INosArtist, IDbTransaction, IPortfolioShare, INosPortfolioWithArtists, ITransactionWithArtist, IPortfolioShareWithArtist } from '../../models/';
 
 import { Subject } from "rxjs/Subject";
 // Store imports
 import { Store } from '@ngrx/store';
-import * as fromStore from '../../app/store';
+import * as fromStore from '../../store';
 
 @Component({
     selector: 'page-portfolio',
@@ -17,48 +17,30 @@ import * as fromStore from '../../app/store';
 export class PortfolioPage {
     private unsubscribe: Subject<any> = new Subject();
 
-    userPortfolio: INosPortfolio;
-
-    stocks: IPortfolioShare[];
+    userPortfolio: INosPortfolioWithArtists;
+    stocks: IPortfolioShareWithArtist[];
     artistFollows: INosArtist[];
-    transactions: IDbTransaction[];
+    transactions: ITransactionWithArtist[];
 
     constructor(
         public navCtrl: NavController,
         public store: Store<fromStore.MusicState>,
-        public firebaseProvider: FirebaseProvider
+        public firebaseProvider: NosFirebaseService
     ) {
         // Start Loading
         this.store.dispatch(new fromStore.ShowLoading());
 
-        this.store.select(fromStore.getNosPortfolio)
+        this.store.select(fromStore.getNosPortfolioWithArtists)
             .takeUntil(this.unsubscribe)
             .subscribe(state => {
                 this.store.dispatch(new fromStore.HideLoading());
-                console.log('getNosPortfolio', state);
+                console.log('getNosPortfolioWithArtists', state);
                 this.userPortfolio = state;
                 if (this.userPortfolio) {
-                    // Get transactions that are not hidden
-                    this.transactions = this.userPortfolio.transactions;
-                    this.stocks = this.userPortfolio.shares;
-                    // Load each artist in the follows
-                    Object.keys(this.userPortfolio.artistFollows).forEach((key) => {
-                        // this.store.dispatch(new fromStore.StartArtistSubscription(key));
-                    });
+                    this.stocks = state.sharesWithArtist;
+                    this.artistFollows = state.followsWithArtist;
+                    this.transactions = state.transactionsWithArtist;
                 }
-            });
-
-        this.store.select(fromStore.getPortfolioFollowingNosArtists)
-            .takeUntil(this.unsubscribe)
-            .subscribe(state => {
-                console.log('getPortfolioFollowingNosArtists', state);
-                this.artistFollows = state;
-            });
-
-            this.store.select(fromStore.getArtistsMap)
-            .takeUntil(this.unsubscribe)
-            .subscribe(state => {
-                console.log('getArtistsMap', state);
             });
     }
 
@@ -67,10 +49,6 @@ export class PortfolioPage {
     }
 
     ionViewWillUnload() {
-        // Stop the artist subscriptions
-        Object.keys(this.userPortfolio.artistFollows).forEach((key) => {
-            // this.store.dispatch(new fromStore.StopArtistSubscription(key));
-        });
         // End Subscriptions
         this.unsubscribe.next();
         this.unsubscribe.complete();
@@ -82,6 +60,10 @@ export class PortfolioPage {
 
     onTransHide(transaction: IDbTransaction): void {
         this.firebaseProvider.hideTransaction(transaction.firebaseKey);
+    }
+
+    getTransactionBadgeColor(trans: ITransactionWithArtist) {
+        return (trans.action === 'Buy' ? 'moneygreen' : 'danger');
     }
 
 }

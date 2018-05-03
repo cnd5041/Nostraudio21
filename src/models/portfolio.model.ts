@@ -1,5 +1,6 @@
-import { IDbTransaction } from './transaction.model';
-import { IDbArtist } from './artist.model';
+import { IDbTransaction, ITransactionWithArtist } from './transaction.model';
+import { IDbArtist, INosArtist } from './artist.model';
+import { cloneDeep } from 'lodash';
 
 export interface IDbPortfolio {
     balance: number;
@@ -16,28 +17,42 @@ export interface ISharesPerPortfolioItem {
 
 export interface IPortfolioShare {
     sharesCount: number;
-    artist: IDbArtist;
+    artistKey: string;
 }
 
-export interface IArtistFollowsPerUserItem {
-    [spotifyId: string]: boolean;
+export interface IPortfolioShareWithArtist {
+    sharesCount: number;
+    artistKey: string;
+    artist: INosArtist;
+    sharesValue: number;
+}
+
+export interface IDbArtistFollowsPerUserItem {
+    [artistKey: string]: boolean;
 }
 
 export interface INosPortfolio extends IDbPortfolio {
     shares?: IPortfolioShare[];
-    artistFollows?: IArtistFollowsPerUserItem;
+    artistFollows?: IDbArtistFollowsPerUserItem;
     transactions?: IDbTransaction[];
 
-    netWorth?: number;
-    sharesValue?: number;
     getSharesByArtistId?(artistId: string): number;
+}
+
+export interface INosPortfolioWithArtists extends INosPortfolio {
+    sharesWithArtist: IPortfolioShareWithArtist[];
+    followsWithArtist: INosArtist[];
+    transactionsWithArtist: ITransactionWithArtist[];
+
+    netWorth: number;
+    sharesValue: number;
 }
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-export class Portfolio implements INosPortfolio {
+export class DbPortfolio implements IDbPortfolio {
     balance: number;
     displayName: string;
     imageUrl?: string;
@@ -58,7 +73,7 @@ export class Portfolio implements INosPortfolio {
 export function constructPortfolio(
     portfolio: IDbPortfolio,
     sharesPerPortfolio: IPortfolioShare[],
-    artistFollowsPerUser: IArtistFollowsPerUserItem,
+    artistFollowsPerUser: IDbArtistFollowsPerUserItem,
     transactions: IDbTransaction[] = []
 ): INosPortfolio {
     const nosPortfolio: INosPortfolio = { ...portfolio };
@@ -67,10 +82,30 @@ export function constructPortfolio(
     nosPortfolio.transactions = transactions;
 
     nosPortfolio.getSharesByArtistId = (artistId: string) => {
-        return sharesPerPortfolio[artistId] || 0;
+        const artist = sharesPerPortfolio.find(s => s.artistKey === artistId);
+        if (artist) {
+            return artist.sharesCount || 0;
+        } else {
+            return 0;
+        }
     };
 
-    nosPortfolio.sharesValue = sharesPerPortfolio.reduce((accum: number, current: IPortfolioShare) => {
+    return nosPortfolio;
+}
+
+export function NosPortfolioWithArtists(
+    portfolio: INosPortfolio,
+    sharesWithArtist: IPortfolioShareWithArtist[],
+    followsWithArtist: INosArtist[],
+    transactionsWithArtist: ITransactionWithArtist[]
+): INosPortfolioWithArtists {
+    const nosPortfolio = cloneDeep(portfolio) as INosPortfolioWithArtists;
+
+    nosPortfolio.sharesWithArtist = sharesWithArtist;
+    nosPortfolio.followsWithArtist = followsWithArtist;
+    nosPortfolio.transactionsWithArtist = transactionsWithArtist;
+
+    nosPortfolio.sharesValue = sharesWithArtist.reduce((accum: number, current: IPortfolioShareWithArtist) => {
         return accum + (current.artist.marketPrice * current.sharesCount);
     }, 0);
 

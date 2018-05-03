@@ -20,6 +20,10 @@ export interface IGenresPerArtistMap {
     [firebaseKey: string]: IReferenceDictionary;
 }
 
+export interface IArtistsPerGenreMap {
+    [firebaseKey: string]: IReferenceDictionary;
+}
+
 // Followers Per Artist
 export interface IFollowersPerArtistMap {
     [firebaseKey: string]: IReferenceDictionary;

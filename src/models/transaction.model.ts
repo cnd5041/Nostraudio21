@@ -1,7 +1,7 @@
 import { IDbArtist } from './artist.model';
 
 export interface IDbTransaction {
-    artistId: string;
+    artistKey: string;
     portfolioId: string;
     numberOfShares: number;
     total: number;
@@ -9,14 +9,17 @@ export interface IDbTransaction {
     isHidden?: boolean;
     date: number;
     // Not in Database
-    artist?: IDbArtist;
     firebaseKey?: string;
 }
 
+export interface ITransactionWithArtist extends IDbTransaction{
+    artist: IDbArtist;
+}
+
 export class NosTransaction implements IDbTransaction {
-    date;
+    public date;
     constructor(
-        public artistId: string,
+        public artistKey: string,
         public portfolioId: string,
         public numberOfShares: number,
         public total: number,

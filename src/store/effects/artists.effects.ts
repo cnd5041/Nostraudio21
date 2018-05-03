@@ -1,49 +1,98 @@
-// import { combineAll } from 'rxjs/operator/combineAll';
 import { Injectable } from '@angular/core';
-
+// NGRX
 import { Effect, Actions } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
-
-import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
-import { map, switchMap, catchError, tap } from 'rxjs/operators';
-
-import { FirebaseProvider } from '../../../providers';
-
 import * as appActions from '../actions';
 import { MusicState } from '../reducers';
+// Firebase
+import { AngularFireDatabase, AngularFireAction } from 'angularfire2/database';
+// Library Imports
+import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { of } from 'rxjs/observable/of';
+import { map, switchMap, catchError, tap, withLatestFrom, filter, take } from 'rxjs/operators';
+import { forOwn } from 'lodash';
+// Providers
+import { NosFirebaseService } from '../../providers/firebase-service';
+import { UiService } from '../../providers/ui-service';
+// Models
+import {
+    IFollowsPerArtistItem, nosArtistFromDbArtist, ICountReferenceDictionary, IDbArtist,
+    IReferenceDictionary, IDbGenre, IDbGenreMap, IDbGenreNameMap, IArtistsPerGenreMap, INosArtist
+} from '../../models';
 
 @Injectable()
 export class ArtistEffects {
 
     constructor(
         private actions$: Actions,
-        private firebaseProvider: FirebaseProvider,
-        private store: Store<MusicState>
+        private store: Store<MusicState>,
+        private firebaseProvider: NosFirebaseService,
+        private db: AngularFireDatabase,
+        private uiService: UiService
     ) {
+        // Artists
+        this.firebaseProvider.nosArtists$
+            .subscribe((value: { key: string, artist: INosArtist }) => {
+                this.store.dispatch(new appActions.ArtistMapAdd({ key: value.key, artist: value.artist }));
+            });
+
+        // Genres Per Artist
+        this.firebaseProvider.artistsPerGenre$
+            .subscribe((value: IArtistsPerGenreMap) => {
+                this.store.dispatch(new appActions.SetArtistsPerGenreMap(value));
+            });
+
+        // Genres
+        this.firebaseProvider.genresList$
+            .subscribe((value: IDbGenreMap) => {
+                this.store.dispatch(new appActions.SetGenresMap(value));
+            });
     }
 
-    // TODO: Remove effect and drive set selected based on the the artist object
     @Effect()
     SetSelectedArtistFollows$: Observable<Action> = this.actions$
         .ofType(appActions.SET_SELECTED_ARTIST_ID)
         .pipe(
             map((action: appActions.SetSelectedArtistId) => action.payload),
-            switchMap((spotifyId) => {
+            switchMap((spotifyId: string) => {
                 if (spotifyId) {
                     return this.firebaseProvider.followsPerArtistByArtistId(spotifyId)
-                        .map(payload => new appActions.SetSelectedArtistFollows(payload));
+                        .map((payload: IFollowsPerArtistItem) => new appActions.SetSelectedArtistFollows(payload));
                 } else {
                     return of(new appActions.SetSelectedArtistFollows(null));
                 }
             }));
 
     @Effect({ dispatch: false })
+    CheckArtistExistence$ = this.actions$
+        .ofType(appActions.SET_SELECTED_ARTIST_ID)
+        .pipe(
+            map((action: appActions.SetSelectedArtistId) => action.payload),
+            switchMap((spotifyId) => {
+                return this.firebaseProvider.checkSpotifyId(spotifyId);
+            }),
+            map((result) => {
+                // DO NOTHING
+            }),
+            catchError((error) => {
+                this.store.dispatch(new appActions.ShowBasicAlert({
+                    title: 'Error',
+                    subTitle: 'There was an error getting the artist.',
+                    buttons: ['Ok']
+                }));
+
+                this.uiService.goBack();
+                return of();
+            })
+        );
+
+    @Effect({ dispatch: false })
     UserFollowArtist$ = this.actions$
         .ofType(appActions.USER_FOLLOW_ARTIST)
         .pipe(
             map((action: appActions.UserFollowArtist) => action.payload),
-            tap(payload => {
+            tap((payload) => {
                 this.firebaseProvider.followArtist(payload.artistKey, payload.portfolioKey, 'follow');
             })
         );
