@@ -74,7 +74,7 @@ export class MyApp {
             // When we get a new authState, get the portfolio
             this.authData.authState
                 .subscribe(userState => {
-                    console.log('userState Change', userState.uid);
+                    console.log('userState Change', userState);
                     if (userState && userState.uid) {
                         this.store.dispatch(new fromStore.FetchPortfolio(userState.uid));
                     } else {

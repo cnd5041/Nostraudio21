@@ -19,11 +19,11 @@
                 </ion-thumbnail>
                 <h2>{{userPortfolio?.displayName}}</h2>
                 <p>
-                    <b>Cash: </b> {{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}
+                    <b>Cash: </b> {{userPortfolio?.balance | currency:'USD':'symbol-narrow':'1.2-2'}}
                     <br>
-                    <b>Shares Value: </b> {{userPortfolio?.sharesValue | currency:'USD':true:'1.2-2'}}
+                    <b>Shares Value: </b> {{userPortfolio?.sharesValue | currency:'USD':'symbol-narrow':'1.2-2'}}
                     <br>
-                    <b>Total Assets:</b> {{userPortfolio?.netWorth | currency:'USD':true:'1.2-2'}}
+                    <b>Total Assets:</b> {{userPortfolio?.netWorth | currency:'USD':'symbol-narrow':'1.2-2'}}
                     <br>
                 </p>
             </ion-item>
@@ -44,11 +44,11 @@
                 </ion-thumbnail>
                 <h2>{{stock.artist.name}}</h2>
                 <p>
-                    <b>Market Price:</b> {{stock.artist.marketPrice | currency:'USD':true:'1.2-2'}}
+                    <b>Market Price:</b> {{stock.artist.marketPrice | currency:'USD':'symbol-narrow':'1.2-2'}}
                     <br>
                     <b>Shares:</b> {{stock.sharesCount}}
                     <br>
-                    <b>Total:</b> {{stock.artist.marketPrice * stock.sharesCount | currency:'USD':true:'1.2-2'}}
+                    <b>Total:</b> {{stock.artist.marketPrice * stock.sharesCount | currency:'USD':'symbol-narrow':'1.2-2'}}
                     <!-- <br />
                     <b>Return:</b> -->
                     <!--<span ng-class="{'positive-return': stock.returnValue > 0, 'negative-return': stock.returnValue < 0}">
@@ -77,7 +77,7 @@
                 </ion-avatar>
                 <h2>{{stock.name}}</h2>
                 <p>
-                    <b>Market Price:</b> {{stock.marketPrice | currency:'USD':true:'1.2-2'}}</p>
+                    <b>Market Price:</b> {{stock.marketPrice | currency:'USD':'symbol-narrow':'1.2-2'}}</p>
                 <button ion-button clear item-end (click)="onHoldingSelect(stock.spotifyId)">
                     <ion-icon name="arrow-forward"></ion-icon>
                 </button>
@@ -99,7 +99,7 @@
                     <ion-badge [color]="getTransactionBadgeColor(trans)">{{trans.action}}</ion-badge> {{trans.artist.name}}
                 </h5>
                 <p>
-                    {{trans.total | currency:'USD':true:'1.2-2'}} - {{trans.numberOfShares}} Share(s)
+                    {{trans.total | currency:'USD':'symbol-narrow':'1.2-2'}} - {{trans.numberOfShares}} Share(s)
                 </p>
                 <p>
                     {{trans.date | date:mediumDate}}

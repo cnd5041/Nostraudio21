@@ -5,75 +5,6 @@ import { Observable } from 'rxjs/Rx';
 import { map, catchError, switchMap } from 'rxjs/operators';
 import { map as _map, take, get } from 'lodash';
 
-import { INosArtist, ISpotifyTopTracks, ISpotifyArtist } from '../models/artist.model';
-
-// interface ISongkickArtist {
-//     id: number;
-//     uri: string;
-//     displayName: string;
-//     onTourUntil: string;
-// }
-
-// interface ISongkickEvent {
-//     id: number;
-//     uri: string;
-
-//     displayName: string;
-//     type: string; // Concert
-//     venue: {
-//         lat: number;
-//         lng: number;
-//         displayName: string;
-//         id: string;
-//     };
-//     location: {
-//         lat: number;
-//         lng: number;
-//         city: string;
-//     };
-//     start: {
-//         time: string; // "19:30:00"
-//         date: string; // "2010-02-16",
-//         datetime: string; // "2010-02-16T19:30:00+0000"
-//     };
-//     performance: {
-//         artist: {
-//             uri: string;
-//             displayName: string;
-//             id: number;
-//             identifier: any[];
-//         };
-//         displayName: string;
-//         billingIndex: number;
-//         id: number;
-//         billing: string;
-//     }[];
-// }
-
-// interface ISongkickSearchResponse {
-//     resultsPage: {
-//         results: {
-//             artist: ISongkickArtist[];
-//         }
-//     };
-//     totalEntries: number;
-//     perPage: number;
-//     page: number;
-//     status: string;
-// }
-
-// interface ISongkickEventSearchResponse {
-//     resultsPage: {
-//         results: {
-//             event: ISongkickArtist[];
-//         }
-//     };
-//     totalEntries: number;
-//     perPage: number;
-//     page: number;
-//     status: string;
-// }
-
 export interface Identifier {
     href: string;
     mbid: string;
@@ -155,6 +86,8 @@ export interface Event {
     uri: string;
     id: number;
     venue: Venue;
+
+    image$: Observable<string>;
 }
 
 export interface EventResults {
@@ -188,10 +121,6 @@ export class NosSongkickService {
 
     }
 
-    private mapArtistSearch(a: any): any {
-
-    }
-
     private handleError(error: Response | any): Observable<any> {
         console.error('Songkick Service Error: ', error);
         return Observable.throw(error.message || 'Server error');
@@ -218,17 +147,14 @@ export class NosSongkickService {
         // this.http.get('https://en.wikipedia.org/w/api.php?action=query&format=json&titles=Image:Saosin5.png&prop=imageinfo&iiprop=url&origin=*')
         return this.http.get(`https://en.wikipedia.org/w/api.php?action=query&format=json&titles=${title}&prop=imageinfo&iiprop=url&origin=*`)
             .map((res: Response) => {
-                console.log('image', res.json());
                 const result = res.json();
                 const pages = result.query.pages;
                 const page1 = pages[Object.keys(pages)[0]];
                 if (page1.imageinfo) {
                     const imageinfo = page1.imageinfo[0];
                     const imageUrl = imageinfo.url;
-                    console.log('imageUrl', imageUrl);
                     return imageUrl;
                 } else {
-                    console.log('no image url');
                     return null;
                 }
             }, (error) => {
@@ -237,7 +163,7 @@ export class NosSongkickService {
             });
     }
 
-    getPageImages(pageId: string): Observable<any> {
+    getPageImages(pageId: string): Observable<string> {
         return this.http.get(`https://en.wikipedia.org/w/api.php?action=query&pageids=${pageId}&prop=images&format=json&origin=*`)
             .pipe(
                 map((res: Response) => {
@@ -261,8 +187,16 @@ export class NosSongkickService {
     }
 
     searchWikiPagesByTitle(title: string): Observable<string> {
+        const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&utf8=1&srsearch=${title}&origin=*`;
+        const headers: Headers = new Headers();
+        // headers.append('Origin', 'http://localhost:8100');
+        // "Content-Type", "application/json; charset=UTF-8"
+        headers.append('Content-Type', 'application/json');
+        const options: RequestOptionsArgs = {
+            headers: headers
+        };
         // https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&utf8=1&srsearch=Jazz%20Fest&origin=*
-        return this.http.get(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&utf8=1&srsearch=${title}&origin=*`)
+        return this.http.get(url)
             .map((res: Response) => {
                 const result = res.json();
                 const pageid = get(result, 'query.search[0].pageid');
@@ -273,8 +207,7 @@ export class NosSongkickService {
             });
     }
 
-    getEventImages(title: string): Observable<any> {
-        // event.venue.displayName
+    getEventImage(title: string): Observable<string> {
         return this.searchWikiPagesByTitle(title).pipe(
             switchMap((pageId) => {
                 if (pageId) {
@@ -293,23 +226,14 @@ export class NosSongkickService {
             .pipe(
                 map((response: Response) => {
                     const eventResults: EventSearchResponse = response.json();
+                    // Replace empty results with empty event array
+                    if (!eventResults.resultsPage.results.event) {
+                        eventResults.resultsPage.results.event = [];
+                    }
                     eventResults.resultsPage.results.event.forEach((e) => {
-                        (e as any).image$ = this.getEventImages(e.venue.displayName);
-                        // TODO:  Leaving Off: add a button that lets them dismiss the image, funny, like whaaa am I seeing here?
-                        // have a placeholder image / loading until the image resolves.
+                        e.image$ = this.getEventImage(e.venue.displayName);
                     });
                     return eventResults.resultsPage.results.event;
-                }),
-                catchError(this.handleError)
-            );
-    }
-
-    getArtistById(spotifyId: string): Observable<ISpotifyArtist> {
-        const url = `${this.searchBaseUrl}/artists/${spotifyId}`;
-        return this.http.get(url)
-            .pipe(
-                map((response: Response) => {
-                    return this.mapArtistSearch(response.json());
                 }),
                 catchError(this.handleError)
             );

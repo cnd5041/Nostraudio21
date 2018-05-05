@@ -1,16 +1,14 @@
-<!-- <ion-item> -->
-    <ion-thumbnail item-left>
-        <img [src]="artist.smallImage">
-    </ion-thumbnail>
-    <h2>{{artist.name}}</h2>
-    <h3>{{artist.genresArray[0]}}</h3>
-    <p>
-        <b>Market Price:</b> {{artist.marketPrice | currency:'USD':true:'1.2-2'}}
-    </p>
-    <p>
-        <b>Market Cap:</b> {{artist.marketCap | currency:'USD':true:'1.2-2'}}
-    </p>
-    <button ion-button clear item-end (click)="onArtistSelect(artist.spotifyId)">
-        <ion-icon name="arrow-forward"></ion-icon>
-    </button>
-<!-- </ion-item> -->
+<ion-thumbnail item-left>
+    <img [src]="artist.smallImage">
+</ion-thumbnail>
+<h2>{{artist.name}}</h2>
+<h3>{{artist.genresArray[0]}}</h3>
+<p>
+    <b>Market Price:</b> {{artist.marketPrice | currency:'USD':'symbol-narrow':'1.2-2'}}
+</p>
+<p>
+    <b>Market Cap:</b> {{artist.marketCap | currency:'USD':'symbol-narrow':'1.2-2'}}
+</p>
+<button ion-button clear item-end (click)="onArtistSelect(artist.spotifyId)">
+    <ion-icon name="arrow-forward"></ion-icon>
+</button>

@@ -1,14 +1,11 @@
 <ion-header>
-
     <ion-navbar>
         <ion-buttons start>
             <button ion-button (click)="dismiss()">Close</button>
         </ion-buttons>
         <ion-title>Events</ion-title>
     </ion-navbar>
-
 </ion-header>
-
 
 <ion-content padding class="card-background-page">
 
@@ -25,9 +22,8 @@
             <p>{{event.location.city}}</p>
             <p>{{event.start.datetime | date:mediumDate}}</p>
         </ion-item>
-
-        <img [src]="event.image$ | async">
-
+        <img *ngIf="(event.image$ | async)" [src]="event.image$ | async">
+        <!-- <img *ngIf="!(event.image$ | async)" src="assets/default_user_avatar.jpg"> -->
         <ion-card-content>
             <h3>
                 <b>Performances</b>

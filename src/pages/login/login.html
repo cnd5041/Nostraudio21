@@ -19,7 +19,7 @@
                     <img src="assets/default_user_avatar.jpg">
                 </ion-thumbnail>
                 <h2>{{(userPortfolio$ | async)?.displayName}}</h2>
-                <p>{{(userPortfolio$ | async)?.balance | currency:'USD':true:'2.2-2'}}</p>
+                <p>{{(userPortfolio$ | async)?.balance | currency:'USD':'symbol-narrow':'2.2-2'}}</p>
                 <button ion-button clear icon-only item-right>
                     <!--<ion-icon name='create' is-active="false"></ion-icon>-->
                 </button>

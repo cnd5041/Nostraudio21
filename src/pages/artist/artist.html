@@ -34,9 +34,9 @@
 
         <ion-row center text-center>
             <ion-col>
-                <b>Stock Price: </b>{{artist?.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
+                <b>Stock Price: </b>{{artist?.marketPrice | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-col>
             <ion-col>
-                <b>Market Cap: </b>{{artist?.marketCap | currency:'USD':true:'1.2-2'}}</ion-col>
+                <b>Market Cap: </b>{{artist?.marketCap | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-col>
         </ion-row>
     </ion-card>
 
@@ -53,9 +53,9 @@
         <ion-card-content>
             <ion-row center text-center>
                 <ion-col>
-                    <b>Cash: </b>{{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}</ion-col>
+                    <b>Cash: </b>{{userPortfolio?.balance | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-col>
                 <ion-col *ngIf="artist">
-                    <b>Shares ({{ownedShares}}): </b>{{ownedShares * artist.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
+                    <b>Shares ({{ownedShares}}): </b>{{ownedShares * artist.marketPrice | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-col>
             </ion-row>
         </ion-card-content>
 
@@ -77,7 +77,7 @@
                         <ion-input id="buyShareCount" type="number" placeholder="Shares" [(ngModel)]="buyShareCount" (ngModelChange)="onBuySharesChange($event)"
                             [min]="1" step="1">
                         </ion-input>
-                        <ion-badge [color]="getBuyBadgeColor()" item-right>{{buyTotal | currency:'USD':true:'1.2-2'}}</ion-badge>
+                        <ion-badge [color]="getBuyBadgeColor()" item-right>{{buyTotal | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-badge>
                     </ion-item>
                     <div padding>
                         <button ion-button block color="secondary" (click)="onBuyClick()" [disabled]="!isBuyValid()">Buy</button>
@@ -90,7 +90,7 @@
                         <ion-input id="sellShareCount" type="number" placeholder="Shares" [(ngModel)]="sellShareCount" (ngModelChange)="onSellSharesChange($event)"
                             [min]="1" [max]="ownedShares" step="1">
                         </ion-input>
-                        <ion-badge [color]="'moneygreen'" item-right>{{sellTotal | currency:'USD':true:'1.2-2'}}</ion-badge>
+                        <ion-badge [color]="'moneygreen'" item-right>{{sellTotal | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-badge>
                     </ion-item>
                     <div padding>
                         <button ion-button block color="danger" (click)="onSellClick()" [disabled]="!isSellValid()">Sell</button>

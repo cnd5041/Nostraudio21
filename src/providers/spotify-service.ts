@@ -8,9 +8,7 @@ import { INosArtist, ISpotifyArtist } from '../models/artist.model';
 
 @Injectable()
 export class NosSpotifyService {
-    // baseUrl: string = 'https://api.spotify.com/v1/';
     readonly baseUrl: string = 'https://nostraudio2-server.appspot.com/api';
-    // https://nostraudio2-server.appspot.com/api
 
     constructor(
         private http: Http
@@ -23,7 +21,6 @@ export class NosSpotifyService {
         https://blitzr.io/
         https://www.google.com/search?q=music+metadata+api&oq=music+metadata+api+&aqs=chrome.0.0l6.2391j0j4&sourceid=chrome&ie=UTF-8
         https://github.com/thelinmichael/spotify-web-api-node
-
 
         https://cloud.google.com/nodejs/
         */
