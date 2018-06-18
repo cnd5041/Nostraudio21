@@ -1,0 +1,48 @@
+<ion-header>
+    <ion-navbar>
+        <button ion-button menuToggle>
+            <ion-icon name="menu"></ion-icon>
+        </button>
+        <ion-title>Friends</ion-title>
+    </ion-navbar>
+</ion-header>
+<ion-content>
+    <ion-searchbar (ionInput)="search($event)" [debounce]="400"></ion-searchbar>
+    <ion-card *ngIf="(results$ | async)?.length > 0">
+        <ion-list>
+            <ion-list-header>
+                Results
+            </ion-list-header>
+            <ion-item *ngFor="let result of results$ | async">
+                {{result.displayName}}
+                <!-- <ion-icon item-end name="person-add"></ion-icon> -->
+                <button ion-button clear item-end icon-only (click)="onAddFriend(result.userProfile)">
+                    <ion-icon name="person-add"></ion-icon>
+                </button>
+            </ion-item>
+        </ion-list>
+    </ion-card>
+
+    <ion-card>
+        <ion-card-header>
+            Following
+        </ion-card-header>
+        <ion-list>
+            <ion-item *ngFor="let portfolio of (friendsList$ | async)">
+                <ion-avatar item-start>
+                    <!-- <img [src]="portfolio.imageUrl"> -->
+                    <img *ngIf="portfolio.imageUrl" [src]="portfolio.imageUrl" />
+                    <img *ngIf="!portfolio.imageUrl" src="assets/default_user_avatar.jpg" />
+                </ion-avatar>
+                <h2>{{portfolio.displayName}}</h2>
+                <button ion-button clear item-end (click)="onFriendSelect(portfolio.userProfile)">
+                    <ion-icon name="arrow-forward"></ion-icon>
+                </button>
+            </ion-item>
+        </ion-list>
+        <ion-card-content *ngIf="(friendsList$ | async)?.length < 1">
+            Find friends from the Search tab, and follow them from their page.
+        </ion-card-content>
+    </ion-card>
+
+</ion-content>

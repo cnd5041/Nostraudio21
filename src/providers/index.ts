@@ -1,5 +1,4 @@
-﻿import { ArtistService } from './artist-service';
-import { AuthData } from './auth-data';
+﻿import { AuthData } from './auth-data';
 import { DateService } from './date-service';
 import { NosSpotifyService } from './spotify-service';
 import { StatsService } from './stats-service';
@@ -9,11 +8,10 @@ import { UiService } from './ui-service';
 import { NosSongkickService } from './songkick-service';
 
 export const providers: any[] = [
-    ArtistService, AuthData, DateService,
+    AuthData, DateService,
     NosSpotifyService, StatsService, DiscogsService, NosFirebaseService, UiService, NosSongkickService
 ];
 
-export * from './artist-service';
 export * from './auth-data';
 export * from './date-service';
 export * from './spotify-service';

@@ -77,6 +77,7 @@ export class MyApp {
                     console.log('userState Change', userState);
                     if (userState && userState.uid) {
                         this.store.dispatch(new fromStore.FetchPortfolio(userState.uid));
+                        this.store.dispatch(new fromStore.FetchFriends(userState.uid));
                     } else {
                         this.store.dispatch(new fromStore.ResetPorfolio());
                     }

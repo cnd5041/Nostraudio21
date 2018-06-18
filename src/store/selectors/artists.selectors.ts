@@ -36,6 +36,11 @@ export const getSearchArtistQuery = createSelector(
     fromArtists.getSearchArtistQuery
 );
 
+export const getArtistSearchResults = createSelector(
+    getArtistsState,
+    fromArtists.getArtistSearchResults
+);
+
 // Combined Selectors
 export const getArtistsArray = createSelector(
     getArtistsMap,
@@ -104,10 +109,10 @@ export const getSelectedFollowersCount = createSelector(
     }
 );
 
-export const getSearchArtistResults = createSelector(
-    getSearchArtistQuery,
-    getArtistsArray,
-    (query, artistArray) => {
-        return [];
-    }
-);
+// export const getSearchArtistResults = createSelector(
+//     getSearchArtistQuery,
+//     getArtistsArray,
+//     (query, artistArray) => {
+//         return [];
+//     }
+// );

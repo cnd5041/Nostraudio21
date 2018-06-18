@@ -7,11 +7,13 @@ import { SearchPage } from './search/search';
 import { SignupPage } from './signup/signup';
 import { StatsPage } from './stats/stats';
 import { SupportPage } from './support/support';
+import { FriendsPage } from './friends/friends';
 import { EventsModal } from './events-modal/events-modal';
+
 
 export const pages: any[] = [
     AboutPage, ArtistPage, LoginPage, PortfolioPage, ResetPasswordPage,
-    SearchPage, SignupPage, StatsPage, SupportPage, EventsModal
+    SearchPage, SignupPage, StatsPage, SupportPage, FriendsPage, EventsModal
 ];
 
 export * from './about/about';
@@ -23,4 +25,5 @@ export * from './search/search';
 export * from './signup/signup';
 export * from './stats/stats';
 export * from './support/support';
+export * from './friends/friends';
 export * from './events-modal/events-modal';

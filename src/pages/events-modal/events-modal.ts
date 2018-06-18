@@ -20,6 +20,7 @@ import { NosSongkickService } from '../../providers';
 export class EventsModal {
     private unsubscribe: Subject<any> = new Subject();
     public events = [];
+    public error$: BehaviorSubject<string> = new BehaviorSubject(null);
 
     constructor(
         public viewCtrl: ViewController,
@@ -37,14 +38,15 @@ export class EventsModal {
                 takeUntil(this.unsubscribe),
                 filter(result => !!result),
                 switchMap(state => {
-                    // return this.songkickService.searchEventsByArtist(state.name);
-                    return this.songkickService.searchEventsByArtist('Cage the Elephant');
+                    return this.songkickService.searchEventsByArtist(state.name);
                 })
             ).subscribe(state => {
-                // If there are no events...show something, link to songkick events page
-                // show the powered by songkick label in the footer
-                console.log('searchEventsByArtist', state);
                 this.events = state;
+                this.error$.next(null);
+                this.store.dispatch(new fromStore.HideLoading());
+            }, (error) => {
+                this.events = [];
+                this.error$.next('Oops. There was problem getting events.');
                 this.store.dispatch(new fromStore.HideLoading());
             });
     }

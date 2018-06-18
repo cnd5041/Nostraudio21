@@ -4,8 +4,8 @@ import { NavController } from 'ionic-angular';
 import { ArtistPage } from '../../pages';
 import { NosFirebaseService } from '../../providers';
 import { INosPortfolio, INosArtist, IDbTransaction, IPortfolioShare, INosPortfolioWithArtists, ITransactionWithArtist, IPortfolioShareWithArtist } from '../../models/';
-
-import { Subject } from "rxjs/Subject";
+// Library Imports
+import { Subject } from 'rxjs/Subject';
 // Store imports
 import { Store } from '@ngrx/store';
 import * as fromStore from '../../store';
@@ -15,7 +15,7 @@ import * as fromStore from '../../store';
     templateUrl: 'portfolio.html'
 })
 export class PortfolioPage {
-    private unsubscribe: Subject<any> = new Subject();
+    private unsubscribe$: Subject<any> = new Subject();
 
     userPortfolio: INosPortfolioWithArtists;
     stocks: IPortfolioShareWithArtist[];
@@ -31,7 +31,7 @@ export class PortfolioPage {
         this.store.dispatch(new fromStore.ShowLoading());
 
         this.store.select(fromStore.getNosPortfolioWithArtists)
-            .takeUntil(this.unsubscribe)
+            .takeUntil(this.unsubscribe$)
             .subscribe(state => {
                 this.store.dispatch(new fromStore.HideLoading());
                 console.log('getNosPortfolioWithArtists', state);
@@ -50,8 +50,8 @@ export class PortfolioPage {
 
     ionViewWillUnload() {
         // End Subscriptions
-        this.unsubscribe.next();
-        this.unsubscribe.complete();
+        this.unsubscribe$.next();
+        this.unsubscribe$.complete();
     }
 
     onHoldingSelect(spotifyId: string): void {

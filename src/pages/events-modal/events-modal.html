@@ -9,11 +9,24 @@
 
 <ion-content padding class="card-background-page">
 
-    <ion-card *ngIf="events.length < 1">
+    <ion-card *ngIf="(error$ | async)">
+        <ion-card-content>
+            {{error$ | async}}
+        </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="events.length < 1 && !(error$ | async)">
         <ion-card-content>
             No Upcoming Events.
         </ion-card-content>
     </ion-card>
+
+    <div padding>
+        <a class="button" ion-button block outline icon-right href="https://www.songkick.com/home" target="_blank">
+            Go to Songkick
+            <ion-icon name="arrow-forward"></ion-icon>
+        </a>
+    </div>
 
     <ion-card *ngFor="let event of events">
 

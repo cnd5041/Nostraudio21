@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+// App Imports
 import {
     IDbGenre, IDbArtist,
     IStockholdersPerArtistItem,
@@ -12,27 +13,22 @@ import {
     IArtistsPerGenreMap,
     IFollowersPerArtistMap,
     IDbGenreNameMap,
-    INosArtist
+    INosArtist,
+    dbArtistFromSpotifyArtist
 } from '../models';
-
-// App Imports
 import { AuthData } from './auth-data';
-import { ArtistService } from './artist-service';
-
+import { NosSpotifyService } from './spotify-service';
 // Library Imports
-import { startCase, toInteger, round, isNull, forOwn } from 'lodash';
+import { startCase, toInteger, round, isNull, forOwn, camelCase } from 'lodash';
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Subject } from 'rxjs/Subject';
 import {
-    map, catchError, withLatestFrom, take, switchMap
+    map, catchError, withLatestFrom, take, switchMap, combineLatest
 } from 'rxjs/operators';
-// NGRX
-import { Store } from '@ngrx/store';
-import * as fromStore from '../store';
 // Angular Fire Imports
 import { AngularFireDatabase, AngularFireAction } from 'angularfire2/database';
 import { DataSnapshot } from '@firebase/database-types';
-import { Subject } from 'rxjs';
 
 @Injectable()
 export class NosFirebaseService {
@@ -58,7 +54,7 @@ export class NosFirebaseService {
     constructor(
         private db: AngularFireDatabase,
         private authData: AuthData,
-        private artistService: ArtistService
+        private spotifyService: NosSpotifyService
     ) {
 
         // https://github.com/angular/angularfire2/blob/5.0.0-rc.6/docs/rtdb/lists.md
@@ -172,7 +168,6 @@ export class NosFirebaseService {
             .valueChanges()
             .pipe(
                 map((shares): IPortfolioShare[] => {
-
                     return Object.keys(shares).map((key) => {
                         return { sharesCount: shares[key], artistKey: key };
                     });
@@ -373,12 +368,12 @@ export class NosFirebaseService {
                     console.error('artist valueChanges error', error);
                     return Observable.throw(error);
                 })
-        ).switchMap((artist: IDbArtist) => {
+            ).switchMap((artist: IDbArtist) => {
                 // Create if null
                 if (isNull(artist)) {
                     console.log('call create artist!');
 
-                    return this.artistService.createArtist(spotifyId)
+                    return this.createArtist(spotifyId)
                         .pipe(
                             switchMap((result) => {
                                 console.log('create result!');
@@ -393,6 +388,43 @@ export class NosFirebaseService {
                     return Observable.of(true);
                 }
             });
+    }
+
+    createArtist(spotifyId) {
+        console.log('createArtist service');
+        // TODO: make sure I update the firebase artist with this info sometimes
+        return this.spotifyService.getArtistById(spotifyId)
+            .switchMap((result) => {
+                const newArtist = dbArtistFromSpotifyArtist(result);
+                console.log('create this artist', newArtist);
+                // set seperately
+                // genres, portoflio follows, portfolios
+                const updates = {};
+                // Set the Artist
+                updates[`/artists/${spotifyId}`] = newArtist;
+                // Set Genre and add artist to Genre list
+                result.spotifyGenres.forEach((genre) => {
+                    const genreKey = camelCase(genre);
+                    // Set the genre name in genre list
+                    updates[`/genres/${genreKey}/name`] = genre;
+                    // Set the genres artist list in association node
+                    // updates[`/genres/${genreKey}/artists/${spotifyId}`] = true;
+                    updates[`/artistsPerGenre/${genreKey}/${spotifyId}`] = true;
+                    // Set the artist's genres in association node
+                    updates[`/genresPerArtist/${spotifyId}/${genreKey}`] = true;
+                });
+                // Perform the updates
+                this.db.object('/').update(updates);
+
+                return Observable.empty();
+            });
+    }
+
+    getPortfoliosByIds(keys: string[]): Observable<IDbPortfolio[]> {
+        const subs = keys.map((key) => {
+            return this.db.object<IDbPortfolio>(`/portfolios/${key}`).valueChanges().take(1);
+        });
+        return Observable.combineLatest(subs);
     }
 
 }

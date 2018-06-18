@@ -1,7 +1,7 @@
 import { NgModule, ErrorHandler } from '@angular/core';
-import { IonicApp, IonicModule, IonicErrorHandler } from 'ionic-angular';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpModule } from '@angular/http';
+import { IonicApp, IonicModule, IonicErrorHandler } from 'ionic-angular';
 
 // Ionic Imports
 import { InAppBrowser } from '@ionic-native/in-app-browser';
@@ -12,18 +12,18 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 
+// App
 import { MyApp } from './app.component';
 
+// Pages
 import {
-    AboutPage, SupportPage, PortfolioPage, SearchPage, ArtistPage,
-    StatsPage, LoginPage, ResetPasswordPage, SignupPage, EventsModal
+    AboutPage, ArtistPage, LoginPage, PortfolioPage, ResetPasswordPage,
+    SearchPage, SignupPage, StatsPage, SupportPage, FriendsPage, EventsModal
 } from '../pages/';
-
-//Import Components
-import { ArtistListItem } from '../components/artist-list-item/artist-list-item';
-
-//Import Providers
-import * as fromProviders from '../providers';
+// Components
+import { components } from '../components';
+// Providers
+import { providers } from '../providers';
 
 // AF2 Settings
 export const firebaseConfig = {
@@ -47,13 +47,14 @@ import { reducers, effects } from '../store';
         SupportPage,
         PortfolioPage,
         SearchPage,
-        ArtistListItem,
         ArtistPage,
         StatsPage,
         LoginPage,
         ResetPasswordPage,
         SignupPage,
-        EventsModal
+        EventsModal,
+        FriendsPage,
+        ...components
     ],
     imports: [
         BrowserModule,
@@ -77,13 +78,14 @@ import { reducers, effects } from '../store';
         LoginPage,
         ResetPasswordPage,
         SignupPage,
-        EventsModal
+        EventsModal,
+        FriendsPage
     ],
     providers: [
         { provide: ErrorHandler, useClass: IonicErrorHandler },
         SplashScreen,
         InAppBrowser,
-        ...fromProviders.providers
+        ...providers
     ]
 })
 export class AppModule { }

@@ -8,14 +8,17 @@ export interface ArtistState {
     selectedArtistId: string;
     // Follows is currenlty seperate, because it might change a lot
     selectedArtistFollows: IFollowsPerArtistItem;
+
     query: string;
+    searchResults: INosArtist[];
 }
 
 const initialState: ArtistState = {
     artistsMap: {},
     selectedArtistId: null,
     selectedArtistFollows: null,
-    query: null
+    query: null,
+    searchResults: []
 };
 
 export function reducer(
@@ -55,10 +58,17 @@ export function reducer(
             };
         }
 
-        case fromArtists.SEARCH_ARTIST: {
+        case fromArtists.SEARCH_ARTISTS: {
             return {
                 ...state,
                 query: action.payload
+            };
+        }
+
+        case fromArtists.SEARCH_ARTISTS_COMPLETE: {
+            return {
+                ...state,
+                searchResults: action.payload
             };
         }
 
@@ -71,4 +81,6 @@ export function reducer(
 export const getArtistsMap = (state: ArtistState) => state.artistsMap;
 export const getSelectedArtistId = (state: ArtistState) => state.selectedArtistId;
 export const getSelectedArtistFollows = (state: ArtistState) => state.selectedArtistFollows;
+
 export const getSearchArtistQuery = (state: ArtistState) => state.query;
+export const getArtistSearchResults = (state: ArtistState) => state.searchResults;

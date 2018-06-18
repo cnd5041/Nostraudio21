@@ -10,7 +10,7 @@ import { AngularFireDatabase, AngularFireAction } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { of } from 'rxjs/observable/of';
-import { map, switchMap, catchError, tap, withLatestFrom, filter, take } from 'rxjs/operators';
+import { map, switchMap, catchError, tap, withLatestFrom, filter, take, takeUntil } from 'rxjs/operators';
 import { forOwn } from 'lodash';
 // Providers
 import { NosFirebaseService } from '../../providers/firebase-service';
@@ -20,6 +20,7 @@ import {
     IFollowsPerArtistItem, nosArtistFromDbArtist, ICountReferenceDictionary, IDbArtist,
     IReferenceDictionary, IDbGenre, IDbGenreMap, IDbGenreNameMap, IArtistsPerGenreMap, INosArtist
 } from '../../models';
+import { NosSpotifyService } from '../../providers';
 
 @Injectable()
 export class ArtistEffects {
@@ -29,7 +30,8 @@ export class ArtistEffects {
         private store: Store<MusicState>,
         private firebaseProvider: NosFirebaseService,
         private db: AngularFireDatabase,
-        private uiService: UiService
+        private uiService: UiService,
+        private spotifyService: NosSpotifyService
     ) {
         // Artists
         this.firebaseProvider.nosArtists$
@@ -162,6 +164,33 @@ export class ArtistEffects {
                     );
             })
         );
+
+    @Effect()
+    searchArtists$: Observable<Action> = this.actions$
+        .ofType(appActions.SEARCH_ARTISTS)
+        // .debounceTime(400)
+        .map((action: appActions.SearchArtists) => action.payload)
+        .switchMap(query => {
+            if (query === '') {
+                return of(new appActions.SearchArtistsComplete([]));
+            }
+
+            const nextSearch$ = this.actions$.ofType(appActions.SEARCH_ARTISTS).skip(1);
+
+            return this.spotifyService.searchArtists(query).pipe(
+                map(results => results.filter(x => x.spotifyPopularity > 5 && x.spotifyFollowers > 250)),
+                takeUntil(nextSearch$),
+                map(results => new appActions.SearchArtistsComplete(results)),
+                catchError(() => {
+                    this.store.dispatch(new appActions.ShowToast({
+                        message: 'There was a problem with the search.',
+                        position: 'top',
+                        duration: 2000
+                    }));
+                    return of(new appActions.SearchArtistsComplete([]));
+                })
+            );
+        });
 
 
     // Example From: https://www.youtube.com/watch?v=13nWhUndQo4

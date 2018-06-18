@@ -17,7 +17,8 @@ export const USER_UNFOLLOW_ARTIST = '[music] USER_UNFOLLOW_ARTIST';
 export const USER_BUY_ARTIST = '[music] USER_BUY_ARTIST';
 export const USER_SELL_ARTIST = '[music] USER_SELL_ARTIST';
 
-export const SEARCH_ARTIST = '[music] SEARCH_ARTIST';
+export const SEARCH_ARTISTS = '[music] SEARCH_ARTISTS';
+export const SEARCH_ARTISTS_COMPLETE = '[music] SEARCH_ARTISTS_COMPLETE';
 
 export class SetArtistsMap implements Action {
     readonly type = SET_ARTISTS_MAP;
@@ -59,9 +60,14 @@ export class UserSellArtist implements Action {
     constructor(public payload: { portfolio: INosPortfolio, artistKey: string, shareCount: number, price: number }) { }
 }
 
-export class SearchArtist implements Action {
-    readonly type = SEARCH_ARTIST;
+export class SearchArtists implements Action {
+    readonly type = SEARCH_ARTISTS;
     constructor(public payload: string) { }
+}
+
+export class SearchArtistsComplete implements Action {
+    readonly type = SEARCH_ARTISTS_COMPLETE;
+    constructor(public payload: INosArtist[]) { }
 }
 
 export type ArtistsActions =
@@ -73,4 +79,5 @@ export type ArtistsActions =
     UserUnfollowArtist |
     UserBuyArtist |
     UserSellArtist |
-    SearchArtist;
+    SearchArtists |
+    SearchArtistsComplete;
