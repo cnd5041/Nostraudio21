@@ -46,11 +46,8 @@ export const getArtistsArray = createSelector(
     getArtistsMap,
     (artistMap): fromModels.INosArtist[] => {
         if (artistMap) {
-            // return values(artistMap);
-
             const artists = values(artistMap);
-            if (artists && artists.length > 0) {
-
+            if (artists && artists.length > 0) { // for testing
                 for (let index = 1; index < 20; index++) {
                     const artistCopy = cloneDeep(artists[0]);
 

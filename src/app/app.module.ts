@@ -17,11 +17,11 @@ import { MyApp } from './app.component';
 
 // Pages
 import {
-    AboutPage, ArtistPage, LoginPage, PortfolioPage, ResetPasswordPage,
+    AboutPage, ArtistPage, LoginPage, PortfolioPage, FriendPortfolioPage, ResetPasswordPage,
     SearchPage, SignupPage, StatsPage, SupportPage, FriendsPage, EventsModal
 } from '../pages/';
 // Components
-import { components } from '../components';
+import { ComponentsModule } from '../components';
 // Providers
 import { providers } from '../providers';
 
@@ -46,6 +46,7 @@ import { reducers, effects } from '../store';
         AboutPage,
         SupportPage,
         PortfolioPage,
+        FriendPortfolioPage,
         SearchPage,
         ArtistPage,
         StatsPage,
@@ -54,7 +55,7 @@ import { reducers, effects } from '../store';
         SignupPage,
         EventsModal,
         FriendsPage,
-        ...components
+        // ...components
     ],
     imports: [
         BrowserModule,
@@ -65,6 +66,7 @@ import { reducers, effects } from '../store';
         AngularFireAuthModule,
         StoreModule.forRoot(reducers, {}),
         EffectsModule.forRoot(effects),
+        ComponentsModule
     ],
     bootstrap: [IonicApp],
     entryComponents: [
@@ -72,6 +74,7 @@ import { reducers, effects } from '../store';
         AboutPage,
         SupportPage,
         PortfolioPage,
+        FriendPortfolioPage,
         SearchPage,
         ArtistPage,
         StatsPage,

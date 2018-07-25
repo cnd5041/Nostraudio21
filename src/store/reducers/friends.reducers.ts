@@ -1,12 +1,13 @@
 import * as fromActions from '../actions/friends.actions';
-import { IDbPortfolio } from '../../models';
+import { IDbPortfolio, INosPortfolioWithArtists } from '../../models';
 
 export interface FriendsState {
     portfolioId: string;
-    friendsMap: { [firebaseKey: string]: any };
+    friendsMap: { [firebaseKey: string]: boolean };
     friendsList: IDbPortfolio[];
     query: string;
-    searchResults: any[];
+    searchResults: { displayName: string, userProfile: string }[];
+    selectedFriend: INosPortfolioWithArtists;
 }
 
 const initialState: FriendsState = {
@@ -14,7 +15,8 @@ const initialState: FriendsState = {
     friendsMap: {},
     friendsList: [],
     query: null,
-    searchResults: []
+    searchResults: [],
+    selectedFriend: null
 };
 
 export function reducer(
@@ -43,6 +45,19 @@ export function reducer(
             };
         }
 
+        case fromActions.FETCH_FRIEND_PORTFOLIO: {
+            return {
+                ...state
+            };
+        }
+
+        case fromActions.FETCH_FRIEND_PORTFOLIO_SUCCESS: {
+            return {
+                ...state,
+                selectedFriend: action.payload
+            };
+        }
+
         case fromActions.SEARCH_FRIENDS: {
             return {
                 ...state,
@@ -66,3 +81,4 @@ export function reducer(
 export const getFriendsMap = (state: FriendsState) => state.friendsMap;
 export const getFriendsList = (state: FriendsState) => state.friendsList;
 export const getFriendsSearchResults = (state: FriendsState) => state.searchResults;
+export const getSelectedFriend = (state: FriendsState) => state.selectedFriend;

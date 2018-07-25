@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { NavController, NavParams } from 'ionic-angular';
 // Library Imports
 import { Subject } from 'rxjs/Subject';
 // Store imports
@@ -7,7 +7,8 @@ import { Store } from '@ngrx/store';
 import * as fromStore from '../../store';
 // Library Imports
 import { Observable } from 'rxjs/Observable';
-import { IDbPortfolio } from '../../models';
+// App Imports
+import { FriendPortfolioPage } from '../friend-portfolio/friend-portfolio';
 
 @Component({
     selector: 'page-friends',
@@ -17,7 +18,7 @@ export class FriendsPage {
 
     private unsubscribe$: Subject<any> = new Subject();
     public friendsList$: Observable<any>;
-    public results$: Observable<string[]>;
+    public results$: Observable<{ displayName: string, userProfile: string, following: boolean }[]>;
 
     constructor(
         public navCtrl: NavController,
@@ -39,10 +40,7 @@ export class FriendsPage {
 
 
         this.friendsList$ = this.store.select(fromStore.getFriendsList);
-
-        this.results$ = this.store.select(fromStore.getFriendsSearchResults);
-
-        // todo, add a check if the friend already exists
+        this.results$ = this.store.select(fromStore.getFriendsSearchResultsWithFollow);
     }
 
     ionViewWillUnload() {
@@ -58,12 +56,21 @@ export class FriendsPage {
     }
 
     onFriendSelect(portfolioId: string): void {
-        console.log('navigate to friends page', portfolioId);
-        // this.navCtrl.push(ArtistPage, { spotifyId: spotifyId });
+        this.navCtrl.push(FriendPortfolioPage, { portfolioId });
     }
 
     onAddFriend(portfolioId: string): void {
-        console.log('add friend!', portfolioId);
+        this.store.dispatch(new fromStore.AddFriend(portfolioId));
     }
+
+    onRemoveFriend(portfolioId: string): void {
+        this.store.dispatch(new fromStore.RemoveFriend(portfolioId));
+    }
+
+    errorHandler(event) {
+        console.debug('errorHanlde', event);
+        event.target.src = 'assets/default_user_avatar.jpg';
+    }
+
 
 }

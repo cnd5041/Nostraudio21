@@ -23,3 +23,21 @@ export const getFriendsSearchResults = createSelector(
     getFriendsState,
     fromFriends.getFriendsSearchResults
 );
+
+export const getSelectedFriend = createSelector(
+    getFriendsState,
+    fromFriends.getSelectedFriend
+);
+
+export const getFriendsSearchResultsWithFollow = createSelector(
+    getFriendsSearchResults,
+    getFriendsList,
+    (results, friendsList) => {
+        return results.map(r => {
+            return {
+                ...r,
+                following: friendsList.some(f => f.userProfile === r.userProfile)
+            };
+        });
+    }
+);

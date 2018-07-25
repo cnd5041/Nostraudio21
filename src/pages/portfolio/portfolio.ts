@@ -3,7 +3,7 @@ import { NavController } from 'ionic-angular';
 
 import { ArtistPage } from '../../pages';
 import { NosFirebaseService } from '../../providers';
-import { INosPortfolio, INosArtist, IDbTransaction, IPortfolioShare, INosPortfolioWithArtists, ITransactionWithArtist, IPortfolioShareWithArtist } from '../../models/';
+import { INosArtist, IDbTransaction, INosPortfolioWithArtists, ITransactionWithArtist, IPortfolioShareWithArtist } from '../../models/';
 // Library Imports
 import { Subject } from 'rxjs/Subject';
 // Store imports

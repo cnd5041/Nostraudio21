@@ -8,6 +8,7 @@ import { PortfolioPage } from '../pages/portfolio/portfolio';
 import { SearchPage } from '../pages/search/search';
 import { StatsPage } from '../pages/stats/stats';
 import { LoginPage } from '../pages/login/login';
+import { FriendsPage } from '../pages/friends/friends';
 
 import { AuthData } from '../providers/auth-data';
 
@@ -35,6 +36,7 @@ export class MyApp {
         { title: 'Portfolio', component: PortfolioPage, icon: 'folder-open' },
         { title: 'Search', component: SearchPage, icon: 'search' },
         { title: 'Stats', component: StatsPage, icon: 'stats' },
+        { title: 'Friends', component: FriendsPage, icon: 'people' },
         { title: 'About', component: AboutPage, icon: 'information-circle' },
         { title: 'Support', component: SupportPage, icon: 'help-buoy' },
         { title: 'Login', component: LoginPage, icon: 'cog' }

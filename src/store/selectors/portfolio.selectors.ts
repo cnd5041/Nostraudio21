@@ -77,12 +77,13 @@ export const getTransactionsWithArtists = createSelector(
     (portfolio, clientArtists): ITransactionWithArtist[] => {
         if (portfolio && portfolio.transactions) {
             // add artist to the transaction
-            return portfolio.transactions.map((transaction) => {
-                return {
-                    ...transaction,
-                    artist: clientArtists[transaction.artistKey]
-                };
-            })
+            return portfolio.transactions
+                .map((transaction) => {
+                    return {
+                        ...transaction,
+                        artist: clientArtists[transaction.artistKey]
+                    };
+                })
                 .filter(trans => trans.artist);
         } else {
             return [];
@@ -95,15 +96,16 @@ export const getSharesWithArtists = createSelector(
     fromArtistSelectors.getArtistsMap,
     (portfolio, clientArtists): IPortfolioShareWithArtist[] => {
         if (portfolio && portfolio.shares && !isEmpty(clientArtists)) {
-            return portfolio.shares.map((share) => {
-                const artist = clientArtists[share.artistKey];
-                const sharesValue = artist ? share.sharesCount + artist.marketPrice : 0;
-                return {
-                    ...share,
-                    artist: clientArtists[share.artistKey],
-                    sharesValue: sharesValue
-                };
-            })
+            return portfolio.shares
+                .map((share) => {
+                    const artist = clientArtists[share.artistKey];
+                    const sharesValue = artist ? share.sharesCount + artist.marketPrice : 0;
+                    return {
+                        ...share,
+                        artist: clientArtists[share.artistKey],
+                        sharesValue: sharesValue
+                    };
+                })
                 .filter(share => share.artist);
         } else {
             return [];

@@ -10,8 +10,8 @@ import { AngularFireDatabase, AngularFireAction } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { of } from 'rxjs/observable/of';
-import { map, switchMap, catchError, tap, withLatestFrom, filter, take, takeUntil, takeWhile } from 'rxjs/operators';
-import { forOwn, pickBy, map as _map, keysIn } from 'lodash';
+import { map, switchMap, catchError, tap, withLatestFrom, takeUntil } from 'rxjs/operators';
+import { pickBy, keysIn } from 'lodash';
 // Providers
 import { NosFirebaseService } from '../../providers/firebase-service';
 import { UiService } from '../../providers/ui-service';
@@ -37,9 +37,6 @@ export class FriendsEffects {
         private db: AngularFireDatabase,
         private uiService: UiService,
     ) {
-        // the value will be 'true', 'false', or 'pending'
-        // it gets set to true when the other person accepts
-
         // Observe the Portfolio Id, get the friendsPerPortfolio for it
         const friendsMap$: Observable<IReferenceDictionary> = this.portfolioId$.pipe(
             switchMap((portfolioId: string) => {
@@ -63,35 +60,10 @@ export class FriendsEffects {
             switchMap((friendsMap: IReferenceDictionary) => {
                 const keys = keysIn(pickBy(friendsMap, (x) => x === true));
                 return firebaseProvider.getPortfoliosByIds(keys);
-                // .map((portfolios) => {
-                //     return keys.map((value, index) => {
-                //         return {
-                //             status: friendsMap[value],
-                //             portfolio: portfolios[index],
-                //             key: value
-                //         };
-                //     });
-                // });
             })
         ).subscribe((value) => {
-            console.log('friends portfolios2', value);
             this.store.dispatch(new appActions.SetFriendsList(value));
         });
-
-        /*
-            Search
-
-            Display each friend as a follow (true/false)
-                Future alert that someone followed you
-
-            click will go to their profile
-
-            maybe adapt the get full portfolio to do a take one
-        */
-
-
-        // Friends of friends....I'll want to get a list of friends ids
-        // then fetch their portfolios (once is fine..)
     }
 
     @Effect({ dispatch: false })
@@ -100,10 +72,40 @@ export class FriendsEffects {
         .pipe(
             map((action: appActions.FetchFriends) => action.payload),
             tap((portfolioId: string) => {
-                console.log('effect', portfolioId);
                 this.portfolioId$.next(portfolioId);
             })
         );
+
+    @Effect()
+    fetchFriendPortfolio$ = this.actions$
+        .ofType(appActions.FETCH_FRIEND_PORTFOLIO)
+        .pipe(
+            map((action: appActions.FetchFriendPortfolio) => action.payload),
+            switchMap((porfolioId: string) => {
+                return this.firebaseProvider.getFullPortfolio(porfolioId)
+                    .pipe(
+                        map(portfolio => new appActions.FetchFriendPortolioSuccess(portfolio)),
+                        catchError(() => {
+                            this.store.dispatch(new appActions.ShowToast({
+                                message: 'There was a problem.',
+                                position: 'top',
+                                duration: 2000
+                            }));
+                            return of(new appActions.FetchFriendPortolioSuccess(null));
+                        })
+                    );
+            }),
+        // map((portfolioId)=> {
+        //     return new appActions.FetchPortfolioSuccess(null);
+        // })
+        // Leaving off. I'll have to rework the portfolio selector that combines
+        // all the stuff into a usable service call that does a single GET
+        // switchMap((portfolioId: string)=> {
+        //     // this.firebaseProvider.get
+        //     console.log(portfolioId);
+        //     // return
+        // })
+    );
 
     @Effect()
     searchFriends$: Observable<Action> = this.actions$
@@ -137,49 +139,42 @@ export class FriendsEffects {
                     return of(new appActions.SearchFriendsComplete([]));
                 })
             );
-            // return this.spotifyService.searchArtists(query).pipe(
-            //     map(results => results.filter(x => x.spotifyPopularity > 5 && x.spotifyFollowers > 250)),
-            //     takeUntil(nextSearch$),
-            //     map(results => new appActions.SearchArtistsComplete(results)),
-            //     catchError(() => {
-            //         this.store.dispatch(new appActions.ShowToast({
-            //             message: 'There was a problem with the search.',
-            //             position: 'top',
-            //             duration: 2000
-            //         }));
-            //         return of(new appActions.SearchArtistsComplete([]));
-            //     })
-            // );
         });
 
-    // @Effect({ dispatch: false })
-    // FetchFriendsPortfolios$ = this.actions$
-    //     .ofType(appActions.SET_FRIENDS_MAP)
-    //     .pipe(
-    //         map((action: appActions.SetFriendsMap) => action.payload),
-    //         tap((friendsMap) => {
-    //             console.log('go get friends', friendsMap);
-    //             const friends = pickBy(friendsMap, value => value === true);
+    @Effect({ dispatch: false })
+    AddFriend$ = this.actions$
+        .ofType(appActions.ADD_FRIEND)
+        .pipe(
+            map((action: appActions.AddFriend) => action.payload),
+            withLatestFrom(this.portfolioId$),
+            tap(([friendId, portfolioId]) => {
+                this.updateFriendStatus(friendId, portfolioId, true);
+            })
+        );
 
+    @Effect({ dispatch: false })
+    RemoveFriend$ = this.actions$
+        .ofType(appActions.REMOVE_FRIEND)
+        .pipe(
+            map((action: appActions.RemoveFriend) => action.payload),
+            withLatestFrom(this.portfolioId$),
+            tap(([friendId, portfolioId]) => {
+                this.updateFriendStatus(friendId, portfolioId, false);
+            })
+        );
 
-    //         })
-    //     );
-
-    // @Effect()
-    // SetSelectedArtistFollows$: Observable<Action> = this.actions$
-    //     .ofType(appActions.SET_SELECTED_ARTIST_ID)
-    //     .pipe(
-    //         map((action: appActions.SetSelectedArtistId) => action.payload),
-    //         switchMap((spotifyId: string) => {
-    //             if (spotifyId) {
-    //                 return this.firebaseProvider.followsPerArtistByArtistId(spotifyId)
-    //                     .map((payload: IFollowsPerArtistItem) => new appActions.SetSelectedArtistFollows(payload));
-    //             } else {
-    //                 return of(new appActions.SetSelectedArtistFollows(null));
-    //             }
-    //         }));
-
-
+    private updateFriendStatus(friendId: string, portfolioId: string, value: boolean): void {
+        if (friendId && portfolioId) {
+            this.db.object(`/friendsPerPortfolio/${portfolioId}/${friendId}`).set(value);
+        } else {
+            console.error('Missing Friend or PortfolioId');
+            this.store.dispatch(new appActions.ShowToast({
+                message: 'There was a problem.',
+                position: 'top',
+                duration: 2000
+            }));
+        }
+    }
 }
 
 

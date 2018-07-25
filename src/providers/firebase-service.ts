@@ -14,7 +14,8 @@ import {
     IFollowersPerArtistMap,
     IDbGenreNameMap,
     INosArtist,
-    dbArtistFromSpotifyArtist
+    dbArtistFromSpotifyArtist,
+    INosPortfolioWithArtists
 } from '../models';
 import { AuthData } from './auth-data';
 import { NosSpotifyService } from './spotify-service';
@@ -424,7 +425,24 @@ export class NosFirebaseService {
         const subs = keys.map((key) => {
             return this.db.object<IDbPortfolio>(`/portfolios/${key}`).valueChanges().take(1);
         });
-        return Observable.combineLatest(subs);
+        return subs.length > 0 ? Observable.combineLatest(subs) : Observable.of([]);
+    }
+
+    getFullPortfolio(portfolioId: string): Observable<INosPortfolioWithArtists> {
+        return Observable.of(null);
+
+        // getNosPortfolio, //getUserPortfokio
+
+        // getSharesWithArtists,
+        // getFollowingNosArtists,
+        // getTransactionsWithArtists,
+        // (portfolio, shares, following, transactions): INosPortfolioWithArtists => {
+        //     if (portfolio) {
+        //         return NosPortfolioWithArtists(portfolio, shares, following, transactions);
+        //     } else {
+        //         return null;
+        //     }
+        // }
     }
 
 }
