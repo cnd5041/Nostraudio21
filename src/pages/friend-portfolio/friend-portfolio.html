@@ -14,8 +14,6 @@
         <ion-list *ngIf="userPortfolio">
             <ion-item>
                 <ion-thumbnail item-left>
-                    <!-- <img *ngIf="userPortfolio?.imageUrl" [src]="userPortfolio?.imageUrl" />
-                    <img *ngIf="!userPortfolio?.imageUrl" src="assets/default_user_avatar.jpg" /> -->
                     <user-image [imageUrl]="userPortfolio.imageUrl"></user-image>
                 </ion-thumbnail>
                 <h2>{{userPortfolio?.displayName}}</h2>
@@ -29,9 +27,6 @@
                 </p>
             </ion-item>
         </ion-list>
-        <ion-card-content *ngIf="!userPortfolio">
-            Login to create a Portfolio.
-        </ion-card-content>
     </ion-card>
 
     <ion-card>
@@ -63,7 +58,7 @@
             </ion-item>
         </ion-list>
         <ion-card-content *ngIf="!stocks || stocks.length < 1">
-            You do not own any stocks, start searching for your favorite artists in the Search tab.
+            Your friend does not own any stocks, tell them to start claiming their favorite artists!
         </ion-card-content>
     </ion-card>
 
@@ -88,9 +83,8 @@
             Find artists from the Search tab, and follow them from their page.
         </ion-card-content>
     </ion-card>
-    <!--<portfolio-achievements ng-if="vm.portfolio.userId" user-id="vm.portfolio.userId" show="false"></portfolio-achievements>-->
 
-    <!-- <ion-card>
+    <ion-card>
         <ion-card-header>
             Transactions
         </ion-card-header>
@@ -105,12 +99,11 @@
                 <p>
                     {{trans.date | date:mediumDate}}
                 </p>
-                <button ion-button outline dark item-end (click)="onTransHide(trans)">Hide</button>
             </ion-item>
         </ion-list>
         <ion-card-content *ngIf="!transactions || transactions.length < 1">
             No Transactions.
         </ion-card-content>
-    </ion-card> -->
+    </ion-card>
 
 </ion-content>

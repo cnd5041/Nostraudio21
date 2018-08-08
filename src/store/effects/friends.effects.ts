@@ -4,13 +4,14 @@ import { Effect, Actions } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import * as appActions from '../actions';
 import { MusicState } from '../reducers';
+import { getUserId } from '../selectors/';
 // Firebase
 import { AngularFireDatabase, AngularFireAction } from 'angularfire2/database';
 // Library Imports
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { of } from 'rxjs/observable/of';
-import { map, switchMap, catchError, tap, withLatestFrom, takeUntil } from 'rxjs/operators';
+import { map, switchMap, catchError, tap, withLatestFrom, takeUntil, take } from 'rxjs/operators';
 import { pickBy, keysIn } from 'lodash';
 // Providers
 import { NosFirebaseService } from '../../providers/firebase-service';
@@ -82,10 +83,12 @@ export class FriendsEffects {
         .pipe(
             map((action: appActions.FetchFriendPortfolio) => action.payload),
             switchMap((porfolioId: string) => {
-                return this.firebaseProvider.getFullPortfolio(porfolioId)
+                return this.firebaseProvider.getUserPortfolio(porfolioId)
                     .pipe(
+                        take(1),
                         map(portfolio => new appActions.FetchFriendPortolioSuccess(portfolio)),
-                        catchError(() => {
+                        catchError((error) => {
+                            console.error('fetchFriendPortfolio$', error);
                             this.store.dispatch(new appActions.ShowToast({
                                 message: 'There was a problem.',
                                 position: 'top',
@@ -94,18 +97,8 @@ export class FriendsEffects {
                             return of(new appActions.FetchFriendPortolioSuccess(null));
                         })
                     );
-            }),
-        // map((portfolioId)=> {
-        //     return new appActions.FetchPortfolioSuccess(null);
-        // })
-        // Leaving off. I'll have to rework the portfolio selector that combines
-        // all the stuff into a usable service call that does a single GET
-        // switchMap((portfolioId: string)=> {
-        //     // this.firebaseProvider.get
-        //     console.log(portfolioId);
-        //     // return
-        // })
-    );
+            })
+        );
 
     @Effect()
     searchFriends$: Observable<Action> = this.actions$
@@ -114,31 +107,33 @@ export class FriendsEffects {
         .switchMap(query => {
             if (query === '') {
                 return of(new appActions.SearchFriendsComplete([]));
+            } else {
+                const nextSearch$ = this.actions$.ofType(appActions.SEARCH_FRIENDS).skip(1);
+                return this.db.list<IDbPortfolio>('/portfolios').valueChanges().pipe(
+                    takeUntil(nextSearch$),
+                    withLatestFrom(this.store.select(getUserId)),
+                    map(([portfolios, userId]) => {
+                        return portfolios
+                            .filter(p => {
+                                // Exclude self, match by displayName
+                                return p.userProfile !== userId
+                                    && p.displayName.toLowerCase().includes(query.toLowerCase());
+                            })
+                            .map(p => {
+                                return { userProfile: p.userProfile, displayName: p.displayName };
+                            });
+                    }),
+                    map(results => new appActions.SearchFriendsComplete(results)),
+                    catchError(() => {
+                        this.store.dispatch(new appActions.ShowToast({
+                            message: 'There was a problem with the search.',
+                            position: 'top',
+                            duration: 2000
+                        }));
+                        return of(new appActions.SearchFriendsComplete([]));
+                    })
+                );
             }
-
-            const nextSearch$ = this.actions$.ofType(appActions.SEARCH_FRIENDS).skip(1);
-
-            return this.db.list<IDbPortfolio>('/portfolios').valueChanges().pipe(
-                takeUntil(nextSearch$),
-                map((portfolios) => {
-                    return portfolios
-                        .filter(p => {
-                            return p.displayName.toLowerCase().includes(query.toLowerCase());
-                        })
-                        .map(p => {
-                            return { userProfile: p.userProfile, displayName: p.displayName };
-                        });
-                }),
-                map(results => new appActions.SearchFriendsComplete(results)),
-                catchError(() => {
-                    this.store.dispatch(new appActions.ShowToast({
-                        message: 'There was a problem with the search.',
-                        position: 'top',
-                        duration: 2000
-                    }));
-                    return of(new appActions.SearchFriendsComplete([]));
-                })
-            );
         });
 
     @Effect({ dispatch: false })

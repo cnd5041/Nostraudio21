@@ -2,6 +2,8 @@ import { createSelector } from '@ngrx/store';
 
 import * as fromFeature from '../reducers';
 import * as fromFriends from '../reducers/friends.reducers';
+import { getArtistsMap } from '../selectors/artists.selectors';
+import { INosPortfolioWithArtists, NosPortfolioWithArtists } from '../../models';
 
 export const getFriendsState = createSelector(
     fromFeature.getMusicState,
@@ -19,7 +21,7 @@ export const getFriendsList = createSelector(
     fromFriends.getFriendsList
 );
 
-export const getFriendsSearchResults = createSelector(
+export const getFriendsSearchResults1 = createSelector(
     getFriendsState,
     fromFriends.getFriendsSearchResults
 );
@@ -29,10 +31,29 @@ export const getSelectedFriend = createSelector(
     fromFriends.getSelectedFriend
 );
 
+// Combined State
+export const getFriendsSearchResults = createSelector(
+    getFriendsState,
+    fromFriends.getFriendsSearchResults
+);
+
+export const getFriendNosPortfolioWithArtists = createSelector(
+    getSelectedFriend,
+    getArtistsMap,
+    (portfolio, clientArtists): INosPortfolioWithArtists => {
+        if (portfolio && clientArtists) {
+            return NosPortfolioWithArtists(portfolio, portfolio.shares, portfolio.transactions, clientArtists);
+        } else {
+            return null;
+        }
+    }
+);
+
 export const getFriendsSearchResultsWithFollow = createSelector(
     getFriendsSearchResults,
     getFriendsList,
     (results, friendsList) => {
+        // Return a friends list - including if they are currently following them or not
         return results.map(r => {
             return {
                 ...r,

@@ -1,5 +1,5 @@
 import * as fromActions from '../actions/friends.actions';
-import { IDbPortfolio, INosPortfolioWithArtists } from '../../models';
+import { IDbPortfolio, INosPortfolio } from '../../models';
 
 export interface FriendsState {
     portfolioId: string;
@@ -7,7 +7,7 @@ export interface FriendsState {
     friendsList: IDbPortfolio[];
     query: string;
     searchResults: { displayName: string, userProfile: string }[];
-    selectedFriend: INosPortfolioWithArtists;
+    selectedFriend: INosPortfolio;
 }
 
 const initialState: FriendsState = {

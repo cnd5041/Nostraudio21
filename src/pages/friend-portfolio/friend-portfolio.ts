@@ -34,25 +34,18 @@ export class FriendPortfolioPage {
         const portfolioId = this.navParams.get('portfolioId');
         this.store.dispatch(new fromStore.FetchFriendPortfolio(portfolioId));
 
-        this.store.select(fromStore.getSelectedFriend)
+        this.store.select(fromStore.getFriendNosPortfolioWithArtists)
             .takeUntil(this.unsubscribe$)
             .subscribe(state => {
                 this.store.dispatch(new fromStore.HideLoading());
-                console.log('getSelectedFriend', portfolioId, state);
+                console.log('getFriendNosPortfolioWithArtists', portfolioId, state);
+                this.userPortfolio = state;
+                if (this.userPortfolio) {
+                    this.stocks = state.sharesWithArtist;
+                    this.artistFollows = state.followsWithArtist;
+                    this.transactions = state.transactionsWithArtist;
+                }
             });
-
-        // this.store.select(fromStore.getNosPortfolioWithArtists)
-        //     .takeUntil(this.unsubscribe$)
-        //     .subscribe(state => {
-        //         this.store.dispatch(new fromStore.HideLoading());
-        //         console.log('getNosPortfolioWithArtists', state);
-        //         this.userPortfolio = state;
-        //         if (this.userPortfolio) {
-        //             this.stocks = state.sharesWithArtist;
-        //             this.artistFollows = state.followsWithArtist;
-        //             this.transactions = state.transactionsWithArtist;
-        //         }
-        //     });
     }
 
     ionViewDidLoad() {
@@ -69,12 +62,8 @@ export class FriendPortfolioPage {
         this.navCtrl.push(ArtistPage, { spotifyId: spotifyId });
     }
 
-    // onTransHide(transaction: IDbTransaction): void {
-    //     this.firebaseProvider.hideTransaction(transaction.firebaseKey);
-    // }
-
-    // getTransactionBadgeColor(trans: ITransactionWithArtist) {
-    //     return (trans.action === 'Buy' ? 'moneygreen' : 'danger');
-    // }
+    getTransactionBadgeColor(trans: ITransactionWithArtist) {
+        return (trans.action === 'Buy' ? 'moneygreen' : 'danger');
+    }
 
 }

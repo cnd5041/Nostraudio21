@@ -5,10 +5,7 @@ import * as fromPortfolio from '../reducers/portfolio.reducers';
 
 import * as fromArtistSelectors from './artists.selectors';
 
-import { isEmpty } from 'lodash';
-
 import {
-    IPortfolioShareWithArtist,
     NosPortfolioWithArtists,
     INosPortfolioWithArtists
 } from '../../models/portfolio.model';
@@ -55,72 +52,20 @@ export const isFollowingCurrentArtist = createSelector(
     getNosPortfolio,
     fromArtistSelectors.getSelectedArtistFollows,
     (portfolio, selectedArtistFollows): boolean => {
-        return portfolio && selectedArtistFollows && selectedArtistFollows.value && selectedArtistFollows.value[portfolio.userProfile];
-    }
-);
-
-export const getFollowingNosArtists = createSelector(
-    getNosPortfolio,
-    fromArtistSelectors.getArtistsMap,
-    (portfolio, clientArtists): INosArtist[] => {
-        if (portfolio && portfolio.artistFollows) {
-            return getArtistsByKeys(clientArtists, portfolio.artistFollows);
-        } else {
-            return [];
-        }
-    }
-);
-
-export const getTransactionsWithArtists = createSelector(
-    getNosPortfolio,
-    fromArtistSelectors.getArtistsMap,
-    (portfolio, clientArtists): ITransactionWithArtist[] => {
-        if (portfolio && portfolio.transactions) {
-            // add artist to the transaction
-            return portfolio.transactions
-                .map((transaction) => {
-                    return {
-                        ...transaction,
-                        artist: clientArtists[transaction.artistKey]
-                    };
-                })
-                .filter(trans => trans.artist);
-        } else {
-            return [];
-        }
-    }
-);
-
-export const getSharesWithArtists = createSelector(
-    getNosPortfolio,
-    fromArtistSelectors.getArtistsMap,
-    (portfolio, clientArtists): IPortfolioShareWithArtist[] => {
-        if (portfolio && portfolio.shares && !isEmpty(clientArtists)) {
-            return portfolio.shares
-                .map((share) => {
-                    const artist = clientArtists[share.artistKey];
-                    const sharesValue = artist ? share.sharesCount + artist.marketPrice : 0;
-                    return {
-                        ...share,
-                        artist: clientArtists[share.artistKey],
-                        sharesValue: sharesValue
-                    };
-                })
-                .filter(share => share.artist);
-        } else {
-            return [];
-        }
+        return portfolio
+            && selectedArtistFollows
+            && selectedArtistFollows.value
+            && selectedArtistFollows.value[portfolio.userProfile];
     }
 );
 
 export const getNosPortfolioWithArtists = createSelector(
     getNosPortfolio,
-    getSharesWithArtists,
-    getFollowingNosArtists,
-    getTransactionsWithArtists,
-    (portfolio, shares, following, transactions): INosPortfolioWithArtists => {
-        if (portfolio) {
-            return NosPortfolioWithArtists(portfolio, shares, following, transactions);
+    fromArtistSelectors.getArtistsMap,
+    (portfolio, clientArtists): INosPortfolioWithArtists => {
+        if (portfolio && clientArtists) {
+            // TODO: make sure all client artists are loaded
+            return NosPortfolioWithArtists(portfolio, portfolio.shares, portfolio.transactions, clientArtists);
         } else {
             return null;
         }

@@ -1,5 +1,5 @@
 import { Action } from '@ngrx/store';
-import { IReferenceDictionary, IDbPortfolio, INosPortfolioWithArtists } from '../../models';
+import { IReferenceDictionary, IDbPortfolio, INosPortfolioWithArtists, INosPortfolio } from '../../models';
 
 export const FETCH_FRIENDS = '[friends] FETCH_FRIENDS';
 export const SET_FRIENDS_MAP = '[friends] SET_FRIENDS_MAP';
@@ -36,7 +36,7 @@ export class FetchFriendPortfolio implements Action {
 
 export class FetchFriendPortolioSuccess implements Action {
     readonly type = FETCH_FRIEND_PORTFOLIO_SUCCESS;
-    constructor(public payload: INosPortfolioWithArtists) { }
+    constructor(public payload: INosPortfolio) { }
 }
 
 export class SearchFriends implements Action {

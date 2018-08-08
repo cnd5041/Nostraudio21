@@ -1,6 +1,7 @@
 import { IDbTransaction, ITransactionWithArtist } from './transaction.model';
-import { IDbArtist, INosArtist } from './artist.model';
+import { IDbArtist, INosArtist, INosArtistMap } from './artist.model';
 import { cloneDeep } from 'lodash';
+import { getArtistsByKeys } from './helpers.model';
 
 export interface IDbPortfolio {
     balance: number;
@@ -24,7 +25,7 @@ export interface IPortfolioShareWithArtist {
     sharesCount: number;
     artistKey: string;
     artist: INosArtist;
-    sharesValue: number;
+    sharesValue?: number;
 }
 
 export interface IDbArtistFollowsPerUserItem {
@@ -95,20 +96,37 @@ export function constructPortfolio(
 
 export function NosPortfolioWithArtists(
     portfolio: INosPortfolio,
-    sharesWithArtist: IPortfolioShareWithArtist[],
-    followsWithArtist: INosArtist[],
-    transactionsWithArtist: ITransactionWithArtist[]
+    shares: IPortfolioShare[],
+    transactions: IDbTransaction[],
+    artists: INosArtistMap
 ): INosPortfolioWithArtists {
     const nosPortfolio = cloneDeep(portfolio) as INosPortfolioWithArtists;
 
-    nosPortfolio.sharesWithArtist = sharesWithArtist;
-    nosPortfolio.followsWithArtist = followsWithArtist;
-    nosPortfolio.transactionsWithArtist = transactionsWithArtist;
-
-    nosPortfolio.sharesValue = sharesWithArtist.reduce((accum: number, current: IPortfolioShareWithArtist) => {
-        return accum + (current.artist.marketPrice * current.sharesCount);
+    if (portfolio.artistFollows) {
+        nosPortfolio.followsWithArtist = getArtistsByKeys(artists, portfolio.artistFollows);
+    } else {
+        nosPortfolio.followsWithArtist = [];
+    }
+    // Add Artists to transactions
+    nosPortfolio.transactionsWithArtist = transactions.map((trans) => {
+        return {
+            ...trans,
+            artist: artists[trans.artistKey]
+        };
+    });
+    // Add Artists to shares
+    nosPortfolio.sharesWithArtist = shares.map((share) => {
+        return {
+            ...share,
+            artist: artists[share.artistKey],
+            sharesValue: artists[share.artistKey] ? share.sharesCount + artists[share.artistKey].marketPrice : 0
+        };
+    });
+    // Calculate total sharesValue
+    nosPortfolio.sharesValue = nosPortfolio.sharesWithArtist.reduce((accum: number, current: IPortfolioShareWithArtist) => {
+        return current.artist ? accum + (current.artist.marketPrice * current.sharesCount) : accum;
     }, 0);
-
+    // Calculate net worth
     nosPortfolio.netWorth = nosPortfolio.balance + nosPortfolio.sharesValue;
 
     return nosPortfolio;

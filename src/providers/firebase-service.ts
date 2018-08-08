@@ -169,9 +169,13 @@ export class NosFirebaseService {
             .valueChanges()
             .pipe(
                 map((shares): IPortfolioShare[] => {
-                    return Object.keys(shares).map((key) => {
-                        return { sharesCount: shares[key], artistKey: key };
-                    });
+                    if (shares) {
+                        return Object.keys(shares).map((key) => {
+                            return { sharesCount: shares[key], artistKey: key };
+                        });
+                    } else {
+                        return [];
+                    }
                 })
             );
     }
@@ -206,15 +210,17 @@ export class NosFirebaseService {
             );
     }
 
+    getArtistFollowsPerPortfolio(uid: string): Observable<IDbArtistFollowsPerUserItem> {
+        return this.db.object<IDbArtistFollowsPerUserItem>(`/artistFollowsPerUser/${uid}`)
+            .valueChanges();
+    }
+
     getUserPortfolio(uid: string): Observable<INosPortfolio> {
         const portfolioSource = this.db.object<IDbPortfolio>(`/portfolios/${uid}`)
             .valueChanges();
 
         const sharesPerPortolioSource = this.getSharesPerPortfolio(uid);
-
-        const artistFollowsPerPortfolioSource = this.db.object<IDbArtistFollowsPerUserItem>(`/artistFollowsPerUser/${uid}`)
-            .valueChanges();
-
+        const artistFollowsPerPortfolioSource = this.getArtistFollowsPerPortfolio(uid);
         const transactionsSource = this.getTransactionsPerPortfolio(uid);
 
         const stream = Observable.combineLatest(
@@ -426,23 +432,6 @@ export class NosFirebaseService {
             return this.db.object<IDbPortfolio>(`/portfolios/${key}`).valueChanges().take(1);
         });
         return subs.length > 0 ? Observable.combineLatest(subs) : Observable.of([]);
-    }
-
-    getFullPortfolio(portfolioId: string): Observable<INosPortfolioWithArtists> {
-        return Observable.of(null);
-
-        // getNosPortfolio, //getUserPortfokio
-
-        // getSharesWithArtists,
-        // getFollowingNosArtists,
-        // getTransactionsWithArtists,
-        // (portfolio, shares, following, transactions): INosPortfolioWithArtists => {
-        //     if (portfolio) {
-        //         return NosPortfolioWithArtists(portfolio, shares, following, transactions);
-        //     } else {
-        //         return null;
-        //     }
-        // }
     }
 
 }

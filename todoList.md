@@ -23,6 +23,22 @@ Priorities:
 - Figure out deployment (firebase, in offline example), multiple instances, secure key storage
 
 
+- Show price change or price history so people know how much they've made. Also, show 
+    a date for following or purchases that they can show off. (i.e. have a card or some 
+        function that shows the early investment)
+    - have to capture transaction price versus current price
+        - have to do that over time to make sure return is accurate
+        - maybe keep the +- value in the transaction? since it's hardish to calculate at the end 
+- With price, might have to have a record of the price change over time....
+    Technically things could be figured out by transactions over time, but might be hard to find..
+      Having a service to update that record would be tough to. 
+        maybe buy / sell changes are all we care about, so that's enough
+            can get transactions per artist ref.orderByChild('artistId').equalTo(uid))
+- Test the loading of all artists 
+
+
+-- if CLI fails: npm i -g ionic@3.20.0
+
 NGRX Sources:
 Manipulations to Firebase Data
 https://github.com/angular/angularfire2/blob/5.0.0-rc.6/docs/rtdb/lists.md
@@ -32,8 +48,6 @@ https://github.com/angular/angularfire2/blob/5.0.0-rc.6/docs/rtdb/lists.md
 
 
 ---- Friends ----- 
---Service--
-manage CRUD
 
 Link 
 Friends list component / Friends Page (seperate from portfolio)
