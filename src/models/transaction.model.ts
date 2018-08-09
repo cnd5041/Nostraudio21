@@ -7,7 +7,7 @@ export interface IDbTransaction {
     total: number;
     action: string;
     isHidden?: boolean;
-    date: number;
+    timestamp: number;
     // Not in Database
     firebaseKey?: string;
 }
@@ -17,7 +17,7 @@ export interface ITransactionWithArtist extends IDbTransaction{
 }
 
 export class NosTransaction implements IDbTransaction {
-    public date;
+    public timestamp;
     constructor(
         public artistKey: string,
         public portfolioId: string,
@@ -26,7 +26,7 @@ export class NosTransaction implements IDbTransaction {
         public action: string,
         public isHidden: boolean = false
     ) {
-        this.date = Date.now();
+        this.timestamp = Date.now();
     }
 
 }

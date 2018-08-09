@@ -1,39 +1,62 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams } from 'ionic-angular';
-import { Validators, FormBuilder } from '@angular/forms';
+import { Validators, FormGroup, FormControl } from '@angular/forms';
+import { AngularFireDatabase } from 'angularfire2/database';
+// NGRX Imports
+import { Store } from '@ngrx/store';
+import * as fromStore from '../../store';
+import { withLatestFrom } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
-/*
-  Generated class for the Support page.
-
-  See http://ionicframework.com/docs/v2/components/#navigation for more info on
-  Ionic pages and navigation.
-*/
 @Component({
     selector: 'page-support',
     templateUrl: 'support.html'
 })
 export class SupportPage {
-    supportForm;
+    supportForm: FormGroup;
+    onSubmit$ = new Subject<any>();
+    submitting: boolean = false;
 
     constructor(
-        public navCtrl: NavController,
-        public navParams: NavParams,
-        private formBuilder: FormBuilder
+        private db: AngularFireDatabase,
+        public store: Store<fromStore.MusicState>
     ) {
-
-    }
-
-    ionViewDidLoad() {
-        this.supportForm = this.formBuilder.group({
-            category: ['', Validators.required],
-            response: ['', Validators.required],
-            comments: ['', Validators.required]
+        // Setup form
+        this.supportForm = new FormGroup({
+            category: new FormControl('', Validators.required),
+            comments: new FormControl('', Validators.required),
         });
 
-    }
+        // Handle Submissions
+        this.onSubmit$.pipe(
+            withLatestFrom(this.store.select(fromStore.getUserId)),
+        ).subscribe(([values, portfolioId]) => {
+            this.submitting = true;
+            const support = {
+                ...values,
+                portfolioId: portfolioId,
+                timestamp: Date.now()
+            };
+            // freeze the form until the submission is complete
+            this.db.list('/support').push(support).then(() => {
+                this.supportForm.reset();
+                // Unfreeze and Toast
+                this.submitting = false;
+                this.store.dispatch(new fromStore.ShowToast({
+                    message: 'Thanks! We will get back you!',
+                    position: 'top',
+                    duration: 2000
+                }));
+            }, () => {
+                // Unfreeze and Toast
+                this.submitting = false;
+                this.store.dispatch(new fromStore.ShowToast({
+                    message: 'There was a problem with the submission.',
+                    position: 'top',
+                    duration: 2000
+                }));
+            });
+        });
 
-    logForm() {
-        console.log(this.supportForm.value);
     }
 
 }

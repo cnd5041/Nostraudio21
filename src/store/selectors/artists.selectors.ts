@@ -2,12 +2,9 @@ import { createSelector } from '@ngrx/store';
 
 import * as fromFeature from '../reducers';
 import * as fromArtists from '../reducers/artists.reducers';
+import { INosArtist } from '../../models';
 
-import * as fromGenresSelector from './genres.selectors';
-
-import * as fromModels from '../../models';
-
-import { values, orderBy, keyBy, cloneDeep } from 'lodash';
+import { values, orderBy, keyBy } from 'lodash';
 
 
 export const getArtistsState = createSelector(
@@ -44,22 +41,22 @@ export const getArtistSearchResults = createSelector(
 // Combined Selectors
 export const getArtistsArray = createSelector(
     getArtistsMap,
-    (artistMap): fromModels.INosArtist[] => {
+    (artistMap): INosArtist[] => {
         if (artistMap) {
             const artists = values(artistMap);
-            if (artists && artists.length > 0) { // for testing
-                for (let index = 1; index < 20; index++) {
-                    const artistCopy = cloneDeep(artists[0]);
+            // if (artists && artists.length > 0) { // for testing
+            //     for (let index = 1; index < 20; index++) {
+            //         const artistCopy = cloneDeep(artists[0]);
 
-                    artistCopy.name = artistCopy.name + index;
-                    artistCopy.spotifyId = artistCopy.spotifyId + index;
+            //         artistCopy.name = artistCopy.name + index;
+            //         artistCopy.spotifyId = artistCopy.spotifyId + index;
 
-                    artistCopy.marketCap += index;
-                    artistCopy.marketPrice += index;
+            //         artistCopy.marketCap += index;
+            //         artistCopy.marketPrice += index;
 
-                    artists.push(artistCopy);
-                }
-            }
+            //         artists.push(artistCopy);
+            //     }
+            // }
             return artists;
         } else {
             return [];
@@ -86,7 +83,7 @@ export const getArtistsRankMap = createSelector(
 export const getSelectedNosArtist = createSelector(
     getSelectedArtistId,
     getArtistsMap,
-    (id, entities): fromModels.INosArtist => {
+    (id, entities): INosArtist => {
         return entities[id];
     }
 );

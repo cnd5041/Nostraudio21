@@ -5,20 +5,17 @@ import { Action, Store } from '@ngrx/store';
 import * as appActions from '../actions';
 import { MusicState } from '../reducers';
 // Firebase
-import { AngularFireDatabase, AngularFireAction } from 'angularfire2/database';
+import { AngularFireDatabase } from 'angularfire2/database';
 // Library Imports
 import { Observable } from 'rxjs/Observable';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { of } from 'rxjs/observable/of';
-import { map, switchMap, catchError, tap, withLatestFrom, filter, take, takeUntil } from 'rxjs/operators';
-import { forOwn } from 'lodash';
+import { map, switchMap, catchError, tap, takeUntil } from 'rxjs/operators';
 // Providers
 import { NosFirebaseService } from '../../providers/firebase-service';
 import { UiService } from '../../providers/ui-service';
 // Models
 import {
-    IFollowsPerArtistItem, nosArtistFromDbArtist, ICountReferenceDictionary, IDbArtist,
-    IReferenceDictionary, IDbGenre, IDbGenreMap, IDbGenreNameMap, IArtistsPerGenreMap, INosArtist
+    IFollowsPerArtistItem, IDbGenreMap, IArtistsPerGenreMap, INosArtist
 } from '../../models';
 import { NosSpotifyService } from '../../providers';
 

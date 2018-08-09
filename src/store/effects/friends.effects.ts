@@ -15,7 +15,6 @@ import { map, switchMap, catchError, tap, withLatestFrom, takeUntil, take } from
 import { pickBy, keysIn } from 'lodash';
 // Providers
 import { NosFirebaseService } from '../../providers/firebase-service';
-import { UiService } from '../../providers/ui-service';
 import { IReferenceDictionary, IDbPortfolio } from '../../models';
 
 @Injectable()
@@ -35,8 +34,7 @@ export class FriendsEffects {
         private actions$: Actions,
         private store: Store<MusicState>,
         private firebaseProvider: NosFirebaseService,
-        private db: AngularFireDatabase,
-        private uiService: UiService,
+        private db: AngularFireDatabase
     ) {
         // Observe the Portfolio Id, get the friendsPerPortfolio for it
         const friendsMap$: Observable<IReferenceDictionary> = this.portfolioId$.pipe(

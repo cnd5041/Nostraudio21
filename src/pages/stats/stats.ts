@@ -1,14 +1,13 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { NavController, NavParams } from 'ionic-angular';
+import { NavController } from 'ionic-angular';
 // Store imports
 import { Store } from '@ngrx/store';
 import * as fromStore from '../../store';
 import { INosArtist, filterByValues } from '../../models';
 import { ArtistPage } from '../../pages';
 // Library Imports
-import { orderBy, escapeRegExp } from 'lodash';
-import { Observable, BehaviorSubject } from 'rxjs/Rx';
+import { orderBy } from 'lodash';
 import { Subject } from "rxjs/Subject";
 import {
     takeUntil, combineLatest, debounceTime
@@ -95,11 +94,11 @@ export class StatsPage {
         this.artists = orderBy(this.artists, [this.primarySort], [this.primarySortDir]);
     }
 
-    primarySortChanged(event): void {
+    primarySortChanged(): void {
         this.setList();
     }
 
-    segmentClick(segment: 'marketPrice' | 'marketCap'): void {
+    segmentClick(): void {
         if (this._primarySort === this.primarySort) {
             this.primarySortDir = this.primarySortDir === 'asc' ? 'desc' : 'asc';
         }

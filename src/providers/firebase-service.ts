@@ -9,23 +9,19 @@ import {
     IFollowsPerArtistItem, IDbTransaction, INosPortfolio, NosTransaction, nosArtistFromDbArtist, IPortfolioShare,
     ICountReferenceDictionary,
     IDbGenreMap,
-    IGenresPerArtistMap,
-    IArtistsPerGenreMap,
     IFollowersPerArtistMap,
     IDbGenreNameMap,
     INosArtist,
-    dbArtistFromSpotifyArtist,
-    INosPortfolioWithArtists
+    dbArtistFromSpotifyArtist
 } from '../models';
 import { AuthData } from './auth-data';
 import { NosSpotifyService } from './spotify-service';
 // Library Imports
 import { startCase, toInteger, round, isNull, forOwn, camelCase } from 'lodash';
 import { Observable } from 'rxjs/Observable';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Subject } from 'rxjs/Subject';
 import {
-    map, catchError, withLatestFrom, take, switchMap, combineLatest
+    map, catchError, withLatestFrom, take, switchMap
 } from 'rxjs/operators';
 // Angular Fire Imports
 import { AngularFireDatabase, AngularFireAction } from 'angularfire2/database';
