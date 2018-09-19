@@ -1,22 +1,18 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, RequestOptionsArgs, Headers } from '@angular/http';
+import { Http, Response } from '@angular/http';
 
 import { Observable } from 'rxjs/Rx';
-import 'rxjs/add/operator/map';
+import { map, catchError } from 'rxjs/operators';
 
-import { INosArtist, ISpotifyTopTracks, ISpotifyArtist } from '../models/artist.model';
+import { INosArtist, ISpotifyArtist } from '../models/artist.model';
 
 @Injectable()
 export class NosSpotifyService {
-    // baseUrl: string = 'https://api.spotify.com/v1/';
     readonly baseUrl: string = 'https://nostraudio2-server.appspot.com/api';
-    // https://nostraudio2-server.appspot.com/api
 
     constructor(
         private http: Http
     ) {
-
-
         /*
         https://developer.spotify.com/web-api/authorization-guide/#implicit_grant_flow
         https://github.com/spotify/web-api-auth-examples/blob/master/implicit_grant/public/index.html
@@ -26,14 +22,13 @@ export class NosSpotifyService {
         https://www.google.com/search?q=music+metadata+api&oq=music+metadata+api+&aqs=chrome.0.0l6.2391j0j4&sourceid=chrome&ie=UTF-8
         https://github.com/thelinmichael/spotify-web-api-node
 
-
         https://cloud.google.com/nodejs/
         */
 
     }
 
     private mapArtistSearch(a: any): ISpotifyArtist {
-        var result: ISpotifyArtist = <ISpotifyArtist>{};
+        const result: ISpotifyArtist = <ISpotifyArtist>{};
         //result.spotifyName = a.name;
         result.name = a.name;
         result.spotifyId = a.id;
@@ -69,16 +64,17 @@ export class NosSpotifyService {
     searchArtists(name: string = ''): Observable<INosArtist[]> {
         if (name.length) {
             // let url = `http://localhost:8080/api/search/${name}`;
-            let url = `${this.baseUrl}/search/${name}`;
+            const url = `${this.baseUrl}/search/${name}`;
             return this.http.get(url)
-                .map((response: Response) => {
-                    console.log('search response', response.json());
-                    let results: INosArtist[] = response.json().artists.items
-                        .map((x: any[]) => this.mapArtistSearch(x));
-
-                    return results;
-                })
-                .catch(this.handleError);
+                .pipe(
+                    map((response: Response) => {
+                        console.log('search response', response.json());
+                        const results: INosArtist[] = response.json().artists.items
+                            .map((x: any[]) => this.mapArtistSearch(x));
+                        return results;
+                    }),
+                    catchError(this.handleError)
+                );
         } else {
             console.warn('Search param was empty');
             return Observable.of([]);
@@ -86,12 +82,14 @@ export class NosSpotifyService {
     }
 
     getArtistById(spotifyId: string): Observable<ISpotifyArtist> {
-        let url = `${this.baseUrl}/artists/${spotifyId}`;
+        const url = `${this.baseUrl}/artists/${spotifyId}`;
         return this.http.get(url)
-            .map((response: Response) => {
-                return this.mapArtistSearch(response.json());
-            })
-            .catch(this.handleError);
+            .pipe(
+                map((response: Response) => {
+                    return this.mapArtistSearch(response.json());
+                }),
+                catchError(this.handleError)
+            );
     }
 
     // getArtistTopTracks(spotifyId: string): Observable<ISpotifyTopTracks> {

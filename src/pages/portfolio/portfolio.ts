@@ -1,27 +1,46 @@
 ﻿import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
-import { PortfolioService } from '../../providers/';
-import { INosPortfolio } from '../../models/';
-
-import { ISubscription } from "rxjs/Subscription";
+import { ArtistPage } from '../../pages';
+import { NosFirebaseService } from '../../providers';
+import { INosArtist, IDbTransaction, INosPortfolioWithArtists, ITransactionWithArtist, IPortfolioShareWithArtist } from '../../models/';
+// Library Imports
+import { Subject } from 'rxjs/Subject';
+// Store imports
+import { Store } from '@ngrx/store';
+import * as fromStore from '../../store';
 
 @Component({
     selector: 'page-portfolio',
     templateUrl: 'portfolio.html'
 })
 export class PortfolioPage {
+    private unsubscribe$: Subject<any> = new Subject();
 
-    userPortfolio: INosPortfolio;
-    portfolioSubscription: ISubscription;
+    userPortfolio: INosPortfolioWithArtists;
+    stocks: IPortfolioShareWithArtist[];
+    artistFollows: INosArtist[];
+    transactions: ITransactionWithArtist[];
 
     constructor(
         public navCtrl: NavController,
-        public portfolioService: PortfolioService
+        public store: Store<fromStore.MusicState>,
+        public firebaseProvider: NosFirebaseService
     ) {
-        this.portfolioSubscription = this.portfolioService.userPortfolio$
-            .subscribe(portfolio => {
-                this.userPortfolio = portfolio;
+        // Start Loading
+        this.store.dispatch(new fromStore.ShowLoading());
+
+        this.store.select(fromStore.getNosPortfolioWithArtists)
+            .takeUntil(this.unsubscribe$)
+            .subscribe(state => {
+                this.store.dispatch(new fromStore.HideLoading());
+                console.log('getNosPortfolioWithArtists', state);
+                this.userPortfolio = state;
+                if (this.userPortfolio) {
+                    this.stocks = state.sharesWithArtist;
+                    this.artistFollows = state.followsWithArtist;
+                    this.transactions = state.transactionsWithArtist;
+                }
             });
     }
 
@@ -30,7 +49,21 @@ export class PortfolioPage {
     }
 
     ionViewWillUnload() {
-        this.portfolioSubscription.unsubscribe();
+        // End Subscriptions
+        this.unsubscribe$.next();
+        this.unsubscribe$.complete();
+    }
+
+    onHoldingSelect(spotifyId: string): void {
+        this.navCtrl.push(ArtistPage, { spotifyId: spotifyId });
+    }
+
+    onTransHide(transaction: IDbTransaction): void {
+        this.firebaseProvider.hideTransaction(transaction.firebaseKey);
+    }
+
+    getTransactionBadgeColor(trans: ITransactionWithArtist) {
+        return (trans.action === 'Buy' ? 'moneygreen' : 'danger');
     }
 
 }

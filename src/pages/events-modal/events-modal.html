@@ -1,0 +1,66 @@
+<ion-header>
+    <ion-navbar>
+        <ion-buttons start>
+            <button ion-button (click)="dismiss()">Close</button>
+        </ion-buttons>
+        <ion-title>Events</ion-title>
+    </ion-navbar>
+</ion-header>
+
+<ion-content padding class="card-background-page">
+
+    <ion-card *ngIf="(error$ | async)">
+        <ion-card-content>
+            {{error$ | async}}
+        </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="events.length < 1 && !(error$ | async)">
+        <ion-card-content>
+            No Upcoming Events.
+        </ion-card-content>
+    </ion-card>
+
+    <div padding>
+        <a class="button" ion-button block outline icon-right href="https://www.songkick.com/home" target="_blank">
+            Go to Songkick
+            <ion-icon name="arrow-forward"></ion-icon>
+        </a>
+    </div>
+
+    <ion-card *ngFor="let event of events">
+
+        <ion-item>
+            <h2>{{event.venue.displayName}}</h2>
+            <p>{{event.location.city}}</p>
+            <p>{{event.start.datetime | date:mediumDate}}</p>
+        </ion-item>
+        <img *ngIf="(event.image$ | async)" [src]="event.image$ | async">
+        <!-- <img *ngIf="!(event.image$ | async)" src="assets/default_user_avatar.jpg"> -->
+        <ion-card-content>
+            <h3>
+                <b>Performances</b>
+            </h3>
+            <p>
+                <span *ngFor="let perf of event.performance; let lst = last">
+                    {{perf.displayName}}
+                    <span *ngIf="!lst">,</span>
+                </span>
+            </p>
+        </ion-card-content>
+
+        <ion-row>
+            <ion-col item-right text-right>
+                <a [attr.href]="event.uri" target="_blank" button ion-button clear item-end>View</a>
+            </ion-col>
+        </ion-row>
+
+    </ion-card>
+
+</ion-content>
+
+<ion-footer text-center>
+
+    <img class="image-songkick" src="assets/powered-by-songkick-pink.svg">
+
+</ion-footer>

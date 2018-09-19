@@ -1,37 +1,67 @@
+import { values, clone, forOwn, startCase } from 'lodash';
 
+import { IReferenceDictionary, ICountReferenceDictionary } from './firebase-objects.model';
 
-// export interface IDictionary {
-//     $key?: string;
-//     $value?: boolean;
-//     $exists?: () => boolean;
-// }
+// Genre
+export interface IDbGenre {
+    name: string;
+}
 
-import { IDictionary } from '../models';
+export interface IDbGenreMap {
+    [firebaseKey: string]: IDbGenre;
+}
+
+export interface IDbGenreNameMap {
+    [firebaseKey: string]: string;
+}
+
+// Genre Per Artist
+export interface IGenresPerArtistMap {
+    [firebaseKey: string]: IReferenceDictionary;
+}
+
+export interface IArtistsPerGenreMap {
+    [firebaseKey: string]: IReferenceDictionary;
+}
+
+// Followers Per Artist
+export interface IFollowersPerArtistMap {
+    [firebaseKey: string]: IReferenceDictionary;
+}
+
+export interface IFollowsPerArtistItem {
+    firebaseKey?: string;
+    value?: IReferenceDictionary;
+}
+
+// Stockholders Per Artist
+export interface IStockholdersPerArtistMap {
+    [firebaseKey: string]: ICountReferenceDictionary;
+}
+
+export interface IStockholdersPerArtistItem {
+    firebaseKey?: string;
+    value?: ICountReferenceDictionary;
+}
+
+// Artists
+export interface IDbArtistMap {
+    [firebaseKey: string]: IDbArtist;
+}
+
+export interface INosArtistMap {
+    [firebaseKey: string]: INosArtist;
+}
 
 export interface INosArtist extends IDbArtist {
-    // // id: string;
-    // name: string;
-    // spotifyId: string;
-    // spotifyUri: string;
-    // spotifyUrl: string;
-    // spotifyHref: string;
-    // spotifyPopularity: number;
-    // spotifyFollowers: number;
-    // // spotifyGenres: string[];
-    // // genre: string;
-    // largeImage: string;
-    // mediumImage: string;
-    // smallImage: string;
-
     shareCount?: number;
-    stockholdersPerArtist: IDictionary[];
-    marketPrice?: number;
+    // stockholdersPerArtist: IDictionary[];
+    stockholdersPerArtist: ICountReferenceDictionary;
     marketCap?: number;
-    // transactions: any[];
 
-    // genres will be tracked seperately
-    // portfolio follows will be tracked seperately
-    // portfolio investors will be tracked seperately
+    genres: IDbGenreMap;
+    genresArray: string[];
+    // transactions: any[];
 }
 
 export interface ISpotifyArtist {
@@ -49,7 +79,7 @@ export interface ISpotifyArtist {
     smallImage: string;
 }
 
-export interface IDbArtist extends IDictionary {
+export interface IDbArtist {
     name: string;
     spotifyId: string;
     spotifyUri: string;
@@ -60,29 +90,31 @@ export interface IDbArtist extends IDictionary {
     largeImage: string;
     mediumImage: string;
     smallImage: string;
+    marketPrice?: number;
 }
 
-export class NosArtist {
+export function nosArtistFromDbArtist(
+    dbArtist: IDbArtist,
+    stockholdersPerArtist: ICountReferenceDictionary,
+    genres: IDbGenreNameMap = {}
+): INosArtist {
+    const artist = clone(dbArtist);
 
-    constructor() {
-
-    }
-}
-
-export function nosArtistFromDbArtist(dbArtist: IDbArtist, stockholdersPerArtist: IDictionary[]): INosArtist {
-    const artist = <INosArtist>Object.create(dbArtist);
-    // const artist = <INosArtist>Object.assign({}, dbArtist);
-
-    artist.shareCount = <number>stockholdersPerArtist.reduce((sum, value) => {
-        return sum + value.$value;
-    }, 0);
-
-    artist.stockholdersPerArtist = stockholdersPerArtist;
+    artist.stockholdersPerArtist = stockholdersPerArtist || {};
+    artist.shareCount = values(artist.stockholdersPerArtist)
+        .reduce((a, b) => a + b, 0);
 
     let price = (50 * (artist.spotifyPopularity / 100)) + (35 * (artist.spotifyFollowers / 5000000)) + (15 * (artist.shareCount / 5000));
     price = Math.round(price * 100) / 100;
     artist.marketPrice = price;
     artist.marketCap = artist.marketPrice * artist.shareCount;
+
+    artist.genres = genres;
+    artist.genresArray = [];
+
+    forOwn(genres, (value, key) => {
+        artist.genresArray.push(startCase(value));
+    });
 
     return artist;
 }
@@ -100,10 +132,6 @@ export function dbArtistFromSpotifyArtist(artist: ISpotifyArtist): IDbArtist {
         mediumImage: artist.mediumImage,
         smallImage: artist.smallImage
     };
-}
-
-export interface IGenre extends IDictionary {
-    name: string;
 }
 
 export interface ISpotifyTrack {

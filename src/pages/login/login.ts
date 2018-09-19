@@ -1,22 +1,28 @@
 ﻿import { Component } from '@angular/core';
-import { NavController, LoadingController, AlertController, Loading, ActionSheetController } from 'ionic-angular';
-import { FormBuilder, Validators, FormGroup } from '@angular/forms';
-import { Observable } from 'rxjs/Observable';
-import { ISubscription } from "rxjs/Subscription";
-
+import { NavController, AlertController, Loading, ActionSheetController } from 'ionic-angular';
+import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
+// Firebase
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
-
-import { AuthData, PortfolioService } from '../../providers/';
-import { INosPortfolio } from '../../models/';
-import { SignupPage, ResetPasswordPage } from '../';
+import { AngularFireDatabase } from 'angularfire2/database';
+// App Imports
+import { AuthData } from '../../providers/';
+import { ResetPasswordPage, SignupPage } from '../';
 import { GlobalValidator } from '../../validators/global-validator';
+// Library Imports
+import { Subject } from 'rxjs/Subject';
+// Store
+import { Store } from '@ngrx/store';
+import * as fromStore from '../../store';
+import { takeWhile, filter, withLatestFrom, takeUntil, take } from 'rxjs/operators';
 
 @Component({
     selector: 'page-login',
     templateUrl: 'login.html'
 })
 export class LoginPage {
+    private unsubscribe$: Subject<any> = new Subject();
+
     loginForm: FormGroup;
 
     emailChanged: boolean = false;
@@ -25,59 +31,98 @@ export class LoginPage {
     loading: Loading;
     // Track user login state
     userState: firebase.User;
-    userPortfolio$: Observable<INosPortfolio>;
-    userStateSubscription: ISubscription;
 
+    accountForm: FormGroup;
+    accountFormChanged: boolean = false;
+    editing: boolean = false;
+    onSubmit$ = new Subject<any>();
+    currentDisplayName: string;
 
     constructor(
         public nav: NavController,
         public authData: AuthData,
         public formBuilder: FormBuilder,
         public alertCtrl: AlertController,
-        public loadingCtrl: LoadingController,
-        public portfolioService: PortfolioService,
         public afAuth: AngularFireAuth,
-        public actionSheetCtrl: ActionSheetController
+        public actionSheetCtrl: ActionSheetController,
+        public store: Store<fromStore.MusicState>,
+        public db: AngularFireDatabase
     ) {
-        /**
-         * Creates a ControlGroup that declares the fields available, their values and the validators that they are going
-         * to be using.
-         *
-         * I set the password's min length to 6 characters because that's Firebase's default, feel free to change that.
-         */
         this.loginForm = this.formBuilder.group({
             email: ['', Validators.compose([Validators.required, GlobalValidator.mailFormat])],
-            password: ['', Validators.compose([Validators.minLength(6), Validators.required])]
+            password: ['', Validators.compose([Validators.required])]
         });
 
+        // Setup account form
+        this.accountForm = new FormGroup({
+            displayName: new FormControl('', [Validators.required, Validators.minLength(4)])
+        });
+
+        // Listen for changes and detect if there are actual changes
+        this.accountForm.valueChanges
+            .pipe(
+                takeUntil(this.unsubscribe$),
+                withLatestFrom(this.store.select(fromStore.getNosPortfolio))
+            )
+            .subscribe(([values, portfolio]) => {
+                this.accountFormChanged = values.displayName !== portfolio.displayName;
+            });
+
+        // Handle Submissions
+        this.onSubmit$.subscribe((values) => {
+            this.db.list('/portfolios', ref => ref.orderByChild('displayName').equalTo(values.displayName))
+                .valueChanges()
+                .pipe(
+                    take(1),
+                    withLatestFrom(this.store.select(fromStore.getNosPortfolio))
+                )
+                .subscribe(([results, portfolio]) => {
+                    if (results.length < 1) {
+                        this.db.object(`/portfolios/${portfolio.userProfile}`)
+                            .update({ displayName: values.displayName });
+                    } else {
+                        this.store.dispatch(new fromStore.ShowToast({
+                            message: 'That name is taken, try another.',
+                            position: 'top',
+                            duration: 2000
+                        }));
+                    }
+                });
+        });
     }
 
 
     ionViewDidLoad() {
-        // Setup Portfolio Subscription
-        this.userPortfolio$ = this.portfolioService.userPortfolio$;
-
-        // Setup UserState Stream/Subscription        
-        const userStateStream = this.authData.authState;
-        this.userStateSubscription = userStateStream
-            .subscribe(userState => {
-                this.userState = userState;
-            }, error => {
-                this.userState = null;
-                this.showError('Error Getting User Info.');
+        // Set the displayName if they are not currently editing
+        this.store.select(fromStore.getNosPortfolio)
+            .pipe(
+                takeUntil(this.unsubscribe$),
+                takeWhile(() => this.editing === false),
+                filter((state) => state !== null)
+            )
+            .subscribe((state) => {
+                this.currentDisplayName = state.displayName;
+                // Set form values
+                this.accountForm.controls['displayName'].setValue(this.currentDisplayName);
             });
+
+        // Watch Auth State
+        this.authData.authState.pipe(
+            takeUntil(this.unsubscribe$),
+        ).subscribe(userState => {
+            this.userState = userState;
+        });
     }
 
     ionViewWillUnload() {
-        this.userStateSubscription.unsubscribe();
+        // End Subscriptions
+        this.unsubscribe$.next();
+        this.unsubscribe$.complete();
     }
 
-    /**
-     * Receives an input field and sets the corresponding fieldChanged property to 'true' to help with the styles.
-     */
-    elementChanged(input) {
-        let field = input.inputControl.name;
-        this[field + "Changed"] = true;
+    onCancel() {
+        this.accountForm.reset();
+        this.accountForm.controls['displayName'].setValue(this.currentDisplayName);
     }
 
     /**
@@ -92,19 +137,20 @@ export class LoginPage {
         if (!this.loginForm.valid) {
             console.log('form invalid', this.loginForm.value);
         } else {
+            // Show Loading
+            this.store.dispatch(new fromStore.ShowLoading());
+            // Request Login
             this.authData.loginUser(this.loginForm.value.email, this.loginForm.value.password)
-                .then(authData => {
-                    this.loading.dismiss();
-                }, error => {
-                    this.loading.dismiss()
-                        .then(() => {
-                            this.showError('Log In Error.');
-                        });
+                .then((authData) => {
+                    this.store.dispatch(new fromStore.HideLoading());
+                }, (errorMsg: string) => {
+                    this.store.dispatch(new fromStore.HideLoading());
+                    this.store.dispatch(new fromStore.ShowToast({
+                        message: errorMsg,
+                        position: 'top',
+                        duration: 2000
+                    }));
                 });
-
-            // Setup and Show Loading
-            this.loading = this.loadingCtrl.create({});
-            this.loading.present();
         }
     }
 
@@ -117,7 +163,7 @@ export class LoginPage {
     }
 
     logOut() {
-        let actionSheet = this.actionSheetCtrl.create({
+        const actionSheet = this.actionSheetCtrl.create({
             title: 'Confirm Log Out',
             buttons: [
                 {
@@ -140,27 +186,18 @@ export class LoginPage {
         actionSheet.present();
     }
 
-    showError(message: string): void {
-        let alert = this.alertCtrl.create({
-            message: message,
-            buttons: [
-                {
-                    text: "Ok",
-                    role: 'cancel'
-                }
-            ]
-        });
-        alert.present();
-    }
-
     signInWithFacebook() {
-        this.afAuth.auth
-            .signInWithPopup(new firebase.auth.FacebookAuthProvider())
+        // https://github.com/angular/angularfire2/blob/master/docs/ionic/v3.md
+        return this.authData.smartSignin('facebook')
             .then(res => {
                 console.log('facbook login res', res);
             }, error => {
                 console.log('facbook login error', error);
-                this.showError(error.message);
+                this.store.dispatch(new fromStore.ShowToast({
+                    message: 'Log In Error.',
+                    position: 'top',
+                    duration: 2000
+                }));
             });
     }
 

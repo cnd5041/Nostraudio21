@@ -1,0 +1,49 @@
+<ion-header>
+    <ion-navbar>
+        <button ion-button menuToggle>
+            <ion-icon name="menu"></ion-icon>
+        </button>
+        <ion-title>Friends</ion-title>
+    </ion-navbar>
+</ion-header>
+<ion-content>
+    <ion-searchbar (ionInput)="search($event)" [debounce]="400"></ion-searchbar>
+    <ion-card *ngIf="(results$ | async)?.length > 0">
+        <ion-list>
+            <ion-list-header>
+                Results
+            </ion-list-header>
+            <ion-item *ngFor="let result of results$ | async">
+                {{result.displayName}}
+                <button ion-button clear item-end icon-only (click)="onAddFriend(result.userProfile)" *ngIf="!result.following">
+                    <ion-icon name="person-add"></ion-icon>
+                </button>
+                <ion-icon item-end name="checkmark-circle" *ngIf="result.following"></ion-icon>
+            </ion-item>
+        </ion-list>
+    </ion-card>
+
+    <ion-card>
+        <ion-card-header>
+            Following
+        </ion-card-header>
+        <ion-list>
+            <ion-item *ngFor="let portfolio of (friendsList$ | async)">
+                <button ion-button clear item-start color="danger" (click)="onRemoveFriend(portfolio.userProfile)">
+                    <ion-icon name="remove-circle"></ion-icon>
+                </button>
+                <ion-avatar item-start>
+                    <user-image [imageUrl]="portfolio.imageUrl"></user-image>
+                </ion-avatar>
+                <h2>{{portfolio.displayName}}</h2>
+                <button ion-button clear item-end (click)="onFriendSelect(portfolio.userProfile)">
+                    <ion-icon name="arrow-forward"></ion-icon>
+                </button>
+            </ion-item>
+        </ion-list>
+        <ion-card-content *ngIf="(friendsList$ | async)?.length < 1">
+            Find friends from the Search tab, and follow them from their page.
+        </ion-card-content>
+    </ion-card>
+
+</ion-content>

@@ -1,26 +1,32 @@
-import { IDictionary } from '../models';
+import { IDbArtist } from './artist.model';
 
-export interface INosTransaction {
-    artistId: string;
+export interface IDbTransaction {
+    artistKey: string;
     portfolioId: string;
     numberOfShares: number;
     total: number;
     action: string;
+    isHidden?: boolean;
+    timestamp: number;
+    // Not in Database
+    firebaseKey?: string;
 }
 
-export interface IDbTransaction extends INosTransaction, IDictionary {
-
+export interface ITransactionWithArtist extends IDbTransaction{
+    artist: IDbArtist;
 }
 
-export class NosTransaction implements INosTransaction {
+export class NosTransaction implements IDbTransaction {
+    public timestamp;
     constructor(
-        public artistId: string,
+        public artistKey: string,
         public portfolioId: string,
         public numberOfShares: number,
         public total: number,
-        public action: string
+        public action: string,
+        public isHidden: boolean = false
     ) {
-
+        this.timestamp = Date.now();
     }
 
 }

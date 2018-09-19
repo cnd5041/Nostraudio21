@@ -1,82 +1,101 @@
-import { NavController, LoadingController, AlertController } from 'ionic-angular';
 import { Component } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { AuthData } from '../../providers/auth-data';
+import { NavController } from 'ionic-angular';
+import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+// Firebase
+import { AngularFireAuth } from 'angularfire2/auth';
+import * as firebase from 'firebase/app';
+// App Imports
+import { AuthData } from '../../providers/';
 import { GlobalValidator } from '../../validators/global-validator';
-import { PortfolioPage } from '../portfolio/portfolio';
+// Library Imports
+import { Subject } from 'rxjs/Subject';
+// Store
+import { Store } from '@ngrx/store';
+import * as fromStore from '../../store';
+import { takeUntil, filter, take, map } from 'rxjs/operators';
+import { LoginPage } from '../login/login';
 
-/*
-  Generated class for the Signup page.
-
-  See http://ionicframework.com/docs/v2/components/#navigation for more info on
-  Ionic pages and navigation.
-*/
 @Component({
-  selector: 'page-signup',
-  templateUrl: 'signup.html'
+    selector: 'page-signup',
+    templateUrl: 'signup.html'
 })
 export class SignupPage {
-  public signupForm;
-  emailChanged: boolean = false;
-  passwordChanged: boolean = false;
-  submitAttempt: boolean = false;
-  loading: any;
+    private unsubscribe$: Subject<any> = new Subject();
 
+    loginForm: FormGroup;
 
-  constructor(
-    public nav: NavController,
-    public authData: AuthData,
-    public formBuilder: FormBuilder,
-    public loadingCtrl: LoadingController,
-    public alertCtrl: AlertController
-  ) {
-
-    this.signupForm = formBuilder.group({
-      email: ['', Validators.compose([Validators.required, GlobalValidator.mailFormat])],
-      password: ['', Validators.compose([Validators.minLength(6), Validators.required])]
-    })
-  }
-
-  /**
-   * Receives an input field and sets the corresponding fieldChanged property to 'true' to help with the styles.
-   */
-  elementChanged(input) {
-    let field = input.inputControl.name;
-    this[field + "Changed"] = true;
-  }
-
-  /**
-   * If the form is valid it will call the AuthData service to sign the user up password displaying a loading
-   *  component while the user waits.
-   *
-   * If the form is invalid it will just log the form value, feel free to handle that as you like.
-   */
-  signupUser() {
-    this.submitAttempt = true;
-
-    if (!this.signupForm.valid) {
-      console.log(this.signupForm.value);
-    } else {
-      this.authData.signupUser(this.signupForm.value.email, this.signupForm.value.password).then(() => {
-        this.nav.setRoot(PortfolioPage);
-      }, (error) => {
-        this.loading.dismiss();
-        let alert = this.alertCtrl.create({
-          message: error.message,
-          buttons: [
-            {
-              text: "Ok",
-              role: 'cancel'
-            }
-          ]
+    constructor(
+        public nav: NavController,
+        public authData: AuthData,
+        public formBuilder: FormBuilder,
+        public afAuth: AngularFireAuth,
+        public store: Store<fromStore.MusicState>
+    ) {
+        this.loginForm = this.formBuilder.group({
+            email: ['', Validators.compose([Validators.required, GlobalValidator.mailFormat])],
+            password: ['', Validators.compose([Validators.minLength(6), Validators.required])]
         });
-        alert.present();
-      });
-
-      this.loading = this.loadingCtrl.create({
-        dismissOnPageChange: true,
-      });
-      this.loading.present();
     }
-  }
+
+    ionViewCanEnter(): Promise<boolean> {
+        // Do not allow entry if logged in
+        return this.authData.authState.pipe(
+            take(1),
+            map(value => value === null ? true : false),
+
+        ).toPromise();
+    }
+
+    ionViewDidLoad() {
+        // Watch Auth State
+        this.authData.authState.pipe(
+            takeUntil(this.unsubscribe$),
+            filter(val => val !== null)
+        ).subscribe(() => {
+            this.nav.setRoot(LoginPage);
+        });
+    }
+
+    ionViewWillUnload() {
+        // End Subscriptions
+        this.unsubscribe$.next();
+        this.unsubscribe$.complete();
+    }
+
+    loginUser() {
+        this.store.dispatch(new fromStore.ShowLoading());
+
+        if (!this.loginForm.valid) {
+            // Do Nothing
+        } else {
+            this.authData.signupUserEmail(this.loginForm.value.email, this.loginForm.value.password)
+                .then((authData) => {
+                    this.store.dispatch(new fromStore.HideLoading());
+                }, (errorMsg) => {
+                    this.store.dispatch(new fromStore.HideLoading());
+                    this.store.dispatch(new fromStore.ShowToast({
+                        message: errorMsg,
+                        position: 'top',
+                        duration: 2000
+                    }));
+                });
+            // Show Loading
+            this.store.dispatch(new fromStore.ShowLoading());
+        }
+    }
+
+    signInWithFacebook() {
+        // https://github.com/angular/angularfire2/blob/master/docs/ionic/v3.md
+        return this.authData.signupUserFacebook()
+            .then((user: firebase.User) => {
+                console.log('success sign in facebook, now unlink', user);
+            }, (errorMsg) => {
+                this.store.dispatch(new fromStore.ShowToast({
+                    message: 'Log In Error.',
+                    position: 'top',
+                    duration: 2000
+                }));
+            });
+    }
+
 }

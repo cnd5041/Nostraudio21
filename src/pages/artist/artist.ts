@@ -1,29 +1,33 @@
 ﻿import { Component } from '@angular/core';
-import { NavController, NavParams, ActionSheetController, LoadingController, LoadingOptions } from 'ionic-angular';
+import { NavController, NavParams, ActionSheetController, ModalController } from 'ionic-angular';
 
+// App Imports
 import { INosArtist, INosPortfolio } from '../../models';
-import { ArtistService, PortfolioService } from '../../providers/';
-import { ISubscription } from "rxjs/Subscription";
+import { UiService, NosSongkickService } from '../../providers';
+import { EventsModal } from '../events-modal/events-modal';
 
+// library imports
+import { Subject } from 'rxjs/Subject';
+import { Observable } from 'rxjs/Observable';
+import { toInteger, isInteger } from 'lodash';
+// Store imports
+import { Store } from '@ngrx/store';
+import * as fromStore from '../../store';
 
 @Component({
     selector: 'page-artist',
     templateUrl: 'artist.html'
 })
 export class ArtistPage {
-    artist: INosArtist;
-    artistSubscription: ISubscription;
+    private unsubscribe: Subject<any> = new Subject();
 
-    portfolioSubscription: ISubscription;
+    artist: INosArtist;
     userPortfolio: INosPortfolio;
 
-    artistFollowersSubscription: ISubscription;
-    artistFollowers: any[];
-    isFollowing = false;
+    artistFollowerCount$: Observable<number>;
+    isFollowing$: Observable<boolean>;
+    artistGenres: string[];
 
-    artistGenres = '';
-
-    // buyForm: FormGroup;
     action = 'buy';
     buyShareCount = 1;
     buyTotal: number;
@@ -34,86 +38,79 @@ export class ArtistPage {
     constructor(
         public navCtrl: NavController,
         public navParams: NavParams,
-        public artistService: ArtistService,
-        public portfolioService: PortfolioService,
         public actionSheetCtrl: ActionSheetController,
-        public loadingCtrl: LoadingController
+        public modalCtrl: ModalController,
+        public store: Store<fromStore.MusicState>,
+        public uiService: UiService,
+        public songkick: NosSongkickService
     ) {
     }
 
     ionViewDidLoad() {
         const spotifyId = this.navParams.get('spotifyId');
+        this.store.dispatch(new fromStore.SetSelectedArtistId(spotifyId));
 
-        const loading = this.loadingCtrl.create({});
-        loading.present();
+        // Start Loading
+        this.store.dispatch(new fromStore.ShowLoading());
 
-        // Setup Artist Stream and Subscription
-        const artistStream = this.artistService.getArtistById(spotifyId);
-        this.artistSubscription = artistStream
-            .subscribe(result => {
-                if (result.$exists()) {
-                    loading.dismiss();
-                    // Set artist and trigger share change
-                    this.artist = result;
-                    this.onBuySharesChange(this.buyShareCount);
-                    this.onSellSharesChange(this.sellShareCount);
-                    // Get Genres
-                    this.artistService.getGenresByArtistId(result.spotifyId)
-                        .subscribe(genres => {
-                            this.artistGenres = genres.map(g => g.name).join(', ');
-                        });
-                } else {
-                    this.artistService.createArtist(spotifyId);
-                }
+        this.uiService.navBackSubject$
+            .filter(state => state === true)
+            .takeUntil(this.unsubscribe)
+            .subscribe((navBack) => {
+                this.store.dispatch(new fromStore.HideLoading());
+                this.navCtrl.pop();
             });
 
-        // Setup Artist Followers Stream and Subscription
-        const artistFollowersStream = this.artistService.getArtistFollowers(spotifyId);
-        this.artistFollowersSubscription = artistFollowersStream
-            .subscribe(artistFollowers => {
-                this.artistFollowers = artistFollowers;
-                // Check if the current user is one of the followers
-                this.setIsFollowing();
+        this.store.select(fromStore.getSelectedNosArtist)
+            .takeUntil(this.unsubscribe)
+            .filter(result => !!result)
+            .subscribe(state => {
+                console.log('getSelectedNosArtist', state);
+                // Stop Loading
+                this.store.dispatch(new fromStore.HideLoading());
+                this.artist = <any>state;
+                this.onBuySharesChange(this.buyShareCount);
+                this.onSellSharesChange(this.sellShareCount);
             });
 
-        // Setup Portfolio Stream and Subscription
-        const portfolioStream = this.portfolioService.userPortfolio$;
-        this.portfolioSubscription = portfolioStream
-            .subscribe(portfolio => {
-                console.log('portfolio', portfolio);
-                this.userPortfolio = portfolio;
-                this.ownedShares = this.userPortfolio.sharesPerArtist(spotifyId);
+        // Setup Portfolio
+        this.store.select(fromStore.getNosPortfolio)
+            .takeUntil(this.unsubscribe)
+            .filter(state => !!state)
+            .subscribe((state) => {
+                console.log('getNosPortfolio', state);
+                this.userPortfolio = state;
+                this.ownedShares = this.userPortfolio.getSharesByArtistId(spotifyId);
             });
-    }
-
-    setIsFollowing(): void {
-        // Check if the current user is one of the followers
-        if (this.userPortfolio && this.artistFollowers.find(x => x.$key === this.userPortfolio.$key)) {
-            this.isFollowing = true;
-        } else {
-            this.isFollowing = false;
-        }
+        // Follower Count
+        this.artistFollowerCount$ = this.store.select(fromStore.getSelectedFollowersCount);
+        // isFollowing
+        this.isFollowing$ = this.store.select(fromStore.isFollowingCurrentArtist);
     }
 
     ionViewWillUnload() {
-        this.artistSubscription.unsubscribe();
-        this.artistFollowersSubscription.unsubscribe();
-        this.portfolioSubscription.unsubscribe();
+        // End Subscriptions
+        this.unsubscribe.next();
+        this.unsubscribe.complete();
     }
 
     follow(): void {
-        this.artistService.followArtist(this.artist.spotifyId, this.userPortfolio.$key);
+        this.store.dispatch(new fromStore.UserFollowArtist(
+            { artistKey: this.artist.spotifyId, portfolioKey: this.userPortfolio.userProfile }
+        ));
     }
 
     unFollow() {
-        let actionSheet = this.actionSheetCtrl.create({
+        const actionSheet = this.actionSheetCtrl.create({
             title: this.artist.name,
             buttons: [
                 {
                     text: 'Unfollow',
                     role: 'destructive',
                     handler: () => {
-                        this.artistService.unFollowArtist(this.artist.spotifyId, this.userPortfolio.$key)
+                        this.store.dispatch(new fromStore.UserUnfollowArtist(
+                            { artistKey: this.artist.spotifyId, portfolioKey: this.userPortfolio.userProfile }
+                        ));
                     }
                 },
                 {
@@ -144,15 +141,40 @@ export class ArtistPage {
         return (this.canAfford() ? 'moneygreen' : 'danger');
     }
 
-    isValidNumber(value: number): boolean {
-        console.log('Number.isInteger(value)', Number.isInteger(value));
-        console.log('value > 0', value > 0);
-        return Number.isInteger(value) && value > 0;
+    isValidNumber(value: number | string): boolean {
+        const intVal = toInteger(value);
+        return value !== '' && isInteger(intVal) && intVal > 0;
+    }
+
+    isSellValid(): boolean {
+        if (this.sellShareCount > this.ownedShares) {
+            return false;
+        } else if (!this.isValidNumber(this.sellShareCount)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    isBuyValid(): boolean {
+        if (!this.canAfford()) {
+            return false;
+        } else if (!this.isValidNumber(this.buyShareCount)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     onBuyClick(): void {
         const purchase = () => {
-            this.artistService.userBuyArtist(this.userPortfolio, this.artist, this.buyShareCount);
+            const params = {
+                portfolio: this.userPortfolio,
+                artistKey: this.artist.spotifyId,
+                shareCount: toInteger(this.buyShareCount),
+                price: this.artist.marketPrice
+            };
+            this.store.dispatch(new fromStore.UserBuyArtist(params));
         };
 
         if (!this.isValidNumber(this.buyShareCount)) {
@@ -181,14 +203,20 @@ export class ArtistPage {
 
     onSellClick(): void {
         const sell = () => {
-            alert('sell');
+            const params = {
+                portfolio: this.userPortfolio,
+                artistKey: this.artist.spotifyId,
+                shareCount: toInteger(this.sellShareCount),
+                price: this.artist.marketPrice
+            };
+            this.store.dispatch(new fromStore.UserSellArtist(params));
         };
 
         if (!this.isValidNumber(this.sellShareCount)) {
             return;
         }
 
-        if (this.sellShareCount > this.ownedShares){
+        if (this.sellShareCount > this.ownedShares) {
             return;
         }
 
@@ -210,6 +238,11 @@ export class ArtistPage {
         });
 
         actionSheet.present();
+    }
+
+    onEventsClick() {
+        const modal = this.modalCtrl.create(EventsModal);
+        modal.present();
     }
 
 }

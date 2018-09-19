@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Http, Response, RequestOptionsArgs, Headers } from '@angular/http';
 
 import { Observable } from 'rxjs/Rx';
-import 'rxjs/add/operator/map';
 
 import { INosArtist, ISpotifyTopTracks, ISpotifyArtist } from '../models/artist.model';
 
@@ -12,7 +11,7 @@ import { INosArtist, ISpotifyTopTracks, ISpotifyArtist } from '../models/artist.
 
 
 // Consumer Key	iwbwyZfQbzcPiyIqEtOc
-// Consumer Secret	oDmpYELCrwMcdrRvShgWogtFlHgicOpW  TODO: hide in firebase 
+// Consumer Secret	oDmpYELCrwMcdrRvShgWogtFlHgicOpW  TODO: hide in firebase
 // Request Token URL	https://api.discogs.com/oauth/request_token
 // Authorize URL	https://www.discogs.com/oauth/authorize
 // Access Token URL	https://api.discogs.com/oauth/access_token
@@ -54,7 +53,7 @@ export class DiscogsService {
     baseUrl: string = 'https://api.discogs.com/database';
     // check the integrety of the search
     // see if there's a way to match spotify and discogs
-    // if there no ranking on discogs, use spotify and discogs as metadata 
+    // if there no ranking on discogs, use spotify and discogs as metadata
 
     constructor(
         private http: Http
@@ -62,15 +61,16 @@ export class DiscogsService {
     }
 
     searchArtists(): Observable<any> {
-        let url = ``;
-        let headers = new Headers();
+        const url = ``;
+        const headers = new Headers();
         headers.append('Authorization', 'Discogs key=iwbwyZfQbzcPiyIqEtOc, secret=oDmpYELCrwMcdrRvShgWogtFlHgicOpW');
 
-        let options: RequestOptionsArgs = {
+        const options: RequestOptionsArgs = {
             headers: headers
         };
 
-        let body: {};
+        // let body: {};
+        const body: any = {};
 
         return this.http.post(url, body, options)
             .map((response: Response) => {

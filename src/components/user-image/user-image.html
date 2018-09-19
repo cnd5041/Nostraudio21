@@ -1,0 +1,2 @@
+<img *ngIf="imageUrl" [src]="imageUrl" (error)="errorHandler($event)" />
+<img *ngIf="!imageUrl" src="assets/default_user_avatar.jpg" />

@@ -14,56 +14,77 @@
         <ion-list *ngIf="userPortfolio">
             <ion-item>
                 <ion-thumbnail item-left>
-                    <img [src]="userPortfolio?.imageUrl">
+                    <!-- <img *ngIf="userPortfolio?.imageUrl" [src]="userPortfolio?.imageUrl" />
+                    <img *ngIf="!userPortfolio?.imageUrl" src="assets/default_user_avatar.jpg" /> -->
+                    <user-image [imageUrl]="userPortfolio.imageUrl"></user-image>
                 </ion-thumbnail>
                 <h2>{{userPortfolio?.displayName}}</h2>
                 <p>
-                    Cash: {{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}
+                    <b>Cash: </b> {{userPortfolio?.balance | currency:'USD':'symbol-narrow':'1.2-2'}}
                     <br>
-                    Total Assets:
+                    <b>Shares Value: </b> {{userPortfolio?.sharesValue | currency:'USD':'symbol-narrow':'1.2-2'}}
+                    <br>
+                    <b>Total Assets:</b> {{userPortfolio?.netWorth | currency:'USD':'symbol-narrow':'1.2-2'}}
+                    <br>
                 </p>
-                <!--<button ion-button clear item-right>Buy Credits</button>-->
             </ion-item>
         </ion-list>
         <ion-card-content *ngIf="!userPortfolio">
             Login to create a Portfolio.
         </ion-card-content>
     </ion-card>
+
     <ion-card>
         <ion-card-header>
             Stocks
         </ion-card-header>
-        <ion-list *ngIf="userPortfolio?.stockHoldings?.length">
-            <ion-item (click)="onHoldingSelect()" *ngFor="let stock of userPortfolio?.stockHoldings">
+        <ion-list *ngIf="stocks && stocks.length">
+            <ion-item *ngFor="let stock of stocks">
                 <ion-thumbnail item-left>
-                    <img [src]="stock.smallImage">
+                    <img [src]="stock.artist.smallImage">
                 </ion-thumbnail>
-                <h2>{{stock.name}}</h2>
+                <h2>{{stock.artist.name}}</h2>
                 <p>
-                    <b>Market Price:</b> {{stock.marketPrice | currency:'USD':true:'1.2-2'}}
-                    <br />
-                    <b>Return:</b>
+                    <b>Market Price:</b> {{stock.artist.marketPrice | currency:'USD':'symbol-narrow':'1.2-2'}}
+                    <br>
+                    <b>Shares:</b> {{stock.sharesCount}}
+                    <br>
+                    <b>Total:</b> {{stock.artist.marketPrice * stock.sharesCount | currency:'USD':'symbol-narrow':'1.2-2'}}
+                    <!-- <br />
+                    <b>Return:</b> -->
                     <!--<span ng-class="{'positive-return': stock.returnValue > 0, 'negative-return': stock.returnValue < 0}">
                         <span ng-class="{'ion-arrow-up-b': stock.returnValue > 0, 'ion-arrow-down-b': stock.returnValue < 0}"></span>
                         {{stock.returnValue | currency}}
                     </span>-->
                 </p>
+                <button ion-button clear item-end (click)="onHoldingSelect(stock.artist.spotifyId)">
+                    <ion-icon name="arrow-forward"></ion-icon>
+                </button>
             </ion-item>
         </ion-list>
-        <ion-card-content *ngIf="!userPortfolio?.stockHoldings?.length">
+        <ion-card-content *ngIf="!stocks || stocks.length < 1">
             You do not own any stocks, start searching for your favorite artists in the Search tab.
         </ion-card-content>
     </ion-card>
+
     <ion-card>
         <ion-card-header>
             Following
         </ion-card-header>
-        <ion-list *ngIf="userPortfolio?.artistFollows?.length">
-            <ion-item *ngFor="let artist of userPortfolio?.artistFollows">
-                {{artist.name}}
+        <ion-list *ngIf="artistFollows && artistFollows.length">
+            <ion-item *ngFor="let stock of artistFollows">
+                <ion-avatar item-start>
+                    <img [src]="stock.smallImage">
+                </ion-avatar>
+                <h2>{{stock.name}}</h2>
+                <p>
+                    <b>Market Price:</b> {{stock.marketPrice | currency:'USD':'symbol-narrow':'1.2-2'}}</p>
+                <button ion-button clear item-end (click)="onHoldingSelect(stock.spotifyId)">
+                    <ion-icon name="arrow-forward"></ion-icon>
+                </button>
             </ion-item>
         </ion-list>
-        <ion-card-content *ngIf="!userPortfolio?.artistFollows?.length">
+        <ion-card-content *ngIf="!artistFollows || artistFollows.length < 1">
             Find artists from the Search tab, and follow them from their page.
         </ion-card-content>
     </ion-card>
@@ -73,26 +94,21 @@
         <ion-card-header>
             Transactions
         </ion-card-header>
-        <ion-list *ngIf="userPortfolio?.transactions?.length">
-            <!--<ion-item ng-repeat="trans in vm.portfolio.transactions | orderBy: '-transactionDate'" item="trans" class="item item-text-wrap">
-                <ion-delete-button class="ion-minus-circled" ng-click="vm.deleteTransaction($index, trans)"></ion-delete-button>
-                <div class="row row-center minimal-padding">
-                    <div class="col col-25">
-                        <h4>{{trans.transactionDate | date : 'M/d/yy'}}</h4>
-                    </div>
-                    <div class="col col-25">
-                        <h4>{{trans.artist.name}}</h4>
-                    </div>
-                    <div class="col col-25">
-                        <h4>{{trans.action}}</h4>
-                    </div>
-                    <div class="col col-25">
-                        <h4>{{trans.price | currency : symbol}}</h4>
-                    </div>
-                </div>
-            </ion-item>-->
+        <ion-list *ngIf="transactions && transactions.length > 0">
+            <ion-item *ngFor="let trans of transactions">
+                <h5>
+                    <ion-badge [color]="getTransactionBadgeColor(trans)">{{trans.action}}</ion-badge> {{trans.artist.name}}
+                </h5>
+                <p>
+                    {{trans.total | currency:'USD':'symbol-narrow':'1.2-2'}} - {{trans.numberOfShares}} Share(s)
+                </p>
+                <p>
+                    {{trans.date | date:mediumDate}}
+                </p>
+                <button ion-button outline dark item-end (click)="onTransHide(trans)">Hide</button>
+            </ion-item>
         </ion-list>
-        <ion-card-content *ngIf="!userPortfolio?.transactions?.length">
+        <ion-card-content *ngIf="!transactions || transactions.length < 1">
             No Transactions.
         </ion-card-content>
     </ion-card>

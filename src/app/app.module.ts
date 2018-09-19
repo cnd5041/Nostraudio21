@@ -1,109 +1,94 @@
 import { NgModule, ErrorHandler } from '@angular/core';
-import { IonicApp, IonicModule, IonicErrorHandler } from 'ionic-angular';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpModule } from '@angular/http';
+import { IonicApp, IonicModule, IonicErrorHandler } from 'ionic-angular';
 
+// Ionic Imports
 import { InAppBrowser } from '@ionic-native/in-app-browser';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
+// Angular Fire Imports
 import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 
-// import { SpotifyService } from 'angular2-spotify';
-import * as SpotifyService from 'angular2-spotify';
-
-// C:\Users\Chris\Development\Nostraudio21\node_modules\angular2-spotify\angular2-spotify.d.ts
-
+// App
 import { MyApp } from './app.component';
 
+// Pages
 import {
-  AboutPage, SupportPage, PortfolioPage, SearchPage, ArtistPage, StatsPage, LoginPage, ResetPasswordPage, SignupPage
+    AboutPage, ArtistPage, LoginPage, PortfolioPage, FriendPortfolioPage, ResetPasswordPage,
+    SearchPage, SignupPage, StatsPage, SupportPage, FriendsPage, EventsModal
 } from '../pages/';
-
-//Import Components
-import { ArtistListItem } from '../components/artist-list-item/artist-list-item';
-
-//Import Providers
-import {
-  NosSpotifyService, ArtistService, DateService, AuthData, PortfolioService, FirebaseStore, DiscogsService
-} from '../providers/';
+// Components
+import { ComponentsModule } from '../components';
+// Providers
+import { providers } from '../providers';
 
 // AF2 Settings
 export const firebaseConfig = {
-  apiKey: 'AIzaSyD9ly1_EmV1N_8KDoW4IX_tYiD_hNhMBiQ',
-  authDomain: 'nostraudio2.firebaseapp.com',
-  databaseURL: 'https://nostraudio2.firebaseio.com',
-  storageBucket: '',
-  messagingSenderId: '392527777532'
+    apiKey: 'AIzaSyD9ly1_EmV1N_8KDoW4IX_tYiD_hNhMBiQ',
+    authDomain: 'nostraudio2.firebaseapp.com',
+    databaseURL: 'https://nostraudio2.firebaseio.com',
+    storageBucket: '',
+    messagingSenderId: '392527777532'
 };
 
-const spotifyConfig = {
-  provide: 'SpotifyConfig',
-  useValue: {
-    clientId: '98e6bfec35a84072badbb68d75c27dd4',
-    redirectUri: '',
-    scope: '',
-    // If you already have an auth token
-    authToken: ''
-  }
-}
+// NGRX
+import { StoreModule } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
+import { reducers, effects } from '../store';
 
-
-// const myFirebaseAuthConfig = {
-//   provider: AuthProviders.Password,
-//   method: AuthMethods.Password
-// }
 
 @NgModule({
-  declarations: [
-    MyApp,
-    AboutPage,
-    SupportPage,
-    PortfolioPage,
-    SearchPage,
-    ArtistListItem,
-    ArtistPage,
-    StatsPage,
-    LoginPage,
-    ResetPasswordPage,
-    SignupPage
-  ],
-  imports: [
-    BrowserModule,
-    HttpModule,
-    IonicModule.forRoot(MyApp),
-    // AngularFireModule.initializeApp(firebaseConfig, myFirebaseAuthConfig),
-    AngularFireModule.initializeApp(firebaseConfig),
-    AngularFireDatabaseModule,
-    AngularFireAuthModule
-  ],
-  bootstrap: [IonicApp],
-  entryComponents: [
-    MyApp,
-    AboutPage,
-    SupportPage,
-    PortfolioPage,
-    SearchPage,
-    ArtistPage,
-    StatsPage,
-    LoginPage,
-    ResetPasswordPage,
-    SignupPage
-  ],
-  providers: [
-    { provide: ErrorHandler, useClass: IonicErrorHandler },
-    NosSpotifyService,
-    DiscogsService,
-    ArtistService,
-    DateService,
-    // StatsService,
-    AuthData,
-    PortfolioService,
-    FirebaseStore,
-    InAppBrowser,
-    SplashScreen,
-    //SpotifyService, spotifyConfig
-  ]
+    declarations: [
+        MyApp,
+        AboutPage,
+        SupportPage,
+        PortfolioPage,
+        FriendPortfolioPage,
+        SearchPage,
+        ArtistPage,
+        StatsPage,
+        LoginPage,
+        ResetPasswordPage,
+        SignupPage,
+        EventsModal,
+        FriendsPage,
+        // ...components
+    ],
+    imports: [
+        BrowserModule,
+        HttpModule,
+        IonicModule.forRoot(MyApp),
+        AngularFireModule.initializeApp(firebaseConfig),
+        AngularFireDatabaseModule,
+        AngularFireAuthModule,
+        StoreModule.forRoot(reducers, {}),
+        EffectsModule.forRoot(effects),
+        ComponentsModule
+    ],
+    bootstrap: [IonicApp],
+    entryComponents: [
+        MyApp,
+        AboutPage,
+        SupportPage,
+        PortfolioPage,
+        FriendPortfolioPage,
+        SearchPage,
+        ArtistPage,
+        StatsPage,
+        LoginPage,
+        ResetPasswordPage,
+        SignupPage,
+        EventsModal,
+        FriendsPage
+    ],
+    providers: [
+        { provide: ErrorHandler, useClass: IonicErrorHandler },
+        SplashScreen,
+        InAppBrowser,
+        ...providers
+    ]
 })
 export class AppModule { }

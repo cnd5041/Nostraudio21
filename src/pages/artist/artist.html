@@ -1,8 +1,8 @@
 <ion-header>
     <ion-navbar>
         <button ion-button menuToggle>
-      <ion-icon name="menu"></ion-icon>
-    </button>
+            <ion-icon name="menu"></ion-icon>
+        </button>
         <ion-title>Artist Info</ion-title>
     </ion-navbar>
 </ion-header>
@@ -14,62 +14,50 @@
                 {{artist?.name}}
             </ion-card-title>
             <p>
-                {{artistGenres}}
+                {{ artist?.genresArray?.join(', ') }}
             </p>
         </ion-card-content>
+        <hr>
+
+        <ion-row align-items-center justify-content-end>
+            <ion-col>
+                <button ion-button outline small round *ngIf="!(isFollowing$ | async)" (click)="follow()">Follow</button>
+                <button ion-button small round *ngIf="(isFollowing$ | async)" (click)="unFollow()">Following</button>
+            </ion-col>
+            <ion-col item-right text-right>
+                Followers
+                <ion-badge item-right>{{artistFollowerCount$ | async}}</ion-badge>
+            </ion-col>
+        </ion-row>
+
         <img *ngIf="artist" [src]="artist?.largeImage" />
 
-        <ion-list>
-            <ion-item>
-                Followers
-                <ion-badge item-right>{{artistFollowers?.length}}</ion-badge>
-                <button ion-button outline item-right icon-only *ngIf="!isFollowing" (click)="follow()">
-                      <ion-icon name="md-add"></ion-icon>
-                </button>
-                <button ion-button clear item-right icon-only *ngIf="isFollowing" (click)="unFollow()">
-                      <ion-icon name="md-checkmark-circle"></ion-icon>
-                </button>
-            </ion-item>
-            <!--<ion-item>
-                Buy
-            </ion-item>-->
-            <!--<ion-item>
-                <ion-label color="primary" stacked>Number of Shares</ion-label>
-                <ion-input type="number" placeholder="Shares" clearInput></ion-input>
-            </ion-item>-->
-            <!--<button ion-button full>Full Button</button>-->
-            <!--<ion-item>
-                <ion-label color="primary" stacked>Number of Shares</ion-label>
-                <ion-input type="number" placeholder="Shares" clearInput></ion-input>
-
-
-                <button ion-button outline item-right>Buy</button>
-            </ion-item>-->
-        </ion-list>
+        <ion-row center text-center>
+            <ion-col>
+                <b>Stock Price: </b>{{artist?.marketPrice | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-col>
+            <ion-col>
+                <b>Market Cap: </b>{{artist?.marketCap | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-col>
+        </ion-row>
     </ion-card>
 
     <ion-card *ngIf="!userPortfolio">
-        <ion-row center text-center>
-            <ion-col>Stock Price: {{artist?.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
-            <ion-col>Market Cap: {{artist?.marketCap | currency:'USD':true:'1.2-2'}}</ion-col>
-        </ion-row>
         <ion-card-content>
             Login to start buying and selling shares.
         </ion-card-content>
     </ion-card>
 
     <ion-card *ngIf="userPortfolio">
-        <ion-card-header center text-center>
-            <ion-row center text-center>
-                <ion-col>Stock Price: {{artist?.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
-                <ion-col>Market Cap: {{artist?.marketCap | currency:'USD':true:'1.2-2'}}</ion-col>
-            </ion-row>
-            <hr />
-            <ion-row center text-center>
-                <ion-col>Cash: {{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}</ion-col>
-                <ion-col *ngIf="artist">Shares({{ownedShares}}): {{ownedShares * artist.marketPrice | currency:'USD':true:'1.2-2'}}</ion-col>
-            </ion-row>
+        <ion-card-header>
+            Portfolio
         </ion-card-header>
+        <ion-card-content>
+            <ion-row center text-center>
+                <ion-col>
+                    <b>Cash: </b>{{userPortfolio?.balance | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-col>
+                <ion-col *ngIf="artist">
+                    <b>Shares ({{ownedShares}}): </b>{{ownedShares * artist.marketPrice | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-col>
+            </ion-row>
+        </ion-card-content>
 
         <ion-list>
             <div ion-item>
@@ -86,100 +74,43 @@
                 <div *ngSwitchCase="'buy'">
                     <ion-item>
                         <ion-label color="primary" stacked>Number of Shares</ion-label>
-                        <ion-input id="buyShareCount" type="number" placeholder="Shares" [(ngModel)]="buyShareCount" (ngModelChange)="onBuySharesChange($event)" [min]="1" step="1">
+                        <ion-input id="buyShareCount" type="number" placeholder="Shares" [(ngModel)]="buyShareCount" (ngModelChange)="onBuySharesChange($event)"
+                            [min]="1" step="1">
                         </ion-input>
-                        <ion-badge [color]="getBuyBadgeColor()" item-right>{{buyTotal | currency:'USD':true:'1.2-2'}}</ion-badge>
+                        <ion-badge [color]="getBuyBadgeColor()" item-right>{{buyTotal | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-badge>
                     </ion-item>
                     <div padding>
-                        <button ion-button block color="secondary" (click)="onBuyClick()" [disabled]="!canAfford()">Buy</button>
+                        <button ion-button block color="secondary" (click)="onBuyClick()" [disabled]="!isBuyValid()">Buy</button>
                     </div>
                 </div>
 
                 <div *ngSwitchCase="'sell'">
                     <ion-item>
                         <ion-label color="primary" stacked>Number of Shares</ion-label>
-                        <ion-input id="sellShareCount" type="number" placeholder="Shares" [(ngModel)]="sellShareCount" (ngModelChange)="onSellSharesChange($event)" [min]="1" [max]="ownedShares" step="1">
+                        <ion-input id="sellShareCount" type="number" placeholder="Shares" [(ngModel)]="sellShareCount" (ngModelChange)="onSellSharesChange($event)"
+                            [min]="1" [max]="ownedShares" step="1">
                         </ion-input>
-                        <ion-badge [color]="'moneygreen'" item-right>{{sellTotal | currency:'USD':true:'1.2-2'}}</ion-badge>
+                        <ion-badge [color]="'moneygreen'" item-right>{{sellTotal | currency:'USD':'symbol-narrow':'1.2-2'}}</ion-badge>
                     </ion-item>
                     <div padding>
-                        <button ion-button block color="danger" (click)="onSellClick()">Sell</button>
+                        <button ion-button block color="danger" (click)="onSellClick()" [disabled]="!isSellValid()">Sell</button>
                     </div>
                 </div>
             </div>
         </ion-list>
-
-        <!--<hr />-->
-        <!--<ion-card-header>
-            <ion-segment [(ngModel)]="action">
-                <ion-segment-button value="buy" ng-click="onBuyClick()">
-                    Buy
-                </ion-segment-button>
-                <ion-segment-button value="sell">
-                    Sell
-                </ion-segment-button>
-            </ion-segment>
-        </ion-card-header>-->
-
-        <!--<ion-item>
-            Cash: {{userPortfolio?.balance | currency:'USD':true:'1.2-2'}}
-        </ion-item>-->
-
-        <!--<div [ngSwitch]="action">
-            <ion-list *ngSwitchCase="'buy'">
-                <ion-item>
-                    <ion-label color="primary" stacked>Number of Shares</ion-label>
-                    <ion-input id="numberOfShares" type="number" placeholder="Shares" [ngModel]="numberOfShares" (ngModelChange)="onSharesChange($event)">
-                    </ion-input>
-                    <ion-badge [color]="getColor()" item-right>{{total | currency:'USD':true:'1.2-2'}}</ion-badge>
-                </ion-item>
-                <button ion-button block round color="secondary" class="center" (click)="onBuyClick()" [disabled]="!canAfford()">Buy</button>
-            </ion-list>
-
-            <ion-list *ngSwitchCase="'sell'">
-                <ion-item>
-                    Sell
-                </ion-item>
-            </ion-list>
-        </div>-->
     </ion-card>
 
-
-
-
-
-
-
-    <!--<pre>{{artist | json}}</pre>-->
-    <!--<ion-card>
-        <img [src]="artist?.largeImage" />
-        <ion-card-content>
-            <ion-card-title>
-                {{artist?.name}}
-            </ion-card-title>
-            <p>
-                The most popular industrial group ever, and largely responsible for bringing the music to a mass audience.
-            </p>
-        </ion-card-content>
-        <ion-list>
-            <ion-item>
-                Followers
-                <ion-badge item-right>{{artistFollowers?.length}}</ion-badge>
-                <button ion-button outline item-right icon-only *ngIf="!isFollowing" (click)="follow()">
-                      <ion-icon name="md-add"></ion-icon>
-                </button>
-                <button ion-button clear item-right icon-only *ngIf="isFollowing" (click)="unFollow()">
-                      <ion-icon name="md-checkmark-circle"></ion-icon>
-                </button>
-            </ion-item>
-            <ion-item>
-                Price
-            </ion-item>
-            <ion-item>
-                Buy
-            </ion-item>
-
-        </ion-list>
-    </ion-card>-->
+    <!-- <ion-item>
+        <button ion-button block outline icon-right (click)="onEventsClick()">
+            See Events
+            <ion-icon name="arrow-forward"></ion-icon>
+        </button>
+    </ion-item> -->
+    <div padding>
+        <button ion-button block outline icon-right (click)="onEventsClick()">
+            See Events
+            <ion-icon name="arrow-forward"></ion-icon>
+        </button>
+    </div>
 
 </ion-content>
