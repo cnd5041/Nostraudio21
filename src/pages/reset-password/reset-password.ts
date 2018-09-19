@@ -1,6 +1,6 @@
 import { NavController, LoadingController, AlertController } from 'ionic-angular';
 import { Component } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { AuthData } from '../../providers/auth-data';
 import { GlobalValidator } from '../../validators/global-validator';
 
@@ -9,11 +9,10 @@ import { GlobalValidator } from '../../validators/global-validator';
     templateUrl: 'reset-password.html',
 })
 export class ResetPasswordPage {
-    public resetPasswordForm;
+    resetPasswordForm: FormGroup;
     emailChanged: boolean = false;
     passwordChanged: boolean = false;
     submitAttempt: boolean = false;
-
 
     constructor(
         public authData: AuthData,
@@ -22,18 +21,9 @@ export class ResetPasswordPage {
         public loadingCtrl: LoadingController,
         public alertCtrl: AlertController
     ) {
-
         this.resetPasswordForm = formBuilder.group({
             email: ['', Validators.compose([Validators.required, GlobalValidator.mailFormat])],
         });
-    }
-
-    /**
-     * Receives an input field and sets the corresponding fieldChanged property to 'true' to help with the styles.
-     */
-    elementChanged(input) {
-        const field = input.inputControl.name;
-        this[field + "Changed"] = true;
     }
 
     /**
@@ -43,7 +33,6 @@ export class ResetPasswordPage {
      * If the form is invalid it will just log the form value, feel free to handle that as you like.
      */
     resetPassword() {
-
         this.submitAttempt = true;
 
         if (!this.resetPasswordForm.valid) {
@@ -51,10 +40,10 @@ export class ResetPasswordPage {
         } else {
             this.authData.resetPassword(this.resetPasswordForm.value.email).then((user) => {
                 const alert = this.alertCtrl.create({
-                    message: "We just sent you a reset link to your email",
+                    message: 'We just sent you a reset link to your email',
                     buttons: [
                         {
-                            text: "Ok",
+                            text: 'Ok',
                             role: 'cancel',
                             handler: () => {
                                 this.nav.pop();
@@ -63,14 +52,13 @@ export class ResetPasswordPage {
                     ]
                 });
                 alert.present();
-
             }, (error) => {
                 const errorMessage: string = error.message;
                 const errorAlert = this.alertCtrl.create({
                     message: errorMessage,
                     buttons: [
                         {
-                            text: "Ok",
+                            text: 'Ok',
                             role: 'cancel'
                         }
                     ]

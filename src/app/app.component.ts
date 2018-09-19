@@ -39,7 +39,7 @@ export class MyApp {
         { title: 'Friends', component: FriendsPage, icon: 'people' },
         { title: 'About', component: AboutPage, icon: 'information-circle' },
         { title: 'Support', component: SupportPage, icon: 'help-buoy' },
-        { title: 'Login', component: LoginPage, icon: 'cog' }
+        { title: 'Account', component: LoginPage, icon: 'cog' }
     ];
 
     constructor(
